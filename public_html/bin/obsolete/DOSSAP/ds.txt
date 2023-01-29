@@ -1,0 +1,69 @@
+                           DOS SAP Ver. 0.72
+                 SAP Library ver.1.54 by Adam Bienias
+
+                         Autor: Marek Panfilow
+
+Contact:
+marek@piorunek.pl
+WWW:
+www.piorunek.pl/~marek/
+
+1. Introduction:
+DOS Sap is SAP format player.
+SAP is music format that store tunes ripped from Atari XL/XE
+
+This program is freeware.
+
+Author has no responsibility for any possible damage caused by DOS sap.
+Use it at your own risk.
+
+2. Requirements:
+- Minimum: 386 processor.
+  On pentium 100MHz all tunes work fine.
+- Sound Blaster or compatible
+  The best will be SB 16 or better.
+  The BLASTER variable should by set.
+- DOS 3.0 or or better, Windows 95/98/ME
+
+3. Usage:
+ds [options] [file.sap]
+options:
+-8,  --8bit    - Force 8 bit mode
+-a,  --adr=    - Force address for SB
+-i,  --irq=    - Force IRQ for SB
+-d,  --dma=    - Force DMA for SB
+-dh, --dmah=   - Force HDMA for SB
+-h,  --help    - show help
+
+example:
+ds -8 -a4 --irq=5 -d1 -dh5 at*.sap
+Program start with:
+Address          240h
+Interrupt        5
+DMA              1
+16 bit DMA       5
+
+In this version -8 or --8bit mean also mono mode.
+
+4. DOS Sap keys:
+esc, q      - Exit DOS Sap
+f           - File selector
+>           - Next song
+<           - Previous song
+s           - Stop
+space, p:   - Pause
++           - Increase volume
+-           - Decrease volume
+e           - Next effect
+b           - Effect on/off
+l           - Change language
+h           - Help on/off
+
+----------------------------------------------------------------
+Compiled with DJGPP and NASM.
+The DJGPP home page on the WWW is: http://www.delorie.com/djgpp/
+NASM has a WWW page at http://nasm.sourceforge.net
+
+This product includes software developed by the University of
+California, Berkeley and its contributors.
+----------------------------------------------------------------

@@ -1,0 +1,1 @@
+SAP player for Windows , based on the new libSAP 2.0 emulation core. With many improvements since the last version. Includes a standalone player and a Winamp plug-in. No TIME tag support. This player comes from the creator of the emulation engine and the original release was the first player available. (2007-08-23)

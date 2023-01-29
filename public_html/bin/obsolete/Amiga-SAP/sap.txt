@@ -1,0 +1,3 @@
+Command line SAP player for Amiga with 68020 or higher or Power PC.
+Requires ixemul.library version 48.0 or higher.
+CLI Example: sap Zybex.sap VERBOSE ADEVICE TRACK 4

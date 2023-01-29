@@ -1,0 +1,4 @@
+http://saper.atari.pl/files.html
+All this stuff has been made by me, Jakub Madej. Feel free to contact me for any reason (please write to madqba ( at ) atari.pl). You can also visit my home page, where You will find more information about me and projects I'm currently working on.
+
+SAPER - a nice Linux graphical environment player with STILView support (STILView shows additional information about songs, like compo contributions, composers' comments, covers, etc.). (2002-11-18)

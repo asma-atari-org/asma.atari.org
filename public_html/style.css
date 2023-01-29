@@ -1,0 +1,74 @@
+@font-face {
+ font-family: atari;
+ src: url(AtariClassic-Regular.ttf);
+}
+
+:root {
+  --color_blue: #0094d6;
+}
+
+html {
+ display: table;
+ margin: auto;
+ font-family: "Trebuchet MS", Tahoma, Arial;
+ font-size: 16px;
+}
+
+a {
+    color: var(--color_blue);
+    text-decoration: none;
+
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.main_body { color:black; background-color:#c6def7; margin: 4px; }
+.main_tab { background-color: white; padding: 0px 0px 4px 0px; font-family:atari; font-size:16px; border:solid 2px var(--color_blue); }
+.main_tabimg { padding: 0px; height: 21px;}
+.main_optional { }
+
+.main_search { text-align: justify; margin-right: 14px; margin-left: 14px; margin-top: 14px; margin-bottom: 14px}
+.main_search_field {  font-size: 1.2em; }
+
+.border { margin-left: 4px; margin-top: 4px; }
+.sections { border:solid 2px var(--color_blue); margin-left: 5px; margin-right: 5px; margin-top: 0px; background-color:#d0e8f8; padding: 0px; }
+.sections_div { margin: 10px; }
+.section { border:solid 2px var(--color_blue); background-color:white; border-spacing:0px; padding: 0px;}
+.section_header_row { background-color:#c6def7; }
+.section_body { display: flex; flex-wrap: wrap;}
+
+.section_header {
+ text-align: left;
+ vertical-align: text-top;
+ font-size: 1.2em;
+ color: #493476;
+}
+
+.left_column {
+ flex: 30%;
+ text-align: left;
+ vertical-align: text-top;
+ font-weight: bold;
+ color: var(--color_blue);
+}
+
+.right_column {
+ flex: 70%;
+ text-align: left;
+ vertical-align: text-top;
+ margin-bottom: 5px;
+}
+
+
+/* Responsive layout - makes a one column-layout instead of a two-column layout */
+@media (max-width: 600px) {
+ .main_body { margin: 0px; }  
+ .main_optional { display:none; }
+ .main_search { text-align:center; }
+ .sections_div { margin: 0px; }
+ .sections { margin: 0px; }  
+ .section { border: none; }
+ .left_column, .right_column{  flex: 100%; }
+}

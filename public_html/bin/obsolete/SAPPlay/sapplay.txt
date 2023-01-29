@@ -1,0 +1,8 @@
+This player was written in 2003 by Christian Nowak <chnowak@web.de>
+and is based on Adam Bienias' SAP Library v1.54. Visit
+http://asma.dspaudio.com/ for more information. SAP files are Atari
+XL/XE music files, pretty similar to C64 SID music files.
+
+SAP player for Sega Dreamcast gaming console.
+SAP player for Gamepark32 gaming console.
+Compiled from the same sources as the Dreamcast version. (2003-04-10)

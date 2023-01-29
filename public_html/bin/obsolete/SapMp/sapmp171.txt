@@ -1,0 +1,1 @@
+Another SAP-only Windows player. This one is not yet mature, but quite usable, though based on the obsolete libSAP 1.54 emulation core. (2003-04-10)

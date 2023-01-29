@@ -1,0 +1,176 @@
+@font-face {
+    font-family: atari;
+    src: url(../AtariClassic-Regular.ttf);
+}
+
+html {
+ display: table;
+ margin: auto;
+ font-family: "Trebuchet MS", Tahoma, Arial;
+ font-size: 13px;
+}
+
+:root {
+  --color_active: #5cb85c;
+}
+
+.tabbedPane {
+ float: left;
+}
+.tab {
+ color:black;
+ background-color:white;
+ display: inline-block;
+ padding: 8px 16px;
+ margin: 8px 0px 0px 0px;
+}
+
+.tab_active {
+ color:#fff!important;
+ background-color:#f44336!important;
+ display: inline-block;
+ padding: 8px 16px;
+ margin: 8px 0px 0px 0px;
+}
+
+.tabbedPane:hover{
+ color:#000!important;
+ background-color:#9e9e9e!important
+}
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 50px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  position: relative;
+  background-color: #fefefe;
+  margin: auto;
+  padding: 0;
+  border: 1px solid #888;
+  width: 100%;
+  min-width: 320px;
+  max-width: 800px;
+
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+  -webkit-animation-name: animatetop;
+  -webkit-animation-duration: 0.4s;
+  animation-name: animatetop;
+  animation-duration: 0.4s
+}
+
+/* Add Animation */
+@-webkit-keyframes animatetop {
+  from {top:-300px; opacity:0} 
+  to {top:0; opacity:1}
+}
+
+@keyframes animatetop {
+  from {top:-300px; opacity:0}
+  to {top:0; opacity:1}
+}
+
+/* The Close Button */
+.close {
+  color: white;
+  float: right;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal-header {
+  padding: 2px 2px;
+  background-color: #5cb85c;
+  color: white;
+  font-size: 24px;
+}
+
+.modal-body {padding: 0px;}
+
+.modal-footer {
+  padding: 2px 16px;
+  background-color: #5cb85c;
+  color: white;
+}
+
+
+* {
+  box-sizing: border-box;
+}
+
+.flex-container {
+  display: flex;
+  flex-wrap: wrap;
+  text-align: center;
+}
+
+.flex-item-left {
+  flex: 50%;
+}
+
+.flex-item-right {
+  flex: 50%;
+}
+
+/* Responsive layout - makes a one column-layout instead of a two-column layout */
+@media (max-width: 1024px) {
+  .flex-item-right, .flex-item-left {
+    flex: 100%;
+  }
+}
+
+.clickable { cursor: pointer; }
+.link { color:blue; text-decoration: underline; cursor: pointer; }
+
+.boxedt { border:solid 0px;  padding: 2px 3px 2px 3px;}
+.player_label { padding: 2px 3px 2px 3px; vertical-align: top; }
+.player_value { padding: 2px 3px 2px 3px; vertical-align: top; }
+.player_song_button_active { color:white; background-color: var(--color_active)!important; font-weight: bold;  }
+.playerButton { height: 22px; vertical-align: middle;}
+
+.search_parameter {
+  float:left;
+  margin:2px;
+}
+
+.search_label {
+  display: block;
+}
+
+.search_result_table { margin: 0px; padding: 0px; border-spacing: 0px; border-collapse: collapse; width: 100%; }
+.search_result_header { text-align: left; background-color:#eeeeff; padding: 2px 3px 2px 3px;}
+.search_result_cell { padding: 2px; cursor: pointer; }
+
+.search_result_selected_row { color:white; background-color: var(--color_active)!important; font-weight: bold; }
+
+table.sortable tbody tr:nth-child(2n) td {
+  background: white;
+}
+table.sortable tbody tr:nth-child(2n+1) td {
+  background: #c6def7;
+}
+
+.statistic_table { width:100%; margin: 0px; padding: 0px; border-spacing: 0px; border-collapse: collapse; }
+.statistic_header { text-align: left; background-color:#eeeeff; padding: 2px 3px 2px 3px;}
+.statistic_header_numeric { text-align: right; background-color:#eeeeff; padding: 2px 3px 2px 3px;}
+.statistic_cell { padding: 2px 3px 2px 3px; }
+.statistic_cell_numeric  { text-align: right; padding: 2px 3px 2px 3px; }

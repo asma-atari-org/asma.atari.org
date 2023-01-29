@@ -1,0 +1,1 @@
+A WinAmp plug-in, based on obsolete libSAP 1.54 emulation core. Has some nice features like STIL and TIME support. Self-installing package. You will need a Windows player Winamp for this plug-in to work. (2002-03-25)

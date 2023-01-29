@@ -1,0 +1,18 @@
+<IfModule mod_expires.c>
+# Enable expiration control
+ExpiresActive On
+ 
+# Default expiration: 1 hour after request
+ExpiresDefault "now plus 1 hour"
+</IfModule>
+
+
+# Referrer-Policy
+<IfModule mod_headers.c>
+Header set Referrer-Policy "origin-when-cross-origin"
+Header set Content-Security-Policy-Report-Only "script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client; frame-src https://accounts.google.com/gsi/; connect-src https://accounts.google.com/gsi/;"
+</IfModule>
+
+<FilesMatch ".sap$">
+Header set X-Robots-Tag "noindex, noarchive, nosnippet"
+</FilesMatch>

@@ -1,0 +1,16 @@
+SAP player for BeOS . Also supports many different formats. (2001-09-02)
+-------------------------
+SimpleSapPlayer for BeOS
+-------------------------
+
+This is just a quick 5 minute hatchet job to get a player up and running, very low cpu usage on the sound emulation, good job Adam Bienias. i had a peek at penguinsap, which gave me a few ideas.
+
+The - button goes back 1 song, and it's obvious what the plus one does, :-)
+
+Go here to learn more about SAP, and get some music files to play.
+
+http://mp3.musichall.cz/Unreal/ASMA/index.html
+
+If anyone wants to do a really cool SAP player for BeOS, feel free to do so, i've made the sound bit work, all you have to do is do the interface, :-), i'm thinking of making it into a plugin for CL-Amp and SoundPlay, or if anyone else is up to the job, feel free to do it.
+
+Caz

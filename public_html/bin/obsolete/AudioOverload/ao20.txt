@@ -1,0 +1,13 @@
+Audio Overload 2.0
+https://www.bannister.org/software/ao.htm
+SAP player for MacOs, Windows 32/64bit, and Linux 32/64bit. Also supports many other formats.
+
+Requires
+Microsoft Visual C++ 2008 Service Pack 1 Redistributable Package MFC Security Update
+https://www.microsoft.com/en-us/download/details.aspx?id=26368
+- vcredist_x86.exe for 32-bit version
+- vcredist_x64.exe for 64-bit version
+
+
+
+
