@@ -109,7 +109,12 @@ public class FileInfoList {
 	public void checkFiles(ComposerList composerList, ProductionList productionList) {
 		final String COMPOSERS = "Composers/";
 		int startIndex = COMPOSERS.length();
+		int count = 0;
 		for (var fileInfo : fileInfoList) {
+			count++;
+			if (count % 100 == 0) {
+				System.out.print(".");
+			}
 			String filePath = fileInfo.filePath;
 			if (filePath.startsWith(COMPOSERS)) {
 

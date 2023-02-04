@@ -15,7 +15,6 @@ echo Checking out current revision ASMA from SVN.
 set SVN_FOLDER=C:\jac\system\Atari800\Sounds\ASMA\SVN
 set SVN_TRUNK_FOLDER=%SVN_FOLDER%\trunk
 set SVN_TRUNK_ASMA_FOLDER=%SVN_TRUNK_FOLDER%\asma
-set SVN_ASMA_TEXT_FILE=%SVN_TRUNK_ASMA_FOLDER%\asma.txt
 
 set SITE_FOLDER=%SITES_FOLDER%\asma.atari.org
 set SITE_HTML_FOLDER=%SITE_FOLDER%\public_html
@@ -23,8 +22,9 @@ set SITE_ASMA_FOLDER=%SITE_HTML_FOLDER%\asma
 
 set SITE_ASMADB_FOLDER=%SITE_HTML_FOLDER%\asmadb
 set SITE_ASMADB_JSON=%SITE_ASMADB_FOLDER%\asma.json
+set SITE_ASMA_ZIP_FILE=%SITE_ASMADB_FOLDER%\asma.zip
+set SVN_ASMA_TEXT_FILE=%SITE_ASMADB_FOLDER%\asma.txt
 
-set SITE_ASMA_ZIP_FILE=%SITE_HTML_FOLDER%\bin\asma.zip
 set JAVA_FOLDER=%SITE_FOLDER%
 
 cd %SVN_FOLDER%
@@ -49,11 +49,14 @@ if not exist %WUDSN_SITE_HTML_FOLDER%. (
   mklink /J %WUDSN_SITE_HTML_FOLDER% %SITE_HTML_FOLDER%
 )
 
+echo.
 rem Run the exporter to update the JSON database.
 java -cp "%JAVA_FOLDER%\bin;%JAVA_FOLDER%\lib\asap.jar;%JAVA_FOLDER%\lib\gson-2.9.1.jar" org.atari.asma.ASMAExporter %SVN_TRUNK_ASMA_FOLDER% %SITE_ASMADB_JSON%
+echo.
 
 rem Create the overall ZIP
 set TARGET=%SITE_ASMA_ZIP_FILE%
+echo Creating %TARGET%
 if exist %TARGET% del %TARGET%
 cd %SVN_TRUNK_FOLDER%
 %WINRAR% a -r -afzip %TARGET% asma
@@ -61,5 +64,5 @@ cd %SVN_TRUNK_FOLDER%
 cd %SVN_FOLDER%
 
 start %SITE_HTML_FOLDER%
-start file:///C:/jac/system/WWW/Sites/asma.atari.org/public_html/index.html
+call %SITE_HTML_FOLDER%\index.bat
 pause
