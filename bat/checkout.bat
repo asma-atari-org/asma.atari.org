@@ -54,7 +54,7 @@ rem Run the exporter to update the JSON database.
 java -cp "%JAVA_FOLDER%\bin;%JAVA_FOLDER%\lib\asap.jar;%JAVA_FOLDER%\lib\gson-2.9.1.jar" org.atari.asma.ASMAExporter %SVN_TRUNK_ASMA_FOLDER% %SITE_ASMADB_JSON%
 echo.
 
-rem Create the overall ZIP
+rem Create the overall ZIP.
 set TARGET=%SITE_ASMA_ZIP_FILE%
 echo Creating %TARGET%
 if exist %TARGET% del %TARGET%
@@ -63,6 +63,4 @@ cd %SVN_TRUNK_FOLDER%
 
 cd %SVN_FOLDER%
 
-start %SITE_HTML_FOLDER%
 call %SITE_HTML_FOLDER%\index.bat
-pause
