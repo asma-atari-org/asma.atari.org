@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>SVN</name>
+			<type>2</type>
+			<location>C:/jac/system/Atari800/Sounds/ASMA/SVN</location>
+		</link>
+	</linkedResources>
 </projectDescription>
