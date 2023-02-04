@@ -64,12 +64,24 @@ public class FileInfoList {
 		System.out.println(fileList.size() + " matching files found.");
 
 		int index = sourceFolder.getAbsolutePath().length() + 1;
+		int count = 0;
+
+		final int blockSize=100;
+		for(int i=0;i<fileList.size()/blockSize;i++) {
+			System.out.print("=");
+		}
+		System.out.println();
 		for (File file : fileList) {
+			count++;
+			if (count % blockSize == 0) {
+				System.out.print("^");
+			}
 			String filePath = file.getAbsolutePath().substring(index);
 			filePath = filePath.replace(File.separator, "/");
 			var songInfo = readFile(file, filePath);
 			fileInfoList.add(songInfo);
 		}
+		System.out.println();
 	}
 
 	private FileInfo readFile(File file, String filePath) {
@@ -109,12 +121,8 @@ public class FileInfoList {
 	public void checkFiles(ComposerList composerList, ProductionList productionList) {
 		final String COMPOSERS = "Composers/";
 		int startIndex = COMPOSERS.length();
-		int count = 0;
+
 		for (var fileInfo : fileInfoList) {
-			count++;
-			if (count % 100 == 0) {
-				System.out.print(".");
-			}
 			String filePath = fileInfo.filePath;
 			if (filePath.startsWith(COMPOSERS)) {
 
@@ -126,19 +134,19 @@ public class FileInfoList {
 					String[] fileAuthors = fileInfo.author.split(" & ");
 					for (String fileAuthor : fileAuthors) {
 						final String questionMark = " <?>";
-						 boolean unsafe = false;
-						if (fileAuthor.endsWith(questionMark)){
+						boolean unsafe = false;
+						if (fileAuthor.endsWith(questionMark)) {
 							unsafe = true;
-							fileAuthor=fileAuthor.substring(0,fileAuthor.length()-questionMark.length());
+							fileAuthor = fileAuthor.substring(0, fileAuthor.length() - questionMark.length());
 						}
 						if (!authors.contains(fileAuthor)) {
-							System.err.println("File " + fileInfo.filePath + " author " + fileAuthor + " in "+fileInfo.author
-									+ " is differnt from all composer authors " + authors.toString());
+							System.err.println("File " + fileInfo.filePath + " author " + fileAuthor + " in "
+									+ fileInfo.author + " is differnt from all composer authors " + authors.toString());
 
 						} else {
 							if (unsafe) {
-								System.out.println("File " + fileInfo.filePath + " author " + fileAuthor + " in "+fileInfo.author
-										+ " is unsafe");
+								System.out.println("File " + fileInfo.filePath + " author " + fileAuthor + " in "
+										+ fileInfo.author + " is unsafe");
 							}
 						}
 					}
