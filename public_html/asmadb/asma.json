@@ -3206,8 +3206,8 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Pelc_Janusz/Dagobar_Ingame_2.sap", "fileSize": 4022, "title": "Dagobar - Ingame - 2", "author": "Janusz Pelc & Daniel Kleczynski (D.K.)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Pelc_Janusz/Dagobar_Ingame_3.sap", "fileSize": 3479, "title": "Dagobar - Ingame - 3", "author": "Janusz Pelc & Daniel Kleczynski (D.K.)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Pelc_Janusz/Enola.sap", "fileSize": 3197, "title": "Enola", "author": "Janusz Pelc <?>", "date": "", "typeLetter": "C", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Pelc_Janusz/Fred.sap", "fileSize": 3818, "title": "Fred", "author": "Janusz Pelc", "date": "1991", "typeLetter": "C", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Pelc_Janusz/Lasermania.sap", "fileSize": 5502, "title": "Lasermania", "author": "Janusz Pelc & Daniel Kleczynski (D.K.)", "date": "1990", "typeLetter": "C", "originalModuleExt": "sap", "songs": 4}
+, {"filePath": "Composers/Pelc_Janusz/Fred.sap", "fileSize": 3846, "title": "Fred", "author": "Janusz Pelc", "date": "1991", "typeLetter": "C", "originalModuleExt": "cmc"}
+, {"filePath": "Composers/Pelc_Janusz/Lasermania.sap", "fileSize": 5532, "title": "Lasermania", "author": "Janusz Pelc & Daniel Kleczynski (D.K.)", "date": "1990", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 4}
 , {"filePath": "Composers/Pelc_Janusz/Misja.sap", "fileSize": 4055, "title": "Misja", "author": "Janusz Pelc", "date": "1991", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Pelc_Janusz/Mix.sap", "fileSize": 3342, "title": "Mix", "author": "Janusz Pelc & Daniel Kleczynski (D.K.)", "date": "", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Pelc_Janusz/Song1.sap", "fileSize": 3211, "title": "Song1", "author": "Janusz Pelc", "date": "1992 <?>", "typeLetter": "C", "originalModuleExt": "cmc"}
