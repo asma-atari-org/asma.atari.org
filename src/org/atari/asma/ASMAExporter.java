@@ -3,6 +3,7 @@ package org.atari.asma;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import org.atari.asma.demozoo.ProductionList;
 import org.atari.asma.util.JSONWriter;
@@ -71,7 +72,7 @@ public class ASMAExporter {
 
 		FileWriter fileWriter = null;
 		try {
-			fileWriter = new FileWriter(exportFile);
+			fileWriter = new FileWriter(exportFile, Charset.forName("UTF8"));
 			fileWriter.write("const asma = ");
 			JSONWriter writer = new JSONWriter(fileWriter);
 			writer.beginObject();
