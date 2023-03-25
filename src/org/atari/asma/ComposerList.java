@@ -123,7 +123,7 @@ public class ComposerList {
 			}
 			String folderName = composerFolder.getName();
 			if (getByFolderName(folderName) == null) {
-				System.err.println("Folder " + composerFolder.toString() + " has not entry in composer list");
+				System.err.println("Folder " + composerFolder.toString() + " has no entry in composer list");
 				continue;
 
 			}

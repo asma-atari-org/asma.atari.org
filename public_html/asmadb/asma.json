@@ -1,4 +1,5 @@
 const asma = {"composerInfos": [
+{ "folderName" : "Aki", "lastName" : "<?>", "firstName" : "", "handles" : "Aki, Akio Tenshi", "country" : "Czech Republic", "demozooID" : "3852"},
 { "folderName" : "Anal_lysator", "lastName" : "<?>", "firstName" : "", "handles" : "Anal-lysator", "country" : "Poland", "demozooID" : "35304"},
 { "folderName" : "Anti_Cheat", "lastName" : "<?>", "firstName" : "", "handles" : "Anti-Cheat", "country" : "USA", "demozooID" : "51247"},
 { "folderName" : "Ce_Pumpkin", "lastName" : "<?>", "firstName" : "", "handles" : "Ce-Pumpkin", "country" : "Poland", "demozooID" : "31132"},
@@ -190,7 +191,6 @@ const asma = {"composerInfos": [
 { "folderName" : "Patschke_Ralf", "lastName" : "Patschke", "firstName" : "Ralf", "handles" : "PP's", "country" : "Germany", "demozooID" : "49832"},
 { "folderName" : "Pelc_Janusz", "lastName" : "Pelc", "firstName" : "Janusz", "country" : "Poland", "demozooID" : "52089"},
 { "folderName" : "Pesout_Marek", "lastName" : "Pesout", "firstName" : "Marek", "lastNameUnicode" : "Pešout", "firstNameUnicode" : "Marek", "handles" : "Poison, Poison6502", "country" : "Czech Republic", "demozooID" : "36030"},
-{ "folderName" : "Petrik_Alan", "lastName" : "Petrik", "firstName" : "Alan", "lastNameUnicode" : "Petřík", "firstNameUnicode" : "Alan", "handles" : "Akio Tenshi, Factor6", "country" : "Czech Republic", "demozooID" : "3852"},
 { "folderName" : "Petruzela_Tomas", "lastName" : "Petruzela", "firstName" : "Tomas", "lastNameUnicode" : "Petružela", "firstNameUnicode" : "Tomáš", "handles" : "Centy Brown", "country" : "Czech Republic", "demozooID" : "29604"},
 { "folderName" : "Pettersen_Njaal", "lastName" : "Pettersen", "firstName" : "Njaal", "handles" : "MovieMovies1", "country" : "Norway", "demozooID" : "55135"},
 { "folderName" : "Pieczko_Szymon", "lastName" : "Pieczko", "firstName" : "Szymon", "handles" : "Sim Piko", "country" : "Poland", "demozooID" : "52103"},
@@ -290,7 +290,25 @@ const asma = {"composerInfos": [
 { "folderName" : "Zur_Soft", "name" : "Zur-Soft", "demozooID" : "52078"}
 ]
 , "fileInfos": [
-{"filePath": "Composers/Anal_lysator/Bhogoosh.sap", "fileSize": 13511, "title": "Bhogoosh", "author": "<?> (Anal-lysator)", "date": "1996", "typeLetter": "B", "originalModuleExt": "dlt"}
+{"filePath": "Composers/Aki/Atari_Style.sap", "fileSize": 7299, "title": "[pong] Atari Style", "author": "Aki (Akio Tenshi)", "date": "2013", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
+, {"filePath": "Composers/Aki/Fruity_Pete_Game_Over.sap", "fileSize": 2721, "title": "Fruity Pete - Game Over", "author": "Aki (Akio Tenshi)", "date": "10/2018", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Composers/Aki/Fruity_Pete_Ingame_1.sap", "fileSize": 7172, "title": "Fruity Pete - Ingame 1", "author": "Aki (Akio Tenshi)", "date": "10/2018", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Composers/Aki/Fruity_Pete_Ingame_2.sap", "fileSize": 6837, "title": "Fruity Pete - Ingame 2", "author": "Aki (Akio Tenshi)", "date": "10/2018", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Composers/Aki/Fruity_Pete_Ingame_3.sap", "fileSize": 7323, "title": "Fruity Pete - Ingame 3", "author": "Aki (Akio Tenshi)", "date": "10/2018", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Composers/Aki/Fruity_Pete_Ingame_4.sap", "fileSize": 2743, "title": "Fruity Pete - Ingame 4", "author": "Aki (Akio Tenshi)", "date": "10/2018", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Composers/Aki/Fruity_Pete_Title.sap", "fileSize": 6138, "title": "Fruity Pete - Title", "author": "Aki (Akio Tenshi)", "date": "10/2018", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
+, {"filePath": "Composers/Aki/Ghosts.sap", "fileSize": 7370, "title": "Ghosts", "author": "Aki (Akio Tenshi)", "date": "2014", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
+, {"filePath": "Composers/Aki/I_Met_You_In_Tokyo.sap", "fileSize": 6548, "title": "I Met You In Tokyo", "author": "Aki (Akio Tenshi)", "date": "2017", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
+, {"filePath": "Composers/Aki/Lokalna_porucha.sap", "fileSize": 6756, "title": "Lokalna porucha", "author": "Aki (Akio Tenshi)", "date": "14/03/2015", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
+, {"filePath": "Composers/Aki/Meaningless_Manhole.sap", "fileSize": 3990, "title": "Meaningless Manhole", "author": "Aki (Akio Tenshi)", "date": "2011", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
+, {"filePath": "Composers/Aki/My_name_is_Andrea.sap", "fileSize": 11885, "title": "My name is Andrea", "author": "Aki (Akio Tenshi)", "date": "12/03/2019", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
+, {"filePath": "Composers/Aki/Rasterizer.sap", "fileSize": 5377, "title": "Rasterizer", "author": "Aki (Akio Tenshi)", "date": "2012", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
+, {"filePath": "Composers/Aki/Robots.sap", "fileSize": 1930, "title": "The Robots", "author": "Aki (Akio Tenshi)", "date": "2009", "typeLetter": "D", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Aki/Squeeker_1.sap", "fileSize": 1502, "title": "Squeeker 1", "author": "Aki (Akio Tenshi)", "date": "2009", "typeLetter": "D", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Aki/Squeeker_2.sap", "fileSize": 1192, "title": "Squeeker 2", "author": "Aki (Akio Tenshi)", "date": "2009 <?>", "typeLetter": "D", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Aki/Squeeker_3.sap", "fileSize": 1172, "title": "Squeeker 3", "author": "Aki (Akio Tenshi)", "date": "2009 <?>", "typeLetter": "D", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Aki/Squeeker_4.sap", "fileSize": 2032, "title": "Squeeker 4", "author": "Aki (Akio Tenshi)", "date": "2009 <?>", "typeLetter": "D", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Anal_lysator/Bhogoosh.sap", "fileSize": 13511, "title": "Bhogoosh", "author": "<?> (Anal-lysator)", "date": "1996", "typeLetter": "B", "originalModuleExt": "dlt"}
 , {"filePath": "Composers/Anal_lysator/Retraktur.sap", "fileSize": 13517, "title": "Retraktur", "author": "<?> (Anal-lysator)", "date": "1996", "typeLetter": "B", "originalModuleExt": "dlt"}
 , {"filePath": "Composers/Anal_lysator/Seban_Ty_Prosiaq.sap", "fileSize": 13518, "title": "Seban Ty Prosiaq", "author": "<?> (Anal-lysator)", "date": "1996", "typeLetter": "B", "originalModuleExt": "dlt"}
 , {"filePath": "Composers/Anti_Cheat/Back_for_Sap.sap", "fileSize": 3598, "title": "Back for Sap", "author": "<?> (Anti-Cheat)", "date": "21/02/2011", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
@@ -1231,14 +1249,19 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Ezcan_Kemal/Fire_Cracker.sap", "fileSize": 576, "title": "Fire Cracker", "author": "Kemal Ezcan (KE-SOFT)", "date": "1984", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Fred_vom_Jupiter.sap", "fileSize": 32267, "title": "Fred vom Jupiter", "author": "Kemal Ezcan (KE-Soft)", "date": "1984", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Globetrotter.sap", "fileSize": 1537, "title": "Globetrotter", "author": "Kemal Ezcan (KE-SOFT)", "date": "1985", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Ezcan_Kemal/Happy_Song_1.sap", "fileSize": 1125, "title": "Happy Song 1", "author": "Kemal Ezcan (KE-Soft) <?>", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Ezcan_Kemal/Happy_Song_2.sap", "fileSize": 1111, "title": "Happy Song 2", "author": "Kemal Ezcan (KE-Soft) <?>", "date": "1989", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Ezcan_Kemal/Ice_in_the_Sunshine.sap", "fileSize": 1567, "title": "Ice in the Sunshine", "author": "Kemal Ezcan (KE-Soft) <?>", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Its_a_Sin.sap", "fileSize": 1167, "title": "It's a Sin", "author": "Kemal Ezcan (KE-SOFT)", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Karriere.sap", "fileSize": 1634, "title": "Yokyu I Karriere", "author": "Kemal Ezcan (KE-SOFT)", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Never_on_Sunday.sap", "fileSize": 22313, "title": "Never on Sunday", "author": "Kemal Ezcan (KE-Soft)", "date": "1984", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Patricia.sap", "fileSize": 14260, "title": "Patricia", "author": "Kemal Ezcan (KE-Soft)", "date": "1984", "typeLetter": "D", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Ezcan_Kemal/Pulstar.sap", "fileSize": 474, "title": "Pulstar", "author": "", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Pungoland.sap", "fileSize": 574, "title": "Pungoland!", "author": "Kemal Ezcan (KE-SOFT)", "date": "1989", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Spider.sap", "fileSize": 1091, "title": "Spider", "author": "Kemal Ezcan (KE-SOFT)", "date": "1989", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Swedish_Rapsody.sap", "fileSize": 11576, "title": "Swedish Rapsody", "author": "Kemal Ezcan (KE-Soft)", "date": "1984", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Tecno_Ninja.sap", "fileSize": 4783, "title": "Tecno Ninja", "author": "Kemal Ezcan (KE-SOFT)", "date": "1990", "typeLetter": "B", "originalModuleExt": "sap", "songs": 10}
+, {"filePath": "Composers/Ezcan_Kemal/The_Great_Commandment.sap", "fileSize": 1743, "title": "The Great Commandment", "author": "Kemal Ezcan (KE-Soft)", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Tico_Tico.sap", "fileSize": 32432, "title": "Tico-Tico", "author": "Kemal Ezcan (KE-Soft)", "date": "1984", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Tinory_Quest_Invention_13.sap", "fileSize": 7345, "title": "Tinory Quest - Invention 13", "author": "Kemal Ezcan (KE-SOFT)", "date": "1991", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Tinory_Quest_Morning.sap", "fileSize": 7245, "title": "Tinory Quest - Morning", "author": "Kemal Ezcan (KE-SOFT)", "date": "1990", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -3420,24 +3443,6 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Pesout_Marek/Who_Knows_The_Future.sap", "fileSize": 6937, "title": "Who Knows The Future", "author": "Marek Pesout (Poison)", "date": "2013", "typeLetter": "C", "originalModuleExt": "cms", "channels": 2}
 , {"filePath": "Composers/Pesout_Marek/You_Are_The_Machine.sap", "fileSize": 5688, "title": "You Are The Machine", "author": "Marek Pesout (Poison)", "date": "2012-2013", "typeLetter": "C", "originalModuleExt": "cms", "channels": 2}
 , {"filePath": "Composers/Pesout_Marek/Ziggy.sap", "fileSize": 5661, "title": "Ziggy", "author": "Marek Pesout (Poison)", "date": "2017", "typeLetter": "C", "originalModuleExt": "cms", "channels": 2}
-, {"filePath": "Composers/Petrik_Alan/Atari_Style.sap", "fileSize": 7307, "title": "[pong] Atari Style", "author": "Alan Petrik (Akio Tenshi)", "date": "2013", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
-, {"filePath": "Composers/Petrik_Alan/Fruity_Pete_Game_Over.sap", "fileSize": 2729, "title": "Fruity Pete - Game Over", "author": "Alan Petrik (Akio Tenshi)", "date": "10/2018", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Petrik_Alan/Fruity_Pete_Ingame_1.sap", "fileSize": 7180, "title": "Fruity Pete - Ingame 1", "author": "Alan Petrik (Akio Tenshi)", "date": "10/2018", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Petrik_Alan/Fruity_Pete_Ingame_2.sap", "fileSize": 6845, "title": "Fruity Pete - Ingame 2", "author": "Alan Petrik (Akio Tenshi)", "date": "10/2018", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Petrik_Alan/Fruity_Pete_Ingame_3.sap", "fileSize": 7331, "title": "Fruity Pete - Ingame 3", "author": "Alan Petrik (Akio Tenshi)", "date": "10/2018", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Petrik_Alan/Fruity_Pete_Ingame_4.sap", "fileSize": 2751, "title": "Fruity Pete - Ingame 4", "author": "Alan Petrik (Akio Tenshi)", "date": "10/2018", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Petrik_Alan/Fruity_Pete_Title.sap", "fileSize": 6146, "title": "Fruity Pete - Title", "author": "Alan Petrik (Akio Tenshi)", "date": "10/2018", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
-, {"filePath": "Composers/Petrik_Alan/Ghosts.sap", "fileSize": 7378, "title": "Ghosts", "author": "Alan Petrik (Akio Tenshi)", "date": "2014", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
-, {"filePath": "Composers/Petrik_Alan/I_Met_You_In_Tokyo.sap", "fileSize": 6556, "title": "I Met You In Tokyo", "author": "Alan Petrik (Akio Tenshi)", "date": "2017", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
-, {"filePath": "Composers/Petrik_Alan/Lokalna_porucha.sap", "fileSize": 6764, "title": "Lokalna porucha", "author": "Alan Petrik (Akio Tenshi)", "date": "14/03/2015", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
-, {"filePath": "Composers/Petrik_Alan/Meaningless_Manhole.sap", "fileSize": 3998, "title": "Meaningless Manhole", "author": "Alan Petrik (Akio Tenshi)", "date": "2011", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
-, {"filePath": "Composers/Petrik_Alan/My_name_is_Andrea.sap", "fileSize": 11893, "title": "My name is Andrea", "author": "Alan Petrik (Akio Tenshi)", "date": "12/03/2019", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
-, {"filePath": "Composers/Petrik_Alan/Rasterizer.sap", "fileSize": 5385, "title": "Rasterizer", "author": "Alan Petrik (Akio Tenshi)", "date": "2012", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
-, {"filePath": "Composers/Petrik_Alan/Robots.sap", "fileSize": 1938, "title": "The Robots", "author": "Alan Petrik (Akio Tenshi)", "date": "2009", "typeLetter": "D", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Petrik_Alan/Squeeker_1.sap", "fileSize": 1510, "title": "Squeeker 1", "author": "Alan Petrik (Akio Tenshi)", "date": "2009", "typeLetter": "D", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Petrik_Alan/Squeeker_2.sap", "fileSize": 1200, "title": "Squeeker 2", "author": "Alan Petrik (Akio Tenshi)", "date": "2009 <?>", "typeLetter": "D", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Petrik_Alan/Squeeker_3.sap", "fileSize": 1180, "title": "Squeeker 3", "author": "Alan Petrik (Akio Tenshi)", "date": "2009 <?>", "typeLetter": "D", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Petrik_Alan/Squeeker_4.sap", "fileSize": 2040, "title": "Squeeker 4", "author": "Alan Petrik (Akio Tenshi)", "date": "2009 <?>", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Petruzela_Tomas/Flatfish.sap", "fileSize": 4615, "title": "Flatfish", "author": "Tomas Petruzela (Centy Brown)", "date": "2004", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Petruzela_Tomas/T_H_R_U_S_T.sap", "fileSize": 4026, "title": "T'H'R'U'S'T", "author": "Tomas Petruzela (Centy Brown)", "date": "03/2006", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Petruzela_Tomas/Viva_Las_Vegas.sap", "fileSize": 4776, "title": "Viva Las Vegas", "author": "Tomas Petruzela (Centy Brown)", "date": "16/03/2013", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
@@ -6478,11 +6483,8 @@ const asma = {"composerInfos": [
 , {"filePath": "Unknown/Grieg.sap", "fileSize": 2776, "title": "Grieg <?>", "author": "", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Unknown/Grzyby.sap", "fileSize": 3483, "title": "Grzyby", "author": "", "date": "", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Unknown/Grzyby_2.sap", "fileSize": 3250, "title": "Grzyby 2", "author": "", "date": "", "typeLetter": "C", "originalModuleExt": "cmc"}
-, {"filePath": "Unknown/Happy_Song_1.sap", "fileSize": 1103, "title": "Happy Song 1", "author": "", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Unknown/Happy_Song_2.sap", "fileSize": 1089, "title": "Happy Song 2", "author": "", "date": "1989", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Unknown/Hawkeye.sap", "fileSize": 3590, "title": "Hawkeye", "author": "", "date": "", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Unknown/Hotel.sap", "fileSize": 1857, "title": "Hotel", "author": "", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Unknown/Ice_in_the_Sunshine.sap", "fileSize": 1545, "title": "Ice in the Sunshine", "author": "", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Unknown/Intro.sap", "fileSize": 4260, "title": "Intro", "author": "", "date": "199?", "typeLetter": "C", "originalModuleExt": "dmc"}
 , {"filePath": "Unknown/Jacobs.sap", "fileSize": 1231, "title": "Jacobs <?>", "author": "", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Unknown/Jeju.sap", "fileSize": 4145, "title": "Jeju", "author": "", "date": "", "typeLetter": "B", "originalModuleExt": "mpt"}
@@ -6519,7 +6521,6 @@ const asma = {"composerInfos": [
 , {"filePath": "Unknown/Popcorn.sap", "fileSize": 3376, "title": "Popcorn", "author": "", "date": "199?", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Unknown/Popeye.sap", "fileSize": 3215, "title": "Popeye", "author": "", "date": "199?", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Unknown/Psychic.sap", "fileSize": 4259, "title": "Psyhic", "author": "", "date": "199?", "typeLetter": "C", "originalModuleExt": "cmc"}
-, {"filePath": "Unknown/Pulstar.sap", "fileSize": 474, "title": "Pulstar", "author": "", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Unknown/Range.sap", "fileSize": 2356, "title": "Range", "author": "", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Unknown/Ranger1.sap", "fileSize": 5260, "title": "Ranger1", "author": "", "date": "", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Unknown/Ranger2.sap", "fileSize": 4299, "title": "Ranger2", "author": "", "date": "", "typeLetter": "C", "originalModuleExt": "sap"}
@@ -6562,7 +6563,6 @@ const asma = {"composerInfos": [
 , {"filePath": "Unknown/Techno.sap", "fileSize": 4320, "title": "Techno", "author": "", "date": "", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Unknown/Telemann.sap", "fileSize": 3895, "title": "Telemann", "author": "", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Unknown/Tetrys.sap", "fileSize": 4789, "title": "Tetrys", "author": "", "date": "", "typeLetter": "B", "originalModuleExt": "mpt", "songs": 2}
-, {"filePath": "Unknown/The_Great_Commandment.sap", "fileSize": 1725, "title": "The Great Commandment", "author": "", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Unknown/The_Holly_and_The_Ivy.sap", "fileSize": 1370, "title": "The Holly and The Ivy", "author": "", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Unknown/The_Muppet_Movie.sap", "fileSize": 7041, "title": "The Muppet Movie", "author": "", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Unknown/Think.sap", "fileSize": 3341, "title": "Think", "author": "", "date": "", "typeLetter": "C", "originalModuleExt": "sap"}
