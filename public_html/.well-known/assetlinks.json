@@ -1,0 +1,9 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "net.sf.asap",
+    "sha256_cert_fingerprints":
+    ["AF:D9:81:4D:8C:8C:4A:B9:90:23:69:4D:79:73:C3:E1:21:F8:62:DF:53:4C:77:E2:19:44:2B:ED:A9:F3:E1:BA"]
+  }
+}]
