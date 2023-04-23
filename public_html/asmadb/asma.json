@@ -1834,6 +1834,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Jaakkola_Juha/Search.sap", "fileSize": 4653, "title": "The Search", "author": "Juha Jaakkola (Warlord)", "date": "06/12/2011", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Jaakkola_Juha/Sky_Glider.sap", "fileSize": 4792, "title": "Sky Glider", "author": "Juha Jaakkola (Warlord)", "date": "06/12/2011", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Jaakkola_Juha/Snowpocalypse.sap", "fileSize": 7291, "title": "Snowpocalypse", "author": "Juha Jaakkola (Warlord)", "date": "08/02/2011", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Composers/Jaakkola_Juha/Solitude_At_Sundown.sap", "fileSize": 12434, "title": "Solitude At Sundown", "author": "Juha Jaakkola (Warlord)", "date": "10/07/2022", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Jaakkola_Juha/Summer_Breeze.sap", "fileSize": 11427, "title": "Summer Breeze", "author": "Juha Jaakkola (Warlord)", "date": "23/08/2012", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Jaakkola_Juha/Sunflare.sap", "fileSize": 13545, "title": "Sunflare", "author": "Juha Jaakkola (Warlord)", "date": "21/07/2013", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Jaakkola_Juha/Thruster.sap", "fileSize": 10219, "title": "Thruster", "author": "Juha Jaakkola (Warlord)", "date": "29/01/2015", "typeLetter": "B", "originalModuleExt": "rmt"}
