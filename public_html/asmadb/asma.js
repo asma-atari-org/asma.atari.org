@@ -9,7 +9,7 @@ const FileType = { CM3 : ".cm3", CMC : ".cmc", CMR : ".cmr", CMS : ".cms", DLT :
                  };
 
 const SongState = { NONE: "NONE", PLAYING: "PLAYING", STOPPED: "STOPPED" };
-const SongNumber = { FIRST: 0, NONE: -1, RANDOM: -2 };
+const SongNumber = { FIRST: 0, NONE: -1, DEFAULT: -2, RANDOM: -3 };
 
 const DEFAULT_WINDOW_TITLE = "Atari SAP Music Archive";
 
@@ -90,9 +90,13 @@ ASMA.prototype.initFromWindowLocation = function(){
   if (foundFileInfo == null) {
     window.alert("There is no matching song in the database for the path \""+filePath+"\".");
   } else {
-   if (this.currentFileInfo == null || this.currentFileInfo.getFilePath() != foundFileInfo.getFilePath()) {
+   let foundSong = params.get("song");
+   if (foundSong == null){
+	 foundSong = foundFileInfo.getDefaultSong(); 
+   } 
+   if (this.currentFileInfo == null || this.currentFileInfo.getFilePath() != foundFileInfo.getFilePath() || this.currentSong != foundSong) {
     this.stopCurrentSong(); 
-    this.playASMA(foundFileInfo.getIndex(), foundFileInfo.getDefaultSong(), false);
+    this.playASMA(foundFileInfo.getIndex(), foundSong, false);
     return;
    }
   }
@@ -657,6 +661,9 @@ ASMA.prototype.setCurrentFileIndexAndSong = function(index,song){
   let url = new URL(window.location);
   url.search = "";
   url.hash = "#/" + this.currentFileInfo.getFilePath();
+  if (song != fileInfo.defaultSong && song != SongNumber.DEFAULT){
+	url.search = "song="+song;
+  }
   window.history.pushState(null, fileInfo.title, url);
   this.loadFileContent(fileInfo, this.onFileContentLoadSuccess, this.onFileContentLoadFailure, song);
  }
