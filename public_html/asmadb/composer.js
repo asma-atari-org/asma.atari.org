@@ -1,6 +1,6 @@
 "use strict";
 
-const ComposerStatus = { UNVERIFIED: "UNVERIFIED", VERIFIED : "VERIFIED" };
+const ComposerStatus = { UNVERIFIED: "UNVERIFIED", VERIFIED: "VERIFIED" };
 
 class ComposerProxy {
 	constructor(composerIndex, status, composer) {
@@ -33,35 +33,45 @@ class ComposerProxy {
 		this.country = ((composer.country != undefined && composer.country != "") ? composer.country : "Unknown");
 		this.demozooID = (composer.demozooID != undefined ? composer.demozooID : "");
 	}
+
 	getComposerIndex() {
 		return this.composerIndex;
 	}
+
 	getStatus() {
 		return this.status;
 	}
+
 	getLastName() {
 		return this.lastName;
 	}
+
 	getFirstName() {
 		return this.firstName;
 
 	}
+
 	getLastNameUnicode() {
 		return this.lastNameUnicode;
 	}
+
 	getFirstNameUnicode() {
 		return this.firstNameUnicode;
 
 	}
+
 	getFullName() {
 		return this.fullName;
 	}
+
 	getFullNameUnicode() {
 		return this.fullNameUnicode;
 	}
+
 	getHandles() {
 		return this.handles;
 	}
+
 	getHandlesArray() {
 		let handles = this.handles.split(",");
 		for (let i = 0; i < handles.length; i++) {
@@ -69,9 +79,11 @@ class ComposerProxy {
 		}
 		return handles;
 	}
+
 	getLastNameSortKey() {
 		return this.lastNameSortkey;
 	}
+
 	getFolderName() {
 		let lastName = this.getLastName();
 		let firstName = this.getFirstName();
@@ -91,6 +103,7 @@ class ComposerProxy {
 		folderName = folderName.replace("-", "_");
 		return folderName;
 	}
+
 	getFolderPath() {
 		let folderName = this.getFolderName();
 		if (folderName == "") {
@@ -104,9 +117,11 @@ class ComposerProxy {
 	getNormalizedCountry() {
 		return Util.getNormalizedCountry(this.getCountry());
 	}
+
 	getDemozooID() {
 		return this.demozooID;
 	}
+
 	getDemozooURL() {
 		let demozooID = this.getDemozooID();
 		if (demozooID != "") {
@@ -114,6 +129,7 @@ class ComposerProxy {
 		}
 		return undefined;
 	}
+
 	getDemozooHTML() {
 		let demozooID = this.getDemozooID();
 		if (demozooID != "") {
@@ -121,9 +137,11 @@ class ComposerProxy {
 		}
 		return "";
 	}
+
 	getFileCount() {
 		return this.fileCount;
 	}
+
 	getFileCountHTML() {
 		const fileCount = this.getFileCount();
 		if (fileCount == 0) {
@@ -169,6 +187,7 @@ class ComposerList {
 			this.countryInfoMap.set(normalizedCountry, countryInfo);
 		}
 	}
+
 	addComposerProxy(status, composer) {
 		// Create proxy
 		let index = this.composerProxies.length;
@@ -176,9 +195,11 @@ class ComposerList {
 		this.composerProxies[index] = composerProxy;
 		return composerProxy;
 	}
+
 	getComposerProxy(index) {
 		return this.composerProxies[index];
 	}
+
 	// Count the number of matching files and assign the files to their composer
 	initFileInfos(fileInfos, productionsByFilePathMap) {
 		for (let fileInfo of fileInfos) {
