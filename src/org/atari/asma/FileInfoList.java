@@ -66,8 +66,8 @@ public class FileInfoList {
 		int index = sourceFolder.getAbsolutePath().length() + 1;
 		int count = 0;
 
-		final int blockSize=100;
-		for(int i=0;i<fileList.size()/blockSize;i++) {
+		final int blockSize = 100;
+		for (int i = 0; i < fileList.size() / blockSize; i++) {
 			System.out.print("=");
 		}
 		System.out.println();
@@ -124,6 +124,18 @@ public class FileInfoList {
 
 		for (var fileInfo : fileInfoList) {
 			String filePath = fileInfo.filePath;
+			if (filePath.toLowerCase().endsWith(FileExtension.SAP)) {
+				if (!filePath.endsWith(FileExtension.SAP)) {
+					System.err.println(
+							"File " + fileInfo.filePath + " does not have a lowercase \".sap\" file extension");
+				}
+				var fileName = filePath;
+				var index = filePath.lastIndexOf('/');
+				if (index >= 0) {
+					fileName = fileName.substring(index);
+				}
+
+			}
 			if (filePath.startsWith(COMPOSERS)) {
 
 				int index = filePath.indexOf("/", startIndex);
