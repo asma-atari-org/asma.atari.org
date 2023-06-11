@@ -57,7 +57,7 @@ class Fetcher {
 
 		let now = new Date().getTime();
 		let milliSecondsSinceStart = now - this.startTime.getTime();
-		let milliSecondsToGo = (milliSecondsSinceStart / (productionsIndex + 1) * (productionsData.count - productionsIndex));
+		let milliSecondsToGo = (milliSecondsSinceStart / (productionsIndex) * (productionsData.count - productionsIndex));
 
 		Logger.log("Fetching production " + (productionsIndex + 1) + " of " + productionsData.count
 			+ " from " + url + "(" + Util.getDurationString(milliSecondsSinceStart) + " until now, "
