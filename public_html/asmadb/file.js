@@ -54,10 +54,6 @@ class FileInfo {
 	}
 }
 
-
-
-
-
 class FileInfoList {
 	constructor() {
 	}
