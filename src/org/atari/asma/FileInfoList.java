@@ -119,6 +119,10 @@ public class FileInfoList {
 	}
 
 	public void checkFiles(ComposerList composerList, ProductionList productionList) {
+		// From "Sap.txt" specification.
+		final int MAX_FILE_NAME_LENGTH = 26;
+		final String FILE_NAME_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
+
 		final String COMPOSERS = "Composers/";
 		int startIndex = COMPOSERS.length();
 
@@ -127,12 +131,26 @@ public class FileInfoList {
 			if (filePath.toLowerCase().endsWith(FileExtension.SAP)) {
 				if (!filePath.endsWith(FileExtension.SAP)) {
 					System.err.println(
-							"File " + fileInfo.filePath + " does not have a lowercase \".sap\" file extension");
+							"SAP-001: File " + fileInfo.filePath + " does not have a lowercase \".sap\" file extension");
 				}
 				var fileName = filePath;
 				var index = filePath.lastIndexOf('/');
 				if (index >= 0) {
-					fileName = fileName.substring(index);
+					fileName = fileName.substring(index+1);
+				}
+				fileName=fileName.substring(0,fileName.length()-FileExtension.SAP.length());
+				var length = fileName.length();
+				if (length > MAX_FILE_NAME_LENGTH) {
+					System.err.println("SAP-002: File " + fileInfo.filePath + " has a file name with more than "
+							+ MAX_FILE_NAME_LENGTH + " characters. Use a shorter name.");
+				}
+				for (int i = 0; i < fileName.length(); i++) {
+					var c = fileName.charAt(i);
+					if (FILE_NAME_CHARACTERS.indexOf(c) < 0) {
+						System.err.println("SAP-003: File " + fileInfo.filePath
+								+ " has a file name with the invalid character \"" + c + "\" at index " + i + ".");
+
+					}
 				}
 
 			}
@@ -152,18 +170,18 @@ public class FileInfoList {
 							fileAuthor = fileAuthor.substring(0, fileAuthor.length() - questionMark.length());
 						}
 						if (!authors.contains(fileAuthor)) {
-							System.err.println("File " + fileInfo.filePath + " author " + fileAuthor + " in "
+							System.err.println("COM-001: File " + fileInfo.filePath + " author " + fileAuthor + " in "
 									+ fileInfo.author + " is differnt from all composer authors " + authors.toString());
 
 						} else {
 							if (unsafe) {
-								System.out.println("File " + fileInfo.filePath + " author " + fileAuthor + " in "
+								System.out.println("COM-002: File " + fileInfo.filePath + " author " + fileAuthor + " in "
 										+ fileInfo.author + " is unsafe");
 							}
 						}
 					}
 				} else {
-					System.err.println("File " + fileInfo.filePath + " has unknown composer path");
+					System.err.println("COM-003: File " + fileInfo.filePath + " has unknown composer path");
 				}
 			}
 			// TODO Groups
