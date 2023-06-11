@@ -14,14 +14,9 @@ const SongNumber = { FIRST: 0, NONE: -1, RANDOM: -2 };
 const DEFAULT_WINDOW_TITLE = "Atari SAP Music Archive";
 
 function ASMA() {
-  this.handleWindowPopState = false; // Disable event handling when location is changed programatically.
-
 }
 
 ASMA.prototype.onWindowPopState = function(state){
- if (this.handleWindowPopState == false){
-   return;
- }
  Logger.log("Execute onWindowPopState: "+JSON.stringify(window.location)+JSON.stringify(state));
  this.initFromWindowLocation();
 };
@@ -171,7 +166,6 @@ ASMA.prototype.initInternal = function(){
  // Setup main window
  window.setInterval(this.refreshCurrentASAPInfo, 500, this);
  window.addEventListener('popstate', (event) => { asmaInstance.onWindowPopState(event.state)});
- this.handleWindowPopState = true;
 
  // Get controls
  this.displayAuthorDialog = UI.getElementById("displayAuthorDialog");
@@ -663,9 +657,7 @@ ASMA.prototype.setCurrentFileIndexAndSong = function(index,song){
   let url = new URL(window.location);
   url.search = "";
   url.hash = "#/" + this.currentFileInfo.getFilePath();
-  this.handleWindowPopState = false;
-  window.location = url;
-  this.handleWindowPopState = true;
+  window.history.pushState(null, fileInfo.title, url);
   this.loadFileContent(fileInfo, this.onFileContentLoadSuccess, this.onFileContentLoadFailure, song);
  }
  else {
