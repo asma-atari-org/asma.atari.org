@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.atari.asma.MessageQueue;
 import org.atari.asma.util.FileUtility;
 
 import com.google.gson.GsonBuilder;
@@ -45,26 +46,26 @@ public class ProductionList {
 		productionList = gson.fromJson(jsonString, productionListType);
 	}
 
-	public void init() {
+	public void init(MessageQueue messageQueue) {
 
 		for (Production production : productionList) {
 			if (production.filePath != null && !production.filePath.isEmpty()) {
 				Production previousProduction = productionByFilePath.put(production.filePath, production);
 				if (previousProduction != null) {
-					String message = "Production " + previousProduction.toString()
+					String message = "PRD-001: Production " + previousProduction.toString()
 							+ " already registered for file path " + previousProduction.filePath + " of production "
 							+ production.toString();
-					System.err.println(message);
+					messageQueue.sendError(message);
 //					throw new RuntimeException(message);
 				}
 //				String defaultFolderName = production.getDefaultFolderName();
 //				if (!production.folderName.equals(defaultFolderName)) {
-//					System.err.println(production.folderName + " of " + production.toString()
+//					messageQueue.sendError("PRD-004: "+production.folderName + " of " + production.toString()
 //							+ " is different from default folder name " + defaultFolderName);
 //
 //				}
 			} else {
-				// System.err.println(production.toString() + " has no file path");
+				// messageQueue.sendError("PRD-003: "+production.toString() + " has no file path");
 			}
 
 			if (production.id != 0) {
@@ -74,7 +75,7 @@ public class ProductionList {
 							"Production " + previousProduction.toString() + " already registered for Demozoo ID "
 									+ previousProduction.id + " of production " + production.toString());
 			} else {
-				System.err.println(production.toString() + " has no Demozoo ID");
+				messageQueue.sendError("PRD-002: "+production.toString() + " has no Demozoo ID");
 			}
 		}
 	}

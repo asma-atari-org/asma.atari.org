@@ -1,7 +1,6 @@
 package org.atari.asma;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Composer {
@@ -29,7 +28,6 @@ public class Composer {
 		for (int i = 0; i < result.length; i++) {
 			result[i] = result[i].trim();
 		}
-		Arrays.sort(result);
 		return result;
 	}
 

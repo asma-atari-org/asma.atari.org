@@ -45,23 +45,23 @@ public class ComposerList {
 		composerList = gson.fromJson(jsonString, composerListType);
 	}
 
-	public void init() {
+	public void init(MessageQueue messageQueue) {
 
 		for (Composer composer : composerList) {
 			if (!composer.folderName.isEmpty()) {
 				Composer previousComposer = composerByFolderName.put(composer.folderName, composer);
 				if (previousComposer != null)
-					throw new RuntimeException(
-							"Composer \\\"" + previousComposer.toString() + "\" is already registered for folder name \""
-									+ previousComposer.folderName + "\" of composer \"" + composer.toString()+"\"");
+					throw new RuntimeException("Composer \\\"" + previousComposer.toString()
+							+ "\" is already registered for folder name \"" + previousComposer.folderName
+							+ "\" of composer \"" + composer.toString() + "\"");
 				String defaultFolderName = composer.getDefaultFolderName();
 				if (!composer.folderName.equals(defaultFolderName)) {
-					System.err.println("Folder \""+composer.folderName + "\" of \"" + composer.toString()
-							+ "\" is different from default folder name \"" + defaultFolderName+"\"");
+					messageQueue.sendError("COM-001: Folder \"" + composer.folderName + "\" of \"" + composer.toString()
+							+ "\" is different from default folder name \"" + defaultFolderName + "\"");
 
 				}
 			} else {
-				System.err.println(composer.toString() + " has no folder path");
+				messageQueue.sendError("COM-002: \"" + composer.toString() + "\" has no folder path");
 			}
 
 			if (!composer.demozooID.isEmpty()) {
@@ -69,9 +69,9 @@ public class ComposerList {
 				if (previousComposer != null)
 					throw new RuntimeException(
 							"Composer \"" + previousComposer.toString() + "\" is already registered for Demozoo ID "
-									+ previousComposer.demozooID + " of composer \"" + composer.toString()+"\"");
+									+ previousComposer.demozooID + " of composer \"" + composer.toString() + "\"");
 			} else {
-				System.err.println("Composer \"" + composer.toString() + "\" has no Demozoo ID");
+				messageQueue.sendError("COM-003: Composer \"" + composer.toString() + "\" has no Demozoo ID");
 			}
 		}
 	}
@@ -90,7 +90,7 @@ public class ComposerList {
 
 	}
 
-	public void checkFolders(File sourceFolder) {
+	public void checkFolders(File sourceFolder, MessageQueue messageQueue) {
 		if (sourceFolder == null) {
 			throw new IllegalArgumentException("Parameter sourceFolder must not be null.");
 		}
@@ -99,14 +99,14 @@ public class ComposerList {
 			if (!composer.folderName.isEmpty()) {
 				File composerFolder = new File(composersFolder, composer.folderName);
 				if (!composerFolder.exists()) {
-					System.err.println(
-							"Folder " + composerFolder.toString() + " of " + composer.toString() + " does not exist");
+					messageQueue.sendError("COM-004: Folder " + composerFolder.toString() + " of \""
+							+ composer.toString() + "\" does not exist");
 					continue;
 
 				}
 				if (!composerFolder.isDirectory()) {
-					System.err.println(
-							"Path " + composerFolder.toString() + " of " + composer.toString() + " is not a directory");
+					messageQueue.sendError("COM-005: Path " + composerFolder.toString() + " of \"" + composer.toString()
+							+ "\" is not a directory");
 					continue;
 
 				}
@@ -117,27 +117,28 @@ public class ComposerList {
 		for (File composerFolder : composerFolders) {
 
 			if (!composerFolder.isDirectory()) {
-				System.err.println("Path " + composerFolder.toString() + "  is not a directory");
+				messageQueue.sendError("COM-006: Path " + composerFolder.toString() + "  is not a directory");
 				continue;
 
 			}
 			String folderName = composerFolder.getName();
 			if (getByFolderName(folderName) == null) {
-				System.err.println("Folder " + composerFolder.toString() + " has no entry in composer list");
+				messageQueue
+						.sendError("COM-007: Folder " + composerFolder.toString() + " has no entry in composer list");
 				continue;
 
 			}
 		}
 	}
 
-	public void checkGroups(GroupList groupList) {
+	public void checkGroups(GroupList groupList, MessageQueue messageQueue) {
 		for (Composer composer : composerList) {
 			if (!composer.groups.isBlank()) {
 				String[] groupsFolderNameArray = composer.groups.split(",");
 				for (String groupFolderName : groupsFolderNameArray) {
 					if (groupList.getByFolderName(groupFolderName) == null) {
-						System.err.println("Group folder " + groupFolderName + " of composer " + composer.toString()
-								+ " has not entry in group list");
+						messageQueue.sendError("COM-008: Group folder " + groupFolderName + " of composer "
+								+ composer.toString() + " has not entry in group list");
 						continue;
 					}
 				}

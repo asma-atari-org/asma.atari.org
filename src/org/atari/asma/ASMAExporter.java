@@ -23,52 +23,51 @@ public class ASMAExporter {
 	}
 
 	@SuppressWarnings("static-method")
-	private void println(String text) {
-		System.out.println(text);
-	}
-
 	private void run(String[] args) {
+		MessageQueue messageQueue = new MessageQueue(System.out, System.err);
+
 		if (args.length != 2) {
-			println("Usage: ASMAExporter <trunk/asma folder> <asmadb.js file>");
+			messageQueue.sendMessage("Usage: ASMAExporter <trunk/asma folder> <asmadb.js file>");
 			return;
 		}
 		var sourceFolderPath = args[0];
 		File sourceFolder = new File(sourceFolderPath);
 
 		File composersFile = new File(sourceFolder, "Docs/ASMA-Composers.json");
-		println("Loading composers from " + composersFile.getPath() + ".");
+		messageQueue.sendMessage("Loading composers from " + composersFile.getPath() + ".");
 		ComposerList composerList = ComposerList.load(composersFile);
 		composerList.deserialize();
-		composerList.init();
-		println(composerList.getEntries().size() + " composers loaded.");
-		composerList.checkFolders(sourceFolder);
+		composerList.init(messageQueue);
+		messageQueue.sendMessage(composerList.getEntries().size() + " composers loaded.");
+		composerList.checkFolders(sourceFolder, messageQueue);
 
 		File groupsFile = new File(sourceFolder, "Docs/ASMA-Groups.json");
-		println("Loading groups from " + composersFile.getPath() + ".");
+		messageQueue.sendMessage("Loading groups from " + composersFile.getPath() + ".");
 		GroupList groupList = GroupList.load(groupsFile);
 		groupList.deserialize();
 
-		println(groupList.getEntries().size() + " groups loaded.");
-		groupList.init();
-		groupList.checkFolders(sourceFolder);
+		messageQueue.sendMessage(groupList.getEntries().size() + " groups loaded.");
+		groupList.init(messageQueue);
+		groupList.checkFolders(sourceFolder, messageQueue);
 
-		composerList.checkGroups(groupList);
+		composerList.checkGroups(groupList, messageQueue);
 
 		File productionsFile = new File(sourceFolder, "Docs/Demozoo-Productions.json");
-		println("Loading Demozoo productions from " + composersFile.getPath() + ".");
+		messageQueue.sendMessage("Loading Demozoo productions from " + composersFile.getPath() + ".");
 		ProductionList productionList = ProductionList.load(productionsFile);
 		productionList.deserialize();
-		println(productionList.getEntries().size() + " productions loaded.");
+		messageQueue.sendMessage(productionList.getEntries().size() + " productions loaded.");
 
-		productionList.init();
+		productionList.init(messageQueue);
 
 		FileInfoList fileInfoList = new FileInfoList();
 		fileInfoList.scanFolder(sourceFolder);
-		fileInfoList.checkFiles(composerList, productionList);
+		fileInfoList.checkFiles(composerList, productionList, messageQueue);
 
 		var exportFile = new File(args[1]);
 
-		println("Exporting " + fileInfoList.getEntries().size() + " song infos to " + exportFile.getPath() + ".");
+		messageQueue.sendMessage(
+				"Exporting " + fileInfoList.getEntries().size() + " song infos to " + exportFile.getPath() + ".");
 
 		FileWriter fileWriter = null;
 		try {
@@ -107,8 +106,9 @@ public class ASMAExporter {
 				}
 			}
 		}
-		println("ASMA exported to " + exportFile.getAbsolutePath() + " completed with " + exportFile.length()
-				+ " bytes.");
+		messageQueue.sendMessage("ASMA exported to " + exportFile.getAbsolutePath() + " completed with "
+				+ exportFile.length() + " bytes.");
+		messageQueue.printSummary();
 
 	}
 

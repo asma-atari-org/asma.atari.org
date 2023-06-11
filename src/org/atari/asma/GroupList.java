@@ -44,8 +44,8 @@ public class GroupList {
 
 		groupList = gson.fromJson(jsonString, groupListType);
 	}
-	
-	public void init() {
+
+	public void init(MessageQueue messageQueue) {
 
 		for (Group group : groupList) {
 			if (!group.folderName.isEmpty()) {
@@ -55,7 +55,7 @@ public class GroupList {
 							"Group " + previousGroup.toString() + " already registered for folder name "
 									+ previousGroup.folderName + " of group " + group.toString());
 			} else {
-				System.err.println(group.toString() + " has no folder path");
+				messageQueue.sendError("GRP-001: Group " + group.toString() + " has no folder path");
 			}
 
 			if (!group.demozooID.isEmpty()) {
@@ -65,7 +65,7 @@ public class GroupList {
 							"Group " + previousGroup.toString() + " already registered for Demozoo ID "
 									+ previousGroup.demozooID + " of group " + group.toString());
 			} else {
-				System.err.println("Group "+group.toString() + " has no Demozoo ID");
+				messageQueue.sendError("GRP-002: Group " + group.toString() + " has no Demozoo ID");
 			}
 		}
 	}
@@ -84,24 +84,28 @@ public class GroupList {
 
 	}
 
-	public void checkFolders(File sourceFolder) {
+	public void checkFolders(File sourceFolder, MessageQueue messageQueue) {
 
 		if (sourceFolder == null) {
-			throw new IllegalArgumentException("Parameter sourceFolder must not be null.");
+			throw new IllegalArgumentException("Parameter 'sourceFolder' must not be null.");
 		}
+		if (messageQueue == null) {
+			throw new IllegalArgumentException("Parameter 'messageQueue' must not be null.");
+		}
+
 		File groupsFolder = new File(sourceFolder, "Groups");
 		for (Group group : groupList) {
 			if (!group.folderName.isEmpty()) {
 				File groupFolder = new File(groupsFolder, group.folderName);
 				if (!groupFolder.exists()) {
-					System.err.println(
-							"Folder " + groupFolder.toString() + " of " + group.toString() + " does not exist");
+					messageQueue.sendError("GRP-003: Folder " + groupFolder.toString() + " of group\""
+							+ group.toString() + "\" does not exist");
 					continue;
 
 				}
 				if (!groupFolder.isDirectory()) {
-					System.err.println(
-							"Path " + groupFolder.toString() + " of " + group.toString() + " is not a directory");
+					messageQueue.sendError("GRP-004: Path " + groupFolder.toString() + " of group \"" + group.toString()
+							+ "\" is not a directory");
 					continue;
 
 				}
@@ -112,13 +116,13 @@ public class GroupList {
 		for (File groupFolder : groupFolders) {
 
 			if (!groupFolder.isDirectory()) {
-				System.err.println("Path " + groupFolder.toString() + "  is not a directory");
+				messageQueue.sendError("GRP-005: Path " + groupFolder.toString() + " is not a directory");
 				continue;
 
 			}
 			String folderName = groupFolder.getName();
 			if (getByFolderName(folderName) == null) {
-				System.err.println("Folder " + groupFolder.toString() + " has not entry in group list");
+				messageQueue.sendError("GRP-006: Folder " + groupFolder.toString() + " has not entry in group list");
 				continue;
 
 			}
