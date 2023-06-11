@@ -615,6 +615,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Brzeski_Michal/Fastfunk.sap", "fileSize": 3762, "title": "Fastfunk", "author": "Michal Brzeski (MCH)", "date": "2013", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Brzeski_Michal/Micro_Funk.sap", "fileSize": 6964, "title": "Micro Funk", "author": "Michal Brzeski (MCH)", "date": "13/11/2011", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Brzeski_Michal/Noname.sap", "fileSize": 5049, "title": "Noname", "author": "Michal Brzeski (MCH)", "date": "08/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Composers/Brzeski_Michal/Pani_Basia_z_klatki_B.sap", "fileSize": 3927, "title": "Pani Basia z Klatki B", "author": "Michal Brzeski (Michu)", "date": "08/12/2012", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Brzeski_Michal/Soft_Serve.sap", "fileSize": 4123, "title": "Soft Serve", "author": "Michal Brzeski (MCH)", "date": "07/12/2019", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Brzeski_Michal/Ucieczka_z_tropikow.sap", "fileSize": 4088, "title": "Ucieczka z tropikow", "author": "Michal Brzeski (MCH)", "date": "10/11/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Brzeski_Michal/Vantage_Point.sap", "fileSize": 7082, "title": "Vantage Point", "author": "Michal Brzeski (MCH)", "date": "11/2014", "typeLetter": "B", "originalModuleExt": "rmt"}
@@ -1256,7 +1257,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Ezcan_Kemal/Karriere.sap", "fileSize": 1634, "title": "Yokyu I Karriere", "author": "Kemal Ezcan (KE-SOFT)", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Never_on_Sunday.sap", "fileSize": 22313, "title": "Never on Sunday", "author": "Kemal Ezcan (KE-Soft)", "date": "1984", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Patricia.sap", "fileSize": 14260, "title": "Patricia", "author": "Kemal Ezcan (KE-Soft)", "date": "1984", "typeLetter": "D", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Ezcan_Kemal/Pulstar.sap", "fileSize": 474, "title": "Pulstar", "author": "", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Ezcan_Kemal/Pulstar.sap", "fileSize": 492, "title": "Pulstar", "author": "Kemal Ezcan (KE-SOFT)", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Pungoland.sap", "fileSize": 574, "title": "Pungoland!", "author": "Kemal Ezcan (KE-SOFT)", "date": "1989", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Spider.sap", "fileSize": 1091, "title": "Spider", "author": "Kemal Ezcan (KE-SOFT)", "date": "1989", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Ezcan_Kemal/Swedish_Rapsody.sap", "fileSize": 11576, "title": "Swedish Rapsody", "author": "Kemal Ezcan (KE-Soft)", "date": "1984", "typeLetter": "D", "originalModuleExt": "sap"}
@@ -4010,6 +4011,8 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Ristau_Chuck/Under_Pressure.sap", "fileSize": 2627, "title": "Under Pressure", "author": "Chuck Ristau", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Roemer_Markus/Biene_Maja.sap", "fileSize": 4149, "title": "Biene Maja", "author": "Markus Roemer (R.I.K)", "date": "2001", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Roemer_Markus/Das_Grauen.sap", "fileSize": 5194, "title": "Das Grauen", "author": "Markus Roemer (R.I.K)", "date": "2001", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Roemer_Markus/JHV_Demo_97_Extro.sap", "fileSize": 9665, "title": "JHV Demo 97 Extro", "author": "Markus Roemer (R.I.K)", "date": "1997", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Roemer_Markus/JHV_Demo_97_Intro.sap", "fileSize": 6288, "title": "JHV Demo 97 Intro", "author": "Markus Roemer (R.I.K)", "date": "1997", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Roemer_Markus/Kaisers_Best.sap", "fileSize": 4274, "title": "Kaisers Best", "author": "Markus Roemer (R.I.K)", "date": "2001", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Roemer_Markus/Kettensaege.sap", "fileSize": 4634, "title": "Kettensaege", "author": "Markus Roemer (R.I.K)", "date": "2001", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Roemer_Markus/No_Name_Song.sap", "fileSize": 4358, "title": "No Name Song", "author": "Markus Roemer (R.I.K)", "date": "1995", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -6115,7 +6118,6 @@ const asma = {"composerInfos": [
 , {"filePath": "Misc/Old_Thunder_Part_1.sap", "fileSize": 4876, "title": "Old Thunder - Part 1", "author": "<?> (Robon)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Misc/Onesong.sap", "fileSize": 3189, "title": "Onesong", "author": "Gunnar Kanold (Bunsen)", "date": "2006", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Misc/Only_Chipchop_Can_Save_Us.sap", "fileSize": 3663, "title": "Only Chipchop Can Save Us Now", "author": "Tristan Corrales (TristEndo)", "date": "07/03/2009", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Misc/Pani_Basia_z_klatki_B.sap", "fileSize": 3939, "title": "Pani Basia z Klatki B", "author": "<?> (Gonzo) & Michal Brzeski (MCH)", "date": "08/12/2012", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Misc/Pokety_Bitches.sap", "fileSize": 3905, "title": "Pokety Bitches", "author": "David Dineen-Porter (PDF Format)", "date": "24/09/2008", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Misc/Poke_My_Desire.sap", "fileSize": 5602, "title": "Poke My Desire", "author": "Johan Letfors (Vedder)", "date": "07/2017", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Misc/Portamento_Midget.sap", "fileSize": 4017, "title": "Portamento Midget", "author": "<?> (Homeless Ninja Robots)", "date": "12/03/2007", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
@@ -6489,8 +6491,6 @@ const asma = {"composerInfos": [
 , {"filePath": "Unknown/Intro.sap", "fileSize": 4260, "title": "Intro", "author": "", "date": "199?", "typeLetter": "C", "originalModuleExt": "dmc"}
 , {"filePath": "Unknown/Jacobs.sap", "fileSize": 1231, "title": "Jacobs <?>", "author": "", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Unknown/Jeju.sap", "fileSize": 4145, "title": "Jeju", "author": "", "date": "", "typeLetter": "B", "originalModuleExt": "mpt"}
-, {"filePath": "Unknown/JHV_Demo_97_Extro.sap", "fileSize": 9647, "title": "JHV Demo 97 Extro", "author": "", "date": "1997", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Unknown/JHV_Demo_97_Intro.sap", "fileSize": 6270, "title": "JHV Demo 97 Intro", "author": "", "date": "1997", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Unknown/Kult_Cover.sap", "fileSize": 3827, "title": "Kult - Cover", "author": "", "date": "", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Unknown/Lambada.sap", "fileSize": 3249, "title": "Lambada", "author": "", "date": "199?", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Unknown/Laser.sap", "fileSize": 4233, "title": "Laser", "author": "", "date": "199?", "typeLetter": "C", "originalModuleExt": "cmc"}
