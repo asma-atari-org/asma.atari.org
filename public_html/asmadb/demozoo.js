@@ -109,7 +109,7 @@ Demozoo.prototype.addProduction = function(productionsData, resultIndex, data, p
   authorIDs[authorIDs.length] = author_nick.releaser.id;
  }
 
- const prefix = "http://asma.atari.org/asma/";
+ const prefix = "https://asma.atari.org/asma/";
  let filePath = null;
  for (let downloadLink of data.download_links){
    if (downloadLink.link_class == "BaseUrl" && downloadLink.url.startsWith(prefix)){
