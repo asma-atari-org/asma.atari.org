@@ -52,12 +52,12 @@ public class ComposerList {
 				Composer previousComposer = composerByFolderName.put(composer.folderName, composer);
 				if (previousComposer != null)
 					throw new RuntimeException(
-							"Composer " + previousComposer.toString() + " already registered for folder name "
-									+ previousComposer.folderName + " of composer " + composer.toString());
+							"Composer \\\"" + previousComposer.toString() + "\" is already registered for folder name \""
+									+ previousComposer.folderName + "\" of composer \"" + composer.toString()+"\"");
 				String defaultFolderName = composer.getDefaultFolderName();
 				if (!composer.folderName.equals(defaultFolderName)) {
-					System.err.println(composer.folderName + " of " + composer.toString()
-							+ " is different from default folder name " + defaultFolderName);
+					System.err.println("Folder \""+composer.folderName + "\" of \"" + composer.toString()
+							+ "\" is different from default folder name \"" + defaultFolderName+"\"");
 
 				}
 			} else {
@@ -68,10 +68,10 @@ public class ComposerList {
 				Composer previousComposer = composerByDemozooID.put(composer.demozooID, composer);
 				if (previousComposer != null)
 					throw new RuntimeException(
-							"Composer " + previousComposer.toString() + " already registered for Demozoo ID "
-									+ previousComposer.demozooID + " of composer " + composer.toString());
+							"Composer \"" + previousComposer.toString() + "\" is already registered for Demozoo ID "
+									+ previousComposer.demozooID + " of composer \"" + composer.toString()+"\"");
 			} else {
-				System.err.println("Composer " + composer.toString() + " has no Demozoo ID");
+				System.err.println("Composer \"" + composer.toString() + "\" has no Demozoo ID");
 			}
 		}
 	}
