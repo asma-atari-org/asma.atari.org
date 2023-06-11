@@ -14,11 +14,15 @@ const SongNumber = { FIRST: 0, NONE: -1, RANDOM: -2 };
 const DEFAULT_WINDOW_TITLE = "Atari SAP Music Archive";
 
 function ASMA() {
+  this.handleWindowPopState = false; // Disable event handling when location is changed programatically.
 
 }
 
 ASMA.prototype.onWindowPopState = function(state){
- Logger.log("Execute onWindowPopState: "+JSON.stringify(window.location)); // TODO
+ if (this.handleWindowPopState == false){
+   return;
+ }
+ Logger.log("Execute onWindowPopState: "+JSON.stringify(window.location)+JSON.stringify(state));
  this.initFromWindowLocation();
 };
 
@@ -56,7 +60,7 @@ ASMA.prototype.initFromWindowLocation = function(){
 
  let url = new URL(window.location);
  let hash = url.hash;
- let params = new URLSearchParams(url.search.slice(1)); // Skip "?"
+ let params = new URLSearchParams(url.search.slice(1)); // Skip question mark "?"
 
  let startHash = false;
  let startSearch = false;
@@ -79,7 +83,7 @@ ASMA.prototype.initFromWindowLocation = function(){
 
  if (startHash) {
   let foundFileInfo = null;
-  let filePath = hash.slice(2); // Skip "#/"
+  let filePath = hash.slice(2); // Skip "#/" prefix
   Logger.log("Start song with path \""+filePath+"\"");
   for (let fileInfo of this.fileInfos){
    if (fileInfo.getFilePath() == filePath){
@@ -132,7 +136,6 @@ ASMA.prototype.initInternal = function(){
 
  // Search
  this.searchFields = [];
- this.lastSearchParameters = new SearchParameters();
 
  this.currentSelectedIndex = undefined;
 
@@ -168,6 +171,7 @@ ASMA.prototype.initInternal = function(){
  // Setup main window
  window.setInterval(this.refreshCurrentASAPInfo, 500, this);
  window.addEventListener('popstate', (event) => { asmaInstance.onWindowPopState(event.state)});
+ this.handleWindowPopState = true;
 
  // Get controls
  this.displayAuthorDialog = UI.getElementById("displayAuthorDialog");
@@ -317,11 +321,11 @@ ASMA.prototype.setSearchParameters = function(searchParameters){
 };
 
 ASMA.prototype.search = function(){
- this.searchUsingParameters(this.getSearchParameters(), true);
+ this.searchUsingParameters(this.getSearchParameters());
 }
 
 
-ASMA.prototype.searchUsingParameters = function(searchParameters, recordInHistory){
+ASMA.prototype.searchUsingParameters = function(searchParameters){
 
  let wasPlaying = (asap.context != undefined && asap.context.state == "running");
  if (wasPlaying){
@@ -453,10 +457,6 @@ ASMA.prototype.searchUsingParameters = function(searchParameters, recordInHistor
  let newTableObject = UI.getElementById("searchResultTable");
  sorttable.makeSortable(newTableObject);
  UI.getElementById("searchResultTableTitleHeader").click();
-
- // Record in history if requested and different from previous value
- // TODO Record search in URL?
- this.lastSearchParameters = searchParameters;
 
  if (wasPlaying){
   asap.togglePause();
@@ -663,7 +663,9 @@ ASMA.prototype.setCurrentFileIndexAndSong = function(index,song){
   let url = new URL(window.location);
   url.search = "";
   url.hash = "#/" + this.currentFileInfo.getFilePath();
+  this.handleWindowPopState = false;
   window.location = url;
+  this.handleWindowPopState = true;
   this.loadFileContent(fileInfo, this.onFileContentLoadSuccess, this.onFileContentLoadFailure, song);
  }
  else {
@@ -672,7 +674,7 @@ ASMA.prototype.setCurrentFileIndexAndSong = function(index,song){
  }
 }
 
-ASMA.prototype.playASMA = function(index,song,recordInHistory){
+ASMA.prototype.playASMA = function(index,song){
  this.setCurrentFileIndexAndSong(index,song); // Will call playSong() if song >=0
  this.setSelectedIndexRow(index);
 };
@@ -982,7 +984,7 @@ ASMA.prototype.onFileContentLoadSuccess = function(asma, fileInfo, parameter){
 };
 
 ASMA.prototype.onFileContentLoadFailure = function(asma, fileInfo, parameter){
- window.alert("Loading \""+fileInfo.filePath+"\" failed");
+ window.alert("Loading \""+fileInfo.filePath+"\" with parameter \""+parameter+"\" failed");
 }
 
 ASMA.prototype.playSong = function(song){
