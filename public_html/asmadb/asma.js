@@ -120,13 +120,13 @@ class ASMA {
 
 	initInternal() {
 
-		this.demozoo = new Demozoo(asma.demozoo.productions);
-		this.demozooCheckResult = "";
-		this.demozooCheckResult = this.demozoo.initProductions();
-
 		FileInfoList.init(asma.fileInfos);
 
 		this.fileInfos = asma.fileInfos; // "asma" or array of local file
+
+		this.demozoo = new Demozoo(asma.demozoo.productions);
+		this.demozooCheckResult = "";
+		this.demozooCheckResult = this.demozoo.initProductions(this.fileInfos);
 
 		this.composerList = new ComposerList(asma.composerInfos);
 		this.composerList.initFileInfos(this.fileInfos, this.demozoo.getProductionsByFilePathAndSongIndexMap());
@@ -809,7 +809,7 @@ class ASMA {
 		Logger.log("Play current song.");
 		let songIndex = this.currentSongIndex;
 		if (songIndex < 0) {
-			songIndex = this.currentFileInfo.asapInfo.getDefaultSongIndex();
+			songIndex = this.currentFileInfo.getDefaultSongIndex();
 		}
 		this.currentModuleInfo = this.playASMA(this.currentFileIndex, songIndex, true);
 	}

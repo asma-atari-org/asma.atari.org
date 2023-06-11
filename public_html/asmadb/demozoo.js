@@ -1,12 +1,80 @@
 "use strict";
 
+/* Structure of Demozoo production.
+
+	{
+		"id": 62401,
+		"title": "Łąńóś",
+		"authorIDs": [
+			31134
+		],
+		"filePath": "Composers/Karwacki_Jakub/Lanos.sap"
+	}
+*/
+
+class Fetcher {
+
+	constructor() {
+		this.maxRequestCount = 3;
+		this.demozoo = null;
+		this.requestCount = 0;
+	}
+
+	fetchPages(url, demozoo) {
+		this.demoZoo = demozoo;
+		this.fetchPage(url, 0);
+	}
+
+	fetchPage(url, productionsIndex) {
+		Logger.log("Fetching page " + url);
+		fetch(url)
+			.then((response) => response.json())
+			.then((data) => this.fetchProductions(data, 0, productionsIndex));
+	}
+
+	fetchProductions(data, resultIndex, productionsIndex) {
+		if (resultIndex < data.results.length) {
+			this.fetchProduction(data, resultIndex, productionsIndex);
+		} else {
+			if (data.next != undefined) {
+				this.fetchPage(data.next, productionsIndex);
+			} else {
+				Logger.log("demozooProductions = ");
+				Logger.log(this.productions);
+			}
+		}
+	}
+
+	fetchNextProduction(productionsData, resultIndex, productionsIndex) {
+		this.requestCount++;
+		while (this.requestCount < this.maxRequestCount) {
+			this.fetchProductions(productionsData, resultIndex + 1, productionsIndex + 1, productionsIndex + 1);
+		}
+	}
+
+	fetchProduction(productionsData, resultIndex, productionsIndex) {
+		let production = productionsData.results.at(resultIndex);
+		let url = production.url;
+
+		Logger.log("Fetching production " + (productionsIndex + 1) + " of " + productionsData.count + " from " + url);
+		fetch(url)
+			.then((response) => response.json())
+			.then((data) => this.demoZoo.addProduction(productionsData, resultIndex, data, productionsIndex))
+			.then(() => this.requestCount-- )
+			.then(() => this.fetchNextProduction(productionsData, resultIndex, productionsIndex))
+			.catch((error) => {
+				console.error("Fetch Error:", error);
+			});
+	}
+}
+
 class Demozoo {
 	constructor(productions) {
 		this.productions = productions;
 		this.productionsByFilePathAndSongIndexMap = new Map();
 	}
 
-	initProductions() {
+	initProductions(fileInfoList) {
 		this.productionsByFilePathAndSongIndexMap.clear();
 		let result = "";
 		let linkCount = 0;
@@ -14,7 +82,17 @@ class Demozoo {
 		for (let production of this.productions) {
 			if (production.filePath == null) {
 				missingLinkCount++;
-				result += (this.getMusicHTML(production) + " has no ASMA link<br>\n");
+				let candidatesHTML = "";
+				for (let fileIndex = 0; fileIndex < fileInfoList.length; fileIndex++) {
+					let fileInfo = fileInfoList[fileIndex];
+					if (fileInfo.title.includes(production.title)) {
+						if (candidatesHTML != "") {
+							candidatesHTML += ", ";
+						}
+						candidatesHTML += "https://asma.atari.org/asma/" + fileInfo.getFilePath();
+					}
+				}
+				result += (this.getMusicHTML(production) + " has no ASMA link. Try " + candidatesHTML + " or " + this.getFindTitleHTML(production) + "<br>\n");
 			} else {
 				let key = this.getFilePathAndSongIndexKey(production.filePath, production.songIndex);
 				this.productionsByFilePathAndSongIndexMap.set(key, production);
@@ -57,49 +135,17 @@ class Demozoo {
 		return "<a href=\"https://demozoo.org/music/" + production.id + "\" target=\"blank\">" + production.title + "</a>";
 	}
 
+	getFindTitleHTML(production) {
+		return "<a href=\"https://asma.atari.org/asmadb/asma.html?searchKeyword=" + production.title + "\" target=\"blank\">searching</a>";
+	}
+
 	checkDemozoo() {
 		this.productions = new Array();
-		this.fetchPage("https://demozoo.org/api/v1/productions/?supertype=music&platform=54&platform=16", 0);
+		let fetcher = new Fetcher();
+		fetcher.fetchPages("https://demozoo.org/api/v1/productions/?supertype=music&platform=54&platform=16", this);
 	}
 
-	fetchPage(url, productionsIndex) {
-		Logger.log("Fetching page " + url);
-		fetch(url)
-			.then((response) => response.json())
-			.then((data) => this.fetchProductions(data, 0, productionsIndex));
-	}
-
-	fetchProductions(data, resultIndex, productionsIndex) {
-		if (resultIndex < data.results.length) {
-			this.fetchProduction(data, resultIndex, productionsIndex);
-		} else {
-			if (data.next != undefined) {
-				this.fetchPage(data.next, productionsIndex);
-			} else {
-				Logger.log("demozooProductions = ");
-				Logger.log(this.productions);
-			}
-		}
-	}
-
-	fetchNextProduction(productionsData, resultIndex, productionsIndex) {
-		this.fetchProductions(productionsData, resultIndex + 1, productionsIndex + 1, productionsIndex + 1);
-	}
-
-	fetchProduction(productionsData, resultIndex, productionsIndex) {
-		let production = productionsData.results.at(resultIndex);
-		let url = production.url;
-
-		Logger.log("Fetching production " + (productionsIndex + 1) + " of " + productionsData.count + " from " + url);
-		fetch(url)
-			.then((response) => response.json())
-			.then((data) => this.addProduction(productionsData, resultIndex, data, productionsIndex))
-			.then(() => this.fetchNextProduction(productionsData, resultIndex, productionsIndex))
-			.catch((error) => {
-				console.error("Fetch Error:", error);
-			});
-	}
-
+	// Callback for Fetcher.fetchPages().
 	addProduction(productionsData, resultIndex, data, productionsIndex) {
 
 		let authorIDs = [];
