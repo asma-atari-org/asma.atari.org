@@ -15,6 +15,6 @@
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_CLASSPATH_ONLY_JAR" value="false"/>
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.atari.asma.ASMAExporter"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="asma.atari.org"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="C:\jac\system\Atari800\Sounds\ASMA\SVN\trunk\asma C:\jac\system\WWW\Sites\asma.atari.org\public_html\asmadb\asma.json"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="C:\jac\system\Atari800\Sounds\ASMA\SVN\trunk\asma C:\jac\system\WWW\Sites\asma.atari.org\public_html\asmadb\asmadb.js"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="asma.atari.org"/>
 </launchConfiguration>

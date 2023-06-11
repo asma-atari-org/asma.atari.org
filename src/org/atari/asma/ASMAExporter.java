@@ -29,7 +29,7 @@ public class ASMAExporter {
 
 	private void run(String[] args) {
 		if (args.length != 2) {
-			println("Usage: ASMAExporter <trunk/asma folder> <asma.json file>");
+			println("Usage: ASMAExporter <trunk/asma folder> <asmadb.js file>");
 			return;
 		}
 		var sourceFolderPath = args[0];

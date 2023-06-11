@@ -22,7 +22,7 @@ set SITE_HTML_FOLDER=%SITE_FOLDER%\public_html
 set SITE_ASMA_FOLDER=%SITE_HTML_FOLDER%\asma
 
 set SITE_ASMADB_FOLDER=%SITE_HTML_FOLDER%\asmadb
-set SITE_ASMADB_JSON=%SITE_ASMADB_FOLDER%\asma.json
+set SITE_ASMADB_JS=%SITE_ASMADB_FOLDER%\asmadb.js
 set SITE_ASMA_ZIP_FILE=%SITE_ASMADB_FOLDER%\asma.zip
 
 set JAVA_FOLDER=%SITE_FOLDER%
@@ -51,7 +51,7 @@ if not exist %WUDSN_SITE_HTML_FOLDER%. (
 
 echo.
 rem Run the exporter to update the JSON database.
-java -cp "%JAVA_FOLDER%\bin;%JAVA_FOLDER%\lib\asap.jar;%JAVA_FOLDER%\lib\gson-2.9.1.jar" org.atari.asma.ASMAExporter %SVN_TRUNK_ASMA_FOLDER% %SITE_ASMADB_JSON%
+java -cp "%JAVA_FOLDER%\bin;%JAVA_FOLDER%\lib\asap.jar;%JAVA_FOLDER%\lib\gson-2.9.1.jar" org.atari.asma.ASMAExporter %SVN_TRUNK_ASMA_FOLDER% %SITE_ASMADB_JS%
 echo.
 
 rem Create the overall ZIP.
