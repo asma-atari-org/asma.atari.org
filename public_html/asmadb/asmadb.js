@@ -6,7 +6,7 @@ const asma = {"composerInfos": [
 { "folderName" : "Chema64", "lastName" : "<?>", "firstName" : "", "handles" : "Chema64", "country" : "Mexico", "demozooID" : "37035"},
 { "folderName" : "Czlowiek_W_Atomizerze", "lastName" : "<?>", "firstName" : "", "handles" : "Czlowiek W Atomizerze", "country" : "Poland", "demozooID" : "51515"},
 { "folderName" : "Dippy", "lastName" : "<?>", "firstName" : "", "handles" : "Dippy, Yung Gotenks", "country" : "USA", "demozooID" : "134573"},
-{ "folderName" : "Fragmare", "lastName" : "<?>", "firstName" : "", "handles" : "Fragmare", "country" : "USA ", "demozooID" : "71372"},
+{ "folderName" : "Fragmare", "lastName" : "<?>", "firstName" : "", "handles" : "Fragmare", "country" : "USA", "demozooID" : "71372"},
 { "folderName" : "gotoandplay", "lastName" : "<?>", "firstName" : "", "handles" : "gotoandplay", "country" : "United Kingdom", "demozooID" : "61505"},
 { "folderName" : "Irrlicht_Project", "lastName" : "<?>", "firstName" : "", "handles" : "Irrlicht Project, Utz", "country" : "Germany", "demozooID" : "23869"},
 { "folderName" : "Makary_Brauner", "lastName" : "<?>", "firstName" : "", "handles" : "Makary Brauner", "country" : "Poland", "demozooID" : "63672"},
@@ -20,12 +20,12 @@ const asma = {"composerInfos": [
 { "folderName" : "Selector_Catalogue", "lastName" : "<?>", "firstName" : "", "handles" : "Selector Catalogue", "country" : "USA", "demozooID" : "56548"},
 { "folderName" : "Spring", "lastName" : "<?>", "firstName" : "", "handles" : "Spring, Spring Enterprises", "country" : "Denmark", "demozooID" : "134575"},
 { "folderName" : "Strobe", "lastName" : "<?>", "firstName" : "", "handles" : "Strobe", "country" : "Sweden", "demozooID" : "9926"},
-{ "folderName" : "SuperJet_Spade", "lastName" : "<?>", "firstName" : "", "handles" : "SuperJet Spade", "country" : "USA", "demozooID" : "134576"},
+{ "folderName" : "SuperJet_Spade", "lastName" : "<?>", "firstName" : "", "handles" : "SuperJet Spade, JetStar1997, Wavetable Guy", "country" : "USA", "demozooID" : "134576"},
 { "folderName" : "Tilde", "lastName" : "<?>", "firstName" : "", "handles" : "Tilde", "country" : "Romania", "demozooID" : "56570"},
 { "folderName" : "WnZ", "lastName" : "<?>", "firstName" : "", "handles" : "WnZ", "country" : "Poland", "demozooID" : "63190"},
 { "folderName" : "XLent", "lastName" : "<?>", "firstName" : "", "handles" : "XLent", "country" : "Poland", "demozooID" : "24472"},
 { "folderName" : "Armijo_Richard_J", "lastName" : "Armijo", "firstName" : "Richard J.", "handles" : "Kulor", "country" : "USA", "demozooID" : "51251"},
-{ "folderName" : "Badkowski_Marek", "lastName" : "Badkowski", "firstName" : "Marek", "handles" : "Bac", "country" : "Poland", "demozooID" : "31136"},
+{ "folderName" : "Badkowski_Marek", "lastName" : "Badkowski", "firstName" : "Marek", "handles" : "Bac, Edi", "country" : "Poland", "demozooID" : "31136"},
 { "folderName" : "Banas_Pawel", "lastName" : "Banas", "firstName" : "Pawel", "handles" : "Zilq", "country" : "Poland", "demozooID" : "52259"},
 { "folderName" : "Banaszkiewicz_Marcin", "lastName" : "Banaszkiewicz", "firstName" : "Marcin", "handles" : "Banas", "country" : "Poland", "demozooID" : "51405"},
 { "folderName" : "Banaszkiewicz_Michal", "lastName" : "Banaszkiewicz", "firstName" : "Michal", "lastNameUnicode" : "Banaszkiewicz", "firstNameUnicode" : "Michał", "handles" : "Hugo", "country" : "Poland", "demozooID" : "51539"},
@@ -105,7 +105,7 @@ const asma = {"composerInfos": [
 { "folderName" : "Holik_Antonin", "lastName" : "Holik", "firstName" : "Antonin", "lastNameUnicode" : "Holík", "firstNameUnicode" : "Antonín", "handles" : "R0ger, Dr.Sid", "country" : "Czech Republic", "demozooID" : "57953"},
 { "folderName" : "Hryn_Piotr", "lastName" : "Hryn", "firstName" : "Piotr", "handles" : "Ramzes", "country" : "Poland", "demozooID" : "44265"},
 { "folderName" : "Hubbard_Rob", "lastName" : "Hubbard", "firstName" : "Rob", "country" : "United Kingdom", "demozooID" : "8434"},
-{ "folderName" : "Hudak_Matej", "lastName" : "Hudak", "firstName" : "Matej", "handles" : "Elan", "country" : "Slovakia", "demozooID" : "29534"},
+{ "folderName" : "Hudak_Matej", "lastName" : "Hudak", "firstName" : "Matej", "handles" : "Elan, Elko", "country" : "Slovakia", "demozooID" : "29534"},
 { "folderName" : "Hughes_Trevin", "lastName" : "Hughes", "firstName" : "Trevin", "handles" : "Jredd", "country" : "USA", "demozooID" : "47659"},
 { "folderName" : "Huntington_Glenys", "lastName" : "Huntington", "firstName" : "Glenys", "country" : "United Kingdom (?)", "demozooID" : "52058"},
 { "folderName" : "Husak_Jakub", "lastName" : "Husak", "firstName" : "Jakub", "country" : "Poland", "demozooID" : "33056"},
@@ -152,6 +152,7 @@ const asma = {"composerInfos": [
 { "folderName" : "Lis_Marcin", "lastName" : "Lis", "firstName" : "Marcin", "country" : "Poland", "demozooID" : "52072"},
 { "folderName" : "Lis_Piotr", "lastName" : "Lis", "firstName" : "Piotr", "handles" : "LiSU", "country" : "Poland", "demozooID" : "20521"},
 { "folderName" : "Loos_Uwe", "lastName" : "Loos", "firstName" : "Uwe", "country" : "Germany", "demozooID" : "35373"},
+{ "folderName" : "Los_Anna", "lastName" : "Los", "firstName" : "Anna", "lastNameUnicode" : " Łoś", "firstNameUnicode" : "Anna ", "handles" : "Aniara", "country" : "Poland", "demozooID" : "35259"},
 { "folderName" : "Luberda_Michal", "lastName" : "Luberda", "firstName" : "Michal", "country" : "Poland", "demozooID" : "52074"},
 { "folderName" : "Lusth_John_W", "lastName" : "Lusth", "firstName" : "John W.", "demozooID" : "52075"},
 { "folderName" : "Luszcz_Tomasz", "lastName" : "Luszcz", "firstName" : "Tomasz", "country" : "Poland", "demozooID" : "52076"},
@@ -216,6 +217,7 @@ const asma = {"composerInfos": [
 { "folderName" : "Rogers_Charles", "lastName" : "Rogers", "firstName" : "Charles", "handles" : "Chip Champion", "country" : "USA", "demozooID" : "43703"},
 { "folderName" : "Rosolek_Maciej", "lastName" : "Rosolek", "firstName" : "Maciej", "handles" : "Sound Vixen", "country" : "Poland", "demozooID" : "52225"},
 { "folderName" : "Roszkowski_Marek", "lastName" : "Roszkowski", "firstName" : "Marek", "handles" : "Marcys", "country" : "Poland", "demozooID" : "35351"},
+{ "folderName" : "Rychlik_Arkadiusz", "lastName" : "Rychlik", "firstName" : "Arkadiusz", "handles" : "Arson", "country" : "Poland", "demozooID" : "25025"},
 { "folderName" : "Rymorz_Waldemar", "lastName" : "Rymorz", "firstName" : "Waldemar", "country" : "Poland", "demozooID" : "52097"},
 { "folderName" : "Sabath_Peter", "lastName" : "Sabath", "firstName" : "Peter", "country" : "Germany", "demozooID" : "33633"},
 { "folderName" : "Samuel_Vin", "lastName" : "Samuel", "firstName" : "Vin", "handles" : "VinsCool", "country" : "Canada", "demozooID" : "134580"},
@@ -243,11 +245,11 @@ const asma = {"composerInfos": [
 { "folderName" : "Strzelec_Pawel", "lastName" : "Strzelec", "firstName" : "Pawel", "country" : "Poland", "demozooID" : "52248"},
 { "folderName" : "Stuermer_Armin", "lastName" : "Stuermer", "firstName" : "Armin", "country" : "Germany", "demozooID" : "50510"},
 { "folderName" : "Swierszcz_Piotr", "lastName" : "Swierszcz", "firstName" : "Piotr", "lastNameUnicode" : "Świerszcz", "firstNameUnicode" : "Piotr", "handles" : "Samurai, Tatqoo", "country" : "Poland", "demozooID" : "2611"},
-{ "folderName" : "Sychowicz_Lukasz", "lastName" : "Sychowicz", "firstName" : "Lukasz", "lastNameUnicode" : "Sychowicz", "firstNameUnicode" : "Łukasz ", "handles" : "X-Ray", "country" : "Poland", "demozooID" : "8878"},
+{ "folderName" : "Sychowicz_Lukasz", "lastName" : "Sychowicz", "firstName" : "Lukasz", "lastNameUnicode" : "Sychowicz", "firstNameUnicode" : "Łukasz", "handles" : "X-Ray", "country" : "Poland", "demozooID" : "8878"},
 { "folderName" : "Szczesniak_Konrad", "lastName" : "Szczesniak", "firstName" : "Konrad", "country" : "Poland", "demozooID" : "52249"},
 { "folderName" : "Szczesniak_Maciek", "lastName" : "Szczesniak", "firstName" : "Maciek", "handles" : "Macioo$, Warp", "country" : "Poland", "demozooID" : "33636"},
 { "folderName" : "Szczygiel_Andrzej", "lastName" : "Szczygiel", "firstName" : "Andrzej", "country" : "Poland", "demozooID" : "52250", "groups" : "Top_Odin"},
-{ "folderName" : "Szelag_Jakub", "lastName" : "Szelag", "firstName" : "Jakub", "lastNameUnicode" : "Szeląg", "firstNameUnicode" : "Jakub  ", "handles" : "AceMan", "country" : "Poland", "demozooID" : "3509"},
+{ "folderName" : "Szelag_Jakub", "lastName" : "Szelag", "firstName" : "Jakub", "lastNameUnicode" : "Szeląg", "firstNameUnicode" : "Jakub ", "handles" : "AceMan", "country" : "Poland", "demozooID" : "3509"},
 { "folderName" : "Szerniewicz_Robert", "lastName" : "Szerniewicz", "firstName" : "Robert", "handles" : "sOnar", "country" : "Poland", "demozooID" : "33059"},
 { "folderName" : "Szmatola_Krzysztof", "lastName" : "Szmatola", "firstName" : "Krzysztof", "handles" : "Thor", "country" : "Poland", "demozooID" : "52251"},
 { "folderName" : "Szpilowski_Michal", "lastName" : "Szpilowski", "firstName" : "Michal", "handles" : "Miker", "country" : "Poland", "demozooID" : "2303"},
@@ -279,7 +281,8 @@ const asma = {"composerInfos": [
 { "folderName" : "Wyszynski_Jaroslaw", "lastName" : "Wyszynski", "firstName" : "Jaroslaw", "handles" : "Panopticum, Odyn1ec", "country" : "Poland", "demozooID" : "33060"},
 { "folderName" : "Zaborowski_Robert", "lastName" : "Zaborowski", "firstName" : "Robert", "country" : "Poland", "demozooID" : "52257"},
 { "folderName" : "Zagiba_Richard", "lastName" : "Zagiba", "firstName" : "Richard", "country" : "Slovakia", "demozooID" : "52258"},
-{ "folderName" : "Zuegner_Alfred", "lastName" : "Zuegner", "firstName" : "Alfred", "country" : "Germany", "demozooID" : "52260"}
+{ "folderName" : "Zuegner_Alfred", "lastName" : "Zuegner", "firstName" : "Alfred", "country" : "Germany", "demozooID" : "52260"},
+{ "folderName" : "Zyla_Grzegorz", "lastName" : "Zyla", "firstName" : "Grzegorz", "firstNameUnicode" : "Grzegorz", "handles" : "SuN", "country" : "Poland", "demozooID" : "2642"}
 ]
 , "groupInfos": [
 { "folderName" : "Cieslewicz_Tomasz_and_Dombek_K", "name" : ""},
@@ -1699,6 +1702,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Hudak_Matej/ElanLL02.sap", "fileSize": 3231, "title": "ElanLL2002", "author": "Matej Hudak (Elan)", "date": "2002", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Hudak_Matej/Null_Cubic.sap", "fileSize": 6961, "title": "Null Cubic", "author": "Matej Hudak (Elan)", "date": "2004", "typeLetter": "B", "originalModuleExt": "sap", "channels": 2}
 , {"filePath": "Composers/Hudak_Matej/Shorty_Noises.sap", "fileSize": 5120, "title": "Shorty Noises", "author": "Matej Hudak (Elan)", "date": "17/03/2007", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
+, {"filePath": "Composers/Hudak_Matej/Vodajka.sap", "fileSize": 5489, "title": "Vodajka", "author": "Matej Hudak (elko)", "date": "17/03/2018", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Hughes_Trevin/1bit_Body_Puncher.sap", "fileSize": 2978, "title": "1-bit Body Puncher", "author": "Trevin Hughes (Jredd)", "date": "2014 <?>", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Hughes_Trevin/1bit_Boss.sap", "fileSize": 1797, "title": "1-bit Boss", "author": "Trevin Hughes (Jredd)", "date": "2014 <?>", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Hughes_Trevin/1bit_of_Advice.sap", "fileSize": 4223, "title": "1-bit of Advice", "author": "Trevin Hughes (Jredd)", "date": "2014 <?>", "typeLetter": "D", "originalModuleExt": "sap"}
@@ -4082,6 +4086,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Roszkowski_Marek/Space_Fix.sap", "fileSize": 3424, "title": "Space Fix", "author": "Marek Roszkowski (Marcys)", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Roszkowski_Marek/Transfer_II.sap", "fileSize": 3466, "title": "Transfer II", "author": "Marek Roszkowski (Marcys)", "date": "1997 <?>", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Roszkowski_Marek/Zajcu_1.sap", "fileSize": 3792, "title": "Zajcu 1 <?>", "author": "Marek Roszkowski (Marcys)", "date": "199?", "typeLetter": "B", "originalModuleExt": "mpt"}
+, {"filePath": "Composers/Rychlik_Arkadiusz/Kolector_Dream.sap", "fileSize": 6908, "title": "Kolector Dream", "author": "Arkadiusz Rychlik (Arson)", "date": "2019", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Rymorz_Waldemar/Arkanoid_II.sap", "fileSize": 3563, "title": "Arkanoid II", "author": "Waldemar Rymorz", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5}
 , {"filePath": "Composers/Rymorz_Waldemar/Kombi.sap", "fileSize": 1790, "title": "Kombi", "author": "Waldemar Rymorz", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Rymorz_Waldemar/Music_Box_Demo_II_1_4.sap", "fileSize": 3001, "title": "The Music Box Demo II - 1-4", "author": "Waldemar Rymorz", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap", "songs": 4}
@@ -6088,7 +6093,6 @@ const asma = {"composerInfos": [
 , {"filePath": "Misc/Jogging_Olympics_2016.sap", "fileSize": 3931, "title": "Jogging Olympics 2016", "author": "<?> (Slimeball)", "date": "17/08/2012", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Misc/Just_the_Tip.sap", "fileSize": 9668, "title": "Just the Tip", "author": "<?> (Brink)", "date": "07/2016", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Misc/KevSoft.sap", "fileSize": 3834, "title": "KevSoft", "author": "Andrzej Rusiecki (KevSoft)", "date": "1992", "typeLetter": "C", "originalModuleExt": "sap"}
-, {"filePath": "Misc/Kolector_Dream.sap", "fileSize": 6894, "title": "Kolector Dream", "author": "<?> (Arson)", "date": "2019", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Misc/lack_of_filters_cause.sap", "fileSize": 4288, "title": "(a lack of filters cause i couldnt figure out them wtf)", "author": "<?> (Savestate)", "date": "20/05/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Misc/Laser_Squadron.sap", "fileSize": 4049, "title": "Laser Squadron", "author": "<?> (Dieter Bohlen)", "date": "", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Misc/Lemme_Tell_You_Bout_My_Neo.sap", "fileSize": 4396, "title": "Lemme Tell You 'bout my Neopet", "author": "<?> (Zanzan)", "date": "08/02/2011", "typeLetter": "B", "originalModuleExt": "rmt"}
@@ -6177,7 +6181,6 @@ const asma = {"composerInfos": [
 , {"filePath": "Misc/Udders.sap", "fileSize": 1653, "title": "Udders", "author": "<?> (The Fender)", "date": "08/04/2017", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Misc/Unite.sap", "fileSize": 2961, "title": "Unite", "author": "Daniel Kolakowski (Mozart)", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Misc/Utwor_z_najwieksza_iloscia.sap", "fileSize": 3287, "title": "Utwor z najwieksza iloscia punktow na jednostke czasu", "author": "Rafal Dziamski (Vasco)", "date": "10/11/2011", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
-, {"filePath": "Misc/Vodajka.sap", "fileSize": 5481, "title": "Vodajka", "author": "<?> (elko)", "date": "17/03/2018", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Misc/Walec.sap", "fileSize": 5265, "title": "Walec", "author": "<?> (Mruczy)", "date": "", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
 , {"filePath": "Misc/Wall_of_Fuzz.sap", "fileSize": 3007, "title": "Wall of Fuzz", "author": "<?> (Chunter)", "date": "29/01/2013", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Misc/Warpsztaty_monofoniczne_in.sap", "fileSize": 6731, "title": "Warpsztaty monofoniczne integracyjne [Afterparty]", "author": "Marcin Kubica (Booker)", "date": "14/11/2011", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
@@ -6195,6 +6198,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Misc/yikes1.sap", "fileSize": 2928, "title": "yikes1", "author": "<?> (Sinc-X)", "date": "20/05/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Misc/You_Cant_Play_in_My_B.sap", "fileSize": 1415, "title": "You Can't Play in My Backyard", "author": "Paul Wheeler", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Misc/Zulu_Sector.sap", "fileSize": 4642, "title": "Zulu Sector", "author": "<?> (Galgox)", "date": "11/11/2018", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Test.saP", "fileSize": 15530, "title": "A Kind of Magic", "author": "", "date": "", "typeLetter": "D", "originalModuleExt": "saP"}
 , {"filePath": "Unknown/4mat_Chip.sap", "fileSize": 3939, "title": "4mat Chip", "author": "", "date": "200?", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Unknown/ABBUC_35.sap", "fileSize": 6212, "title": "ABBUC 35", "author": "", "date": "1993", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Unknown/AMP/A_Bottle_of_Wine.sap", "fileSize": 17563, "title": "A Bottle of Wine", "author": "", "date": "", "typeLetter": "D", "originalModuleExt": "sap"}
