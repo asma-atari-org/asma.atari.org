@@ -31,6 +31,9 @@ class Fetcher {
 			.then((data) => this.fetchProductions(data, 0, productionsIndex));
 	}
 
+    // data = data returned from HTTP request
+    // resultIndex = index in the complete query resöt
+    // productionIndex = index where to insert in the demozoo productions
 	fetchProductions(data, resultIndex, productionsIndex) {
 		if (resultIndex < data.results.length) {
 			this.fetchProduction(data, resultIndex, productionsIndex);
@@ -39,13 +42,12 @@ class Fetcher {
 				this.fetchPage(data.next, productionsIndex);
 			} else {
 				Logger.log("demozooProductions = ");
-				Logger.log(this.productions);
+				Logger.log(this.demozoo.productions);
 			}
 		}
 	}
 
 	fetchNextProduction(productionsData, resultIndex, productionsIndex) {
-		this.requestCount++;
 		resultIndex++;
 		productionsIndex++;
 		this.fetchProductions(productionsData, resultIndex, productionsIndex, productionsIndex);
@@ -60,7 +62,7 @@ class Fetcher {
 		let milliSecondsToGo = (milliSecondsSinceStart / (productionsIndex) * (productionsData.count - productionsIndex));
 
 		Logger.log("Fetching production " + (productionsIndex + 1) + " of " + productionsData.count
-			+ " from " + url + "(" + Util.getDurationString(milliSecondsSinceStart) + " until now, "
+			+ " from " + url + " (" + Util.getDurationString(milliSecondsSinceStart) + " until now, "
 			+ Util.getDurationString(milliSecondsToGo) + " to go)");
 		fetch(url)
 			.then((response) => response.json())
