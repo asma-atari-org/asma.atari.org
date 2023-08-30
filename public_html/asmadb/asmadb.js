@@ -1523,6 +1523,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Golewski_Filip/Epic_Saga.sap", "fileSize": 4663, "title": "Epic Saga", "author": "Filip Golewski (Zoltar X)", "date": "1998", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Golewski_Filip/Future.sap", "fileSize": 4522, "title": "Future", "author": "Filip Golewski (Zoltar X) <?>", "date": "", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Golewski_Filip/Gosleep.sap", "fileSize": 4106, "title": "Gosleep", "author": "Filip Golewski (Zoltar X)", "date": "199?", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 3}
+, {"filePath": "Composers/Golewski_Filip/Grace_of_the_Lord.sap", "fileSize": 13099, "title": "Grace of the Lord", "author": "Filip Golewski (Zoltar X)", "date": "2023", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Golewski_Filip/Heal.sap", "fileSize": 4474, "title": "Heal", "author": "Filip Golewski (Zoltar X)", "date": "", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Golewski_Filip/Jazda.sap", "fileSize": 8275, "title": "Jazda", "author": "Filip Golewski (Zoltar X)", "date": "199?", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Golewski_Filip/King.sap", "fileSize": 9883, "title": "King", "author": "Filip Golewski (Zoltar X)", "date": "199?", "typeLetter": "D", "originalModuleExt": "sap"}
@@ -2629,6 +2630,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Lis_Piotr/I_Love_You_True_Story.sap", "fileSize": 6702, "title": "I Love You, True Story", "author": "Piotr Lis (LiSU)", "date": "17/03/2012", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Lis_Piotr/I_Presume_Its_Funny.sap", "fileSize": 6122, "title": "I Presume It's Funny", "author": "Piotr Lis (LiSU)", "date": "15/03/2008", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Lis_Piotr/January_The_4th_Be_With_Yo.sap", "fileSize": 7813, "title": "January The 4th Be With You", "author": "Piotr Lis (LiSU)", "date": "04/01/2020", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
+, {"filePath": "Composers/Lis_Piotr/Jeli_To_Jeli_Tam.sap", "fileSize": 8741, "title": "Jeli To Jeli Tam", "author": "Piotr Lis (LiSU)", "date": "08/07/2023", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Lis_Piotr/Jest_Sprawa.sap", "fileSize": 8274, "title": "Jest Sprawa", "author": "Piotr Lis (LiSU)", "date": "2007-2010", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Lis_Piotr/Kompleks_K_12_Teaser.sap", "fileSize": 7459, "title": "Kompleks K-12 Teaser", "author": "Piotr Lis (LiSU)", "date": "07/12/2019", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2, "songs": 2}
 , {"filePath": "Composers/Lis_Piotr/K_jak.sap", "fileSize": 5722, "title": "K jak...", "author": "Piotr Lis (LiSU)", "date": "15/04/2018", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2, "songs": 4}
@@ -2671,7 +2673,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Lis_Piotr/Zilch.sap", "fileSize": 3338, "title": "Zilch", "author": "Piotr Lis (LiSU)", "date": "02/06/2018", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 2}
 , {"filePath": "Composers/Loos_Uwe/ABBUC_25.sap", "fileSize": 5146, "title": "ABBUC 25", "author": "Uwe Loos", "date": "1991 <?>", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Loos_Uwe/ABBUC_28.sap", "fileSize": 8335, "title": "ABBUC 28", "author": "Uwe Loos", "date": "1992 <?>", "typeLetter": "D", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Loos_Uwe/Das_Omen.sap", "fileSize": 17340, "title": "Das Omen", "author": "Uwe Loos", "date": "1989", "typeLetter": "D", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Loos_Uwe/Das_Omen.sap", "fileSize": 17222, "title": "Das Omen", "author": "Uwe Loos", "date": "1989", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Loos_Uwe/Das_Omen_Intro.sap", "fileSize": 6029, "title": "Das Omen - Intro", "author": "Uwe Loos", "date": "1989", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Loos_Uwe/Das_Omen_Title.sap", "fileSize": 3336, "title": "Das Omen - Title", "author": "Uwe Loos", "date": "1989", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Loos_Uwe/Studio_Dream.sap", "fileSize": 54137, "title": "Studio Dream", "author": "Uwe Loos", "date": "1990", "typeLetter": "D", "originalModuleExt": "sap"}
