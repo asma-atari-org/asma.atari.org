@@ -67,13 +67,7 @@ class ASMA {
 		let hash = url.hash;
 		let params = new URLSearchParams(url.search.slice(1)); // Skip question mark "?"
 
-		let startHash = false;
 		let startSearch = false;
-
-		if (hash.startsWith('#/')) {
-			startHash = true;
-		}
-
 		for (let searchField of this.searchFields) {
 			startSearch |= this.initSearchParameter(params, searchField);
 		}
@@ -86,9 +80,10 @@ class ASMA {
 		let detailsMode = (window.innerWidth >= 1024);
 		this.setDetailsMode(detailsMode);
 
-		if (startHash) {
+		const hashMatches = /^#\/(.+?)(?:\/(-?\d+))?$/.exec(hash);
+		if (hashMatches != null) {
 			let foundFileInfo = null;
-			let filePath = hash.slice(2); // Skip "#/" prefix
+			let filePath = hashMatches[1];
 			Logger.log("Starting file with path \"" + filePath + "\"");
 			for (let fileInfo of this.fileInfos) {
 				if (fileInfo.getFilePath() == filePath) {
@@ -100,8 +95,8 @@ class ASMA {
 			if (foundFileInfo == null) {
 				window.alert("There is no matching file in the database for the path \"" + filePath + "\".");
 			} else {
-				let foundSongIndex = params.get("songIndex");
-				if (foundSongIndex == null) {
+				let foundSongIndex = hashMatches[2];
+				if (foundSongIndex == undefined) {
 					foundSongIndex = foundFileInfo.getDefaultSongIndex();
 				}
 				if (this.currentFileInfo == null || this.currentFileInfo.getFilePath() != foundFileInfo.getFilePath() || this.currentSongIndex != foundSongIndex) {
@@ -654,10 +649,9 @@ class ASMA {
 			let fileInfo = this.fileInfos[fileIndex];
 			this.currentFileInfo = fileInfo;
 			let url = new URL(window.location);
-			url.search = "";
 			url.hash = "#/" + this.currentFileInfo.getFilePath();
 			if (songIndex != fileInfo.defaultSongIndex && songIndex != SongIndex.DEFAULT) {
-				url.search = "songIndex=" + songIndex;
+				url.hash += "/" + songIndex;
 			}
 			window.history.pushState(null, fileInfo.title, url);
 			this.loadFileContent(fileInfo, this.onFileContentLoadSuccess, this.onFileContentLoadFailure, songIndex);
