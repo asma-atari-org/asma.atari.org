@@ -98,6 +98,8 @@ class ASMA {
 				let foundSongIndex = hashMatches[2];
 				if (foundSongIndex == undefined) {
 					foundSongIndex = foundFileInfo.getDefaultSongIndex();
+				} else if (foundSongIndex > 0) {
+					foundSongIndex--; // one-based to zero-based
 				}
 				if (this.currentFileInfo == null || this.currentFileInfo.getFilePath() != foundFileInfo.getFilePath() || this.currentSongIndex != foundSongIndex) {
 					this.stopCurrentSong();
@@ -651,7 +653,7 @@ class ASMA {
 			let url = new URL(window.location);
 			url.hash = "#/" + this.currentFileInfo.getFilePath();
 			if (songIndex != fileInfo.defaultSongIndex && songIndex != SongIndex.DEFAULT) {
-				url.hash += "/" + songIndex;
+				url.hash += "/" + (songIndex + 1);
 			}
 			window.history.pushState(null, fileInfo.title, url);
 			this.loadFileContent(fileInfo, this.onFileContentLoadSuccess, this.onFileContentLoadFailure, songIndex);
