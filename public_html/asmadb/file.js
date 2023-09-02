@@ -35,7 +35,7 @@ class FileInfo {
 		if (this.songs == 1) {
 			return "1";
 		}
-		return this.songs + "/" + (this.getDefaultSongIndex());
+		return this.songs + " (" + (this.getDefaultSongIndex() + 1) + ")";
 	}
 	getAuthorsArray() {
 		let authors = this.author.split("&");

@@ -22,7 +22,7 @@ public final class FileInfo {
 	public String originalModuleExt;
 	public int channels;
 	public int songs;
-	public int defaultSong;
+	public int defaultSongIndex; // Zero-based
 	// TODO Duration and details from STIL per Song
 
 	FileInfo() {
@@ -59,10 +59,9 @@ public final class FileInfo {
 
 		this.channels = asapInfo.getChannels();
 		this.songs = asapInfo.getSongs();
-		this.defaultSong = asapInfo.getDefaultSong();
+		this.defaultSongIndex = asapInfo.getDefaultSong();
 	}
 
-	
 	public void write(JSONWriter writer) throws IOException {
 		if (writer == null) {
 			throw new IllegalArgumentException("Parameter writer must not be null.");
@@ -101,9 +100,12 @@ public final class FileInfo {
 			writer.writeSeparator();
 			writer.writeJSONLong("songs", songs);
 		}
-		if (defaultSong != 0) {
+		if (defaultSongIndex != 0) {
 			writer.writeSeparator();
-			writer.writeJSONLong("defaultSong", defaultSong);
+			writer.writeJSONLong("defaultSongIndex", defaultSongIndex);
+			if (defaultSongIndex < 0) {
+				throw new IllegalArgumentException("Invalid default song index " + defaultSongIndex);
+			}
 		}
 		writer.endObject();
 	}

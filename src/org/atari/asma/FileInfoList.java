@@ -109,8 +109,7 @@ public class FileInfoList {
 			fileInfo.originalModuleExt = "ttt";
 			fileInfo.channels = 1;
 			fileInfo.songs = 1;
-			fileInfo.defaultSong = 0;
-
+			fileInfo.defaultSongIndex = 0;
 		} else {
 			throw new IllegalArgumentException("Unsupport file extension in " + filePath);
 		}
