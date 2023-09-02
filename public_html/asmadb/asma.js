@@ -11,6 +11,10 @@ const FileType = {
 
 const FileIndex = { NONE: -1 };
 const SongState = { NONE: "NONE", PLAYING: "PLAYING", STOPPED: "STOPPED" };
+
+// The internal song index used in the code is zero-based and has pseudo values.
+// The external song index used in the URL hash is one-based and has no pseudo values.
+// The DEFAULT is expressed by omitting the external song index in the URL.
 const SongIndex = { FIRST: 0, NONE: -1, DEFAULT: -2, RANDOM: -3 };
 
 const DEFAULT_WINDOW_TITLE = "Atari SAP Music Archive";
@@ -96,10 +100,10 @@ class ASMA {
 				window.alert("There is no matching file in the database for the path \"" + filePath + "\".");
 			} else {
 				let foundSongIndex = hashMatches[2];
-				if (foundSongIndex == undefined) {
+				if (foundSongIndex == undefined || foundSongIndex<1) {
 					foundSongIndex = foundFileInfo.getDefaultSongIndex();
-				} else if (foundSongIndex > 0) {
-					foundSongIndex--; // one-based to zero-based
+				} else {
+					foundSongIndex--; // Convert external one-based index to internal zero-based
 				}
 				if (this.currentFileInfo == null || this.currentFileInfo.getFilePath() != foundFileInfo.getFilePath() || this.currentSongIndex != foundSongIndex) {
 					this.stopCurrentSong();
@@ -419,7 +423,7 @@ class ASMA {
 			resultHTML += '<th class="search_result_header sorttable_alpha">Date</th>';
 		}
 		if (this.detailsMode) {
-			resultHTML += '<th class="search_result_header sorttable_alpha">Channels</th><th class="search_result_header">Format</th><th class="search_result_header sorttable_alpha">Songs / Default</th>';
+			resultHTML += '<th class="search_result_header sorttable_alpha">Channels</th><th class="search_result_header">Format</th><th class="search_result_header sorttable_alpha">Songs (Default)</th>';
 		}
 		resultHTML += "</tr>";
 
@@ -653,7 +657,7 @@ class ASMA {
 			let url = new URL(window.location);
 			url.hash = "#/" + this.currentFileInfo.getFilePath();
 			if (songIndex != fileInfo.defaultSongIndex && songIndex != SongIndex.DEFAULT) {
-				url.hash += "/" + (songIndex + 1);
+				url.hash += "/" + (songIndex + 1); // Convert internal zero-base song index to external one-based song index
 			}
 			window.history.pushState(null, fileInfo.title, url);
 			this.loadFileContent(fileInfo, this.onFileContentLoadSuccess, this.onFileContentLoadFailure, songIndex);

@@ -464,7 +464,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Bernasek_Jiri/Bewesofts_Race.sap", "fileSize": 5722, "title": "Bewesoft's Race", "author": "Jiri Bernasek (Bewesoft)", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Bernasek_Jiri/Easy_Demo.sap", "fileSize": 705, "title": "Easy Demo", "author": "Jiri Bernasek (Bewesoft)", "date": "1998", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Bernasek_Jiri/Golfer.sap", "fileSize": 7393, "title": "Golfer", "author": "Jiri Bernasek (Bewesoft)", "date": "199?", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Bernasek_Jiri/H2O.sap", "fileSize": 5251, "title": "H2O", "author": "Jiri Bernasek (Bewesoft)", "date": "", "typeLetter": "B", "originalModuleExt": "sap", "songs": 4, "defaultSong": 3}
+, {"filePath": "Composers/Bernasek_Jiri/H2O.sap", "fileSize": 5251, "title": "H2O", "author": "Jiri Bernasek (Bewesoft)", "date": "", "typeLetter": "B", "originalModuleExt": "sap", "songs": 4, "defaultSongIndex": 3}
 , {"filePath": "Composers/Bernasek_Jiri/Midnight.sap", "fileSize": 5375, "title": "Midnight", "author": "Jiri Bernasek (Bewesoft)", "date": "1992", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Bernasek_Jiri/Multi_Dash.sap", "fileSize": 2426, "title": "Multi-Dash", "author": "Jiri Bernasek (Bewesoft)", "date": "2000", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Bernasek_Jiri/Strange_Mountains.sap", "fileSize": 6302, "title": "Strange Mountains", "author": "Jiri Bernasek (Bewesoft)", "date": "1992", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -945,7 +945,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Dojwa_Jacek/Jumping_Jack_Ingame.sap", "fileSize": 4356, "title": "Jumping Jack - Ingame", "author": "Jacek Dojwa", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Dojwa_Jacek/Micro_Man.sap", "fileSize": 5439, "title": "Micro Man", "author": "Jacek Dojwa", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 9}
 , {"filePath": "Composers/Dojwa_Jacek/Micro_Man_Ingame.sap", "fileSize": 4509, "title": "Micro Man - Ingame", "author": "Jacek Dojwa", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2}
-, {"filePath": "Composers/Dojwa_Jacek/Pang.sap", "fileSize": 6082, "title": "Pang", "author": "Jacek Dojwa", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5, "defaultSong": 2}
+, {"filePath": "Composers/Dojwa_Jacek/Pang.sap", "fileSize": 6082, "title": "Pang", "author": "Jacek Dojwa", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5, "defaultSongIndex": 2}
 , {"filePath": "Composers/Dojwa_Jacek/Song.sap", "fileSize": 3563, "title": "Song", "author": "Jacek Dojwa <?>", "date": "199?", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Dojwa_Jacek/Tracker.sap", "fileSize": 4330, "title": "Tracker", "author": "Jacek Dojwa <?>", "date": "", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Dojwa_Jacek/Trisz_Divinis.sap", "fileSize": 3921, "title": "Trisz Divinis", "author": "Jacek Dojwa", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
@@ -1144,7 +1144,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Eisenhammer_Zdenek/Radixex.sap", "fileSize": 6104, "title": "Radixex", "author": "Zdenek Eisenhammer (PG)", "date": "2007", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Eisenhammer_Zdenek/Rain_Bliss.sap", "fileSize": 8147, "title": "Rain Bliss", "author": "Zdenek Eisenhammer (PG)", "date": "17/03/2016", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Eisenhammer_Zdenek/Retrovibes.sap", "fileSize": 2932, "title": "Retrovibes", "author": "Zdenek Eisenhammer (PG)", "date": "20/10/2005", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Eisenhammer_Zdenek/RGB.sap", "fileSize": 8445, "title": "RGB", "author": "Zdenek Eisenhammer (PG)", "date": "08/2014", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 8, "defaultSong": 6}
+, {"filePath": "Composers/Eisenhammer_Zdenek/RGB.sap", "fileSize": 8445, "title": "RGB", "author": "Zdenek Eisenhammer (PG)", "date": "08/2014", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 8, "defaultSongIndex": 6}
 , {"filePath": "Composers/Eisenhammer_Zdenek/Rockford_at_the_Olympic_Ga.sap", "fileSize": 3087, "title": "Rockford at the Olympic Games", "author": "Zdenek Eisenhammer (PG)", "date": "15/03/2014", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Eisenhammer_Zdenek/Rolling_Stars.sap", "fileSize": 3749, "title": "Rolling Stars", "author": "Zdenek Eisenhammer (PG)", "date": "26/12/2012", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Eisenhammer_Zdenek/Rolltris_Game.sap", "fileSize": 13155, "title": "Rolltris - Game", "author": "Zdenek Eisenhammer (PG)", "date": "2013", "typeLetter": "B", "originalModuleExt": "rmt"}
@@ -1436,7 +1436,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Galinski_Adrian/Midnight.sap", "fileSize": 4356, "title": "Midnight", "author": "Adrian Galinski (Daxey)", "date": "1992", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Galinski_Adrian/Rockman.sap", "fileSize": 13312, "title": "Rockman", "author": "Adrian Galinski (Daxey)", "date": "1995", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5}
 , {"filePath": "Composers/Galinski_Adrian/Special_Forces.sap", "fileSize": 5283, "title": "Special Forces", "author": "Adrian Galinski (Daxey)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2}
-, {"filePath": "Composers/Galinski_Adrian/Special_Forces_2.sap", "fileSize": 3928, "title": "Special Forces - 2", "author": "Adrian Galinski (Daxey)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSong": 1}
+, {"filePath": "Composers/Galinski_Adrian/Special_Forces_2.sap", "fileSize": 3928, "title": "Special Forces - 2", "author": "Adrian Galinski (Daxey)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSongIndex": 1}
 , {"filePath": "Composers/Galinski_Adrian/Vectors_Theme.sap", "fileSize": 5799, "title": "Vectors Theme", "author": "Adrian Galinski (Daxey)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Garrido_Daniel/3_Joonkiz_Skullz.sap", "fileSize": 4075, "title": "3 Joonkiz Skullz", "author": "Daniel Garrido (ui)", "date": "06/05/2007", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Garrido_Daniel/8bit_Animation_Serie.sap", "fileSize": 3224, "title": "8bit (Animation Serie)", "author": "Daniel Garrido (ui)", "date": "2008", "typeLetter": "B", "originalModuleExt": "rmt"}
@@ -1493,11 +1493,11 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Gilmore_Adam/Blinkys_Scary_School.sap", "fileSize": 2604, "title": "Blinky's Scary School", "author": "Adam Gilmore", "date": "1990", "typeLetter": "B", "originalModuleExt": "sap", "songs": 4}
 , {"filePath": "Composers/Gilmore_Adam/Draconus.sap", "fileSize": 2795, "title": "Draconus", "author": "Adam Gilmore", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap", "songs": 7}
 , {"filePath": "Composers/Gilmore_Adam/Jocky_Wilsons_Darts_Chall.sap", "fileSize": 2736, "title": "Jocky Wilson's Darts Challenge", "author": "Adam Gilmore", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5}
-, {"filePath": "Composers/Gilmore_Adam/Jocky_Wilsons_Darts_Compen.sap", "fileSize": 3036, "title": "Jocky Wilson's Darts Compendium", "author": "Adam Gilmore", "date": "1991", "typeLetter": "B", "originalModuleExt": "sap", "songs": 11, "defaultSong": 10}
-, {"filePath": "Composers/Gilmore_Adam/Las_Vegas_Casino.sap", "fileSize": 3041, "title": "Las Vegas Casino", "author": "Adam Gilmore", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSong": 2}
+, {"filePath": "Composers/Gilmore_Adam/Jocky_Wilsons_Darts_Compen.sap", "fileSize": 3036, "title": "Jocky Wilson's Darts Compendium", "author": "Adam Gilmore", "date": "1991", "typeLetter": "B", "originalModuleExt": "sap", "songs": 11, "defaultSongIndex": 10}
+, {"filePath": "Composers/Gilmore_Adam/Las_Vegas_Casino.sap", "fileSize": 3041, "title": "Las Vegas Casino", "author": "Adam Gilmore", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSongIndex": 2}
 , {"filePath": "Composers/Gilmore_Adam/Mountain_Bike.sap", "fileSize": 2185, "title": "Mountain Bike", "author": "Adam Gilmore", "date": "1989", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3}
 , {"filePath": "Composers/Gilmore_Adam/Ninja_Commando.sap", "fileSize": 2203, "title": "Ninja Commando", "author": "Adam Gilmore", "date": "1989", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5}
-, {"filePath": "Composers/Gilmore_Adam/Zybex.sap", "fileSize": 2399, "title": "Zybex", "author": "Adam Gilmore", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSong": 4}
+, {"filePath": "Composers/Gilmore_Adam/Zybex.sap", "fileSize": 2399, "title": "Zybex", "author": "Adam Gilmore", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSongIndex": 4}
 , {"filePath": "Composers/Gmurek_Konrad/Jurassic_Park.sap", "fileSize": 3930, "title": "Jurassic Park", "author": "Konrad Gmurek (KeyG)", "date": "1994 <?>", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Gmurek_Konrad/Kosci.sap", "fileSize": 3421, "title": "Kosci", "author": "Konrad Gmurek (KeyG)", "date": "1994 <?>", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Gmurek_Konrad/Test_Drive.sap", "fileSize": 4173, "title": "Test Drive", "author": "Konrad Gmurek (KeyG)", "date": "1994 <?>", "typeLetter": "C", "originalModuleExt": "sap"}
@@ -1608,7 +1608,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Gurney_Rebecca/Depixol.sap", "fileSize": 3002, "title": "Depixol", "author": "Rebecca Gurney (Bex)", "date": "2014", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Gurney_Rebecca/Inc_Year.sap", "fileSize": 3031, "title": "Inc Year", "author": "Rebecca Gurney (Bex)", "date": "12/2014", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Gurney_Rebecca/Rouge_Chromazon.sap", "fileSize": 3041, "title": "Rouge Chromazon", "author": "Rebecca Gurney (Bex)", "date": "26/07/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Haas_Jan_Soeren/Bomb_Square_Duel_Ingame.sap", "fileSize": 4235, "title": "Bomb Square Duel - Ingame", "author": "Jan-Soeren Haas (Tonic)", "date": "07/2017", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 4, "defaultSong": 2}
+, {"filePath": "Composers/Haas_Jan_Soeren/Bomb_Square_Duel_Ingame.sap", "fileSize": 4235, "title": "Bomb Square Duel - Ingame", "author": "Jan-Soeren Haas (Tonic)", "date": "07/2017", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 4, "defaultSongIndex": 2}
 , {"filePath": "Composers/Haas_Jan_Soeren/Bomb_Square_Duel_Title.sap", "fileSize": 4232, "title": "Bomb Square Duel - Title", "author": "Jan-Soeren Haas (Tonic)", "date": "07/2017", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Haas_Jan_Soeren/Get_Up.sap", "fileSize": 3935, "title": "Get Up!", "author": "Jan-Soeren Haas (Tonic)", "date": "22/10/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Hawkins_Ron/Cool_Water.sap", "fileSize": 1427, "title": "Cool Water", "author": "Ron Hawkins", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -1656,7 +1656,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Hay_Adam/Territorial_Pissings.sap", "fileSize": 3554, "title": "Territorial Pissings", "author": "Adam Hay (Sack)", "date": "2003", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Hay_Adam/Wiz.sap", "fileSize": 5493, "title": "Wiz", "author": "Adam Hay (Sack)", "date": "2003", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Henning_Mario/ABBUC_139.sap", "fileSize": 8496, "title": "ABBUC 139", "author": "Mario Henning (Mario130XE)", "date": "13/12/2019", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Henning_Mario/Dimos_Quest_The_Dungeon_In.sap", "fileSize": 5680, "title": "Dimo's Quest: The Dungeon - Ingame", "author": "Mario Henning (Mario130XE)", "date": "28/07/2016", "typeLetter": "B", "originalModuleExt": "sap", "songs": 7, "defaultSong": 2}
+, {"filePath": "Composers/Henning_Mario/Dimos_Quest_The_Dungeon_In.sap", "fileSize": 5680, "title": "Dimo's Quest: The Dungeon - Ingame", "author": "Mario Henning (Mario130XE)", "date": "28/07/2016", "typeLetter": "B", "originalModuleExt": "sap", "songs": 7, "defaultSongIndex": 2}
 , {"filePath": "Composers/Henning_Mario/Dimos_Quest_The_Dungeon_Ti.sap", "fileSize": 3396, "title": "Dimo's Quest: The Dungeon - Title", "author": "Mario Henning (Mario130XE)", "date": "28/07/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Higgins_Robert/Brandenburg_Concerto_no_5.sap", "fileSize": 10463, "title": "Brandenburg Concerto no. 5", "author": "Robert Higgins", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Higgins_Robert/Calliope.sap", "fileSize": 1339, "title": "Calliope", "author": "Robert Higgins", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -1748,14 +1748,14 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Husak_Jakub/Radioactivity.sap", "fileSize": 10640, "title": "Radioactivity (Kraftwerk)", "author": "Jakub Husak", "date": "2013", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Husak_Jakub/Raszyn_1809.sap", "fileSize": 3723, "title": "Raszyn 1809", "author": "Jakub Husak", "date": "1992", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Husak_Jakub/Red_Dragon.sap", "fileSize": 4728, "title": "Red Dragon", "author": "Jakub Husak", "date": "02/12/2009", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Husak_Jakub/Rycerz.sap", "fileSize": 4781, "title": "Rycerz", "author": "Jakub Husak", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSong": 1}
+, {"filePath": "Composers/Husak_Jakub/Rycerz.sap", "fileSize": 4781, "title": "Rycerz", "author": "Jakub Husak", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSongIndex": 1}
 , {"filePath": "Composers/Husak_Jakub/Sarepska.sap", "fileSize": 3347, "title": "Sarepska", "author": "Jakub Husak", "date": "05/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Husak_Jakub/Schlecht_Korrekt.sap", "fileSize": 8272, "title": "Schlecht Korrekt", "author": "Jakub Husak", "date": "1988", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Husak_Jakub/Scorpions_v2_0.sap", "fileSize": 4028, "title": "Scorpions v2.0", "author": "Jakub Husak", "date": "1993 <?>", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Husak_Jakub/Shadow_of_the_Beast.sap", "fileSize": 4435, "title": "Shadow of the Beast", "author": "Jakub Husak", "date": "13/08/2010", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Husak_Jakub/SPEEDmaza.sap", "fileSize": 3811, "title": "SPEEDmaza", "author": "Jakub Husak", "date": "13/09/2014", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Husak_Jakub/SPEEDmaza_in_Game.sap", "fileSize": 3395, "title": "SPEEDmaza in Game", "author": "Jakub Husak", "date": "13/09/2014", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 3}
-, {"filePath": "Composers/Husak_Jakub/Starball.sap", "fileSize": 6473, "title": "Starball", "author": "Jakub Husak", "date": "", "typeLetter": "C", "originalModuleExt": "sap", "songs": 7, "defaultSong": 1}
+, {"filePath": "Composers/Husak_Jakub/Starball.sap", "fileSize": 6473, "title": "Starball", "author": "Jakub Husak", "date": "", "typeLetter": "C", "originalModuleExt": "sap", "songs": 7, "defaultSongIndex": 1}
 , {"filePath": "Composers/Husak_Jakub/Super_Fortuna.sap", "fileSize": 5358, "title": "Super Fortuna", "author": "Jakub Husak", "date": "", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 6}
 , {"filePath": "Composers/Husak_Jakub/Sweet_Chip_Eighties.sap", "fileSize": 5394, "title": "Sweet Chip Eighties", "author": "Jakub Husak", "date": "11/12/2010", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Husak_Jakub/Sweet_Dreams.sap", "fileSize": 32049, "title": "Sweet Dreams / Eurythmics", "author": "Jakub Husak", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -2007,7 +2007,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Karwoth_Torsten/FOFT.sap", "fileSize": 3915, "title": "FOFT <?>", "author": "Torsten Karwoth", "date": "1990 <?>", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Karwoth_Torsten/FOFT2.sap", "fileSize": 5852, "title": "FOFT2 <?>", "author": "Torsten Karwoth", "date": "1990 <?>", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Karwoth_Torsten/Laser_Duell.sap", "fileSize": 409, "title": "Laser Duell", "author": "Torsten Karwoth", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Karwoth_Torsten/Megablast.sap", "fileSize": 15316, "title": "Megablast", "author": "Torsten Karwoth", "date": "1992", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSong": 2}
+, {"filePath": "Composers/Karwoth_Torsten/Megablast.sap", "fileSize": 15316, "title": "Megablast", "author": "Torsten Karwoth", "date": "1992", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSongIndex": 2}
 , {"filePath": "Composers/Karwoth_Torsten/Shades.sap", "fileSize": 5861, "title": "Shades <?>", "author": "Torsten Karwoth", "date": "1990 <?>", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Karwoth_Torsten/Sometime.sap", "fileSize": 2299, "title": "Sometime <?>", "author": "Torsten Karwoth", "date": "1990 <?>", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Karwoth_Torsten/Synthe.sap", "fileSize": 2445, "title": "Synthe <?>", "author": "Torsten Karwoth", "date": "1990 <?>", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -2591,9 +2591,9 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Liebich_Tomasz/Smus.sap", "fileSize": 7564, "title": "Smus", "author": "Tomasz Liebich", "date": "1993", "typeLetter": "C", "originalModuleExt": "sap", "songs": 5}
 , {"filePath": "Composers/Liebich_Tomasz/Snowball.sap", "fileSize": 16761, "title": "Snowball", "author": "Tomasz Liebich", "date": "", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Liebich_Tomasz/Snowball_Ingame.sap", "fileSize": 8927, "title": "Snowball - Ingame", "author": "Tomasz Liebich", "date": "", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
-, {"filePath": "Composers/Liebich_Tomasz/Tank_vs_Tank.sap", "fileSize": 3180, "title": "Tank vs Tank", "author": "Tomasz Liebich", "date": "1993", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2, "defaultSong": 1}
+, {"filePath": "Composers/Liebich_Tomasz/Tank_vs_Tank.sap", "fileSize": 3180, "title": "Tank vs Tank", "author": "Tomasz Liebich", "date": "1993", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2, "defaultSongIndex": 1}
 , {"filePath": "Composers/Liebich_Tomasz/Tank_vs_Tank_Ingame.sap", "fileSize": 3424, "title": "Tank vs Tank - Ingame", "author": "Tomasz Liebich", "date": "1993", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Liebich_Tomasz/Technus.sap", "fileSize": 6810, "title": "Technus", "author": "Tomasz Liebich", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5, "defaultSong": 1}
+, {"filePath": "Composers/Liebich_Tomasz/Technus.sap", "fileSize": 6810, "title": "Technus", "author": "Tomasz Liebich", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5, "defaultSongIndex": 1}
 , {"filePath": "Composers/Liebich_Tomasz/Technus_Intro.sap", "fileSize": 5954, "title": "Technus - Intro", "author": "Tomasz Liebich", "date": "1993", "typeLetter": "C", "originalModuleExt": "sap", "songs": 2}
 , {"filePath": "Composers/Liebich_Tomasz/Technus_Title.sap", "fileSize": 12168, "title": "Technus - Title", "author": "Tomasz Liebich", "date": "1993", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Liebich_Tomasz/Tusker.sap", "fileSize": 2164, "title": "Tusker", "author": "Tomasz Liebich", "date": "1993", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -2937,8 +2937,8 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Michalski_Krzysztof/Trans.sap", "fileSize": 3681, "title": "Trans", "author": "Krzysztof Michalski (KAMMSoft)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Michalski_Krzysztof/Wolfchild.sap", "fileSize": 7131, "title": "Wolfchild", "author": "Krzysztof Michalski (KAMMSoft)", "date": "1994", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Mikolajczak_Pawel/Jaffar.sap", "fileSize": 3333, "title": "Jaffar", "author": "Pawel Mikolajczak <?>", "date": "1993", "typeLetter": "C", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Mikolajczak_Pawel/Janosik.sap", "fileSize": 4309, "title": "Janosik", "author": "Pawel Mikolajczak", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5, "defaultSong": 3}
-, {"filePath": "Composers/Mikolajczak_Pawel/Magia.sap", "fileSize": 3991, "title": "Magia", "author": "Pawel Mikolajczak", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSong": 1}
+, {"filePath": "Composers/Mikolajczak_Pawel/Janosik.sap", "fileSize": 4309, "title": "Janosik", "author": "Pawel Mikolajczak", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5, "defaultSongIndex": 3}
+, {"filePath": "Composers/Mikolajczak_Pawel/Magia.sap", "fileSize": 3991, "title": "Magia", "author": "Pawel Mikolajczak", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSongIndex": 1}
 , {"filePath": "Composers/Mikolajczak_Pawel/Zbir.sap", "fileSize": 3432, "title": "Zbir", "author": "Pawel Mikolajczak", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Mister_Beep/1_bit_Chase.sap", "fileSize": 4797, "title": "1-bit Chase", "author": "<?> (Mister Beep)", "date": "10/2009", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Mister_Beep/1_bit_Synthetic.sap", "fileSize": 3631, "title": "1-bit Synthetic", "author": "<?> (Mister Beep)", "date": "2013 <?>", "typeLetter": "D", "originalModuleExt": "sap"}
@@ -3015,7 +3015,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/MusicMarius/Monkey_Island_and_Saints.sap", "fileSize": 4893, "title": "Monkey Island & Saints", "author": "<?> (MusicMarius)", "date": "1997", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2}
 , {"filePath": "Composers/Nabialek_Dawid/Benny_Hill_Show_Theme.sap", "fileSize": 3851, "title": "Benny Hill Show Theme", "author": "Dawid Nabialek (Dave)", "date": "1994", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Nabialek_Dawid/Kampania_Wrzesniowa.sap", "fileSize": 3348, "title": "Kampania Wrzesniowa", "author": "Dawid Nabialek (Dave)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
-, {"filePath": "Composers/Nabialek_Dawid/Kampania_Wrzesniowa_Ingame.sap", "fileSize": 4597, "title": "Kampania Wrzesniowa - Ingame", "author": "Dawid Nabialek (Dave)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 3, "defaultSong": 1}
+, {"filePath": "Composers/Nabialek_Dawid/Kampania_Wrzesniowa_Ingame.sap", "fileSize": 4597, "title": "Kampania Wrzesniowa - Ingame", "author": "Dawid Nabialek (Dave)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 3, "defaultSongIndex": 1}
 , {"filePath": "Composers/Nedved_Vojtech/Amelie.sap", "fileSize": 5800, "title": "Amelie", "author": "Vojtech Nedved (Nooly)", "date": "03/2009", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Nedved_Vojtech/Aoki.sap", "fileSize": 5950, "title": "Aoki", "author": "Vojtech Nedved (Nooly)", "date": "15/03/2008", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Nedved_Vojtech/Citoplazma.sap", "fileSize": 4270, "title": "Citoplazma", "author": "Vojtech Nedved (Nooly)", "date": "23/03/2011", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
@@ -3079,7 +3079,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Numan_Daniel/Pentagram_2_Info.sap", "fileSize": 4010, "title": "Pentagram #2 - Info", "author": "Daniel Numan (Zbx Virus)", "date": "1996", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Numan_Daniel/Pentagram_2_Intro.sap", "fileSize": 3430, "title": "Pentagram #2 - Intro", "author": "Daniel Numan (Zbx Virus)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Numan_Daniel/Pentagram_2_Menu.sap", "fileSize": 8815, "title": "Pentagram #2 - Menu", "author": "Daniel Numan (Zbx Virus)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc"}
-, {"filePath": "Composers/Numan_Daniel/Pentagram_3_Info.sap", "fileSize": 4531, "title": "Pentagram #3 - Info", "author": "Daniel Numan (Zbx Virus)", "date": "1996", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSong": 1}
+, {"filePath": "Composers/Numan_Daniel/Pentagram_3_Info.sap", "fileSize": 4531, "title": "Pentagram #3 - Info", "author": "Daniel Numan (Zbx Virus)", "date": "1996", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSongIndex": 1}
 , {"filePath": "Composers/Numan_Daniel/Pentagram_3_Music_1.sap", "fileSize": 4235, "title": "Pentagram #3 - Music 1", "author": "Daniel Numan (Zbx Virus)", "date": "1996", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Numan_Daniel/Pentagram_3_Music_2.sap", "fileSize": 4710, "title": "Pentagram #3 - Music 2", "author": "Daniel Numan (Zbx Virus)", "date": "1996", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Numan_Daniel/Pentagram_3_Music_3.sap", "fileSize": 4595, "title": "Pentagram #3 - Music 3", "author": "Daniel Numan (Zbx Virus)", "date": "1996", "typeLetter": "B", "originalModuleExt": "mpt"}
@@ -3356,7 +3356,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Pesout_Marek/Molecula.sap", "fileSize": 4017, "title": "Molecula", "author": "Marek Pesout (Poison)", "date": "1998", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Pesout_Marek/Morning_Coffe.sap", "fileSize": 6085, "title": "Morning Coffe", "author": "Marek Pesout (Poison)", "date": "2012-2013", "typeLetter": "C", "originalModuleExt": "cms", "channels": 2}
 , {"filePath": "Composers/Pesout_Marek/Multi10.sap", "fileSize": 6135, "title": "multi10", "author": "Marek Pesout (Poison)", "date": "06/2019", "typeLetter": "C", "originalModuleExt": "cms", "channels": 2, "songs": 3}
-, {"filePath": "Composers/Pesout_Marek/Muxeso.sap", "fileSize": 5740, "title": "Muxeso", "author": "Marek Pesout (Poison)", "date": "2016 <?>", "typeLetter": "C", "originalModuleExt": "cms", "channels": 2, "songs": 4, "defaultSong": 2}
+, {"filePath": "Composers/Pesout_Marek/Muxeso.sap", "fileSize": 5740, "title": "Muxeso", "author": "Marek Pesout (Poison)", "date": "2016 <?>", "typeLetter": "C", "originalModuleExt": "cms", "channels": 2, "songs": 4, "defaultSongIndex": 2}
 , {"filePath": "Composers/Pesout_Marek/My_Stress.sap", "fileSize": 3604, "title": "My Stress", "author": "Marek Pesout (Poison)", "date": "", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Pesout_Marek/My_Throne.sap", "fileSize": 5603, "title": "My Throne", "author": "Marek Pesout (Poison)", "date": "2012-2013", "typeLetter": "C", "originalModuleExt": "cms", "channels": 2}
 , {"filePath": "Composers/Pesout_Marek/Nemezyro.sap", "fileSize": 7065, "title": "Nemezyro", "author": "Marek Pesout (Poison)", "date": "31/08/2014", "typeLetter": "C", "originalModuleExt": "cms", "channels": 2, "songs": 3}
@@ -3398,7 +3398,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Pesout_Marek/Radiation_part_2.sap", "fileSize": 3654, "title": "Radiation - part 2", "author": "Marek Pesout (Poison)", "date": "1996", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Pesout_Marek/Rainbow_Art.sap", "fileSize": 3470, "title": "Rainbow Art", "author": "Marek Pesout (Poison)", "date": "", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Pesout_Marek/Req_for_Partridge_and_Mary.sap", "fileSize": 6091, "title": "Requiem for Partridge and Mary", "author": "Marek Pesout (Poison)", "date": "2013", "typeLetter": "C", "originalModuleExt": "cms", "channels": 2}
-, {"filePath": "Composers/Pesout_Marek/Rick_19.sap", "fileSize": 4060, "title": "Rick 19", "author": "Marek Pesout (Poison)", "date": "1996", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 3, "defaultSong": 2}
+, {"filePath": "Composers/Pesout_Marek/Rick_19.sap", "fileSize": 4060, "title": "Rick 19", "author": "Marek Pesout (Poison)", "date": "1996", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 3, "defaultSongIndex": 2}
 , {"filePath": "Composers/Pesout_Marek/Riper.sap", "fileSize": 4268, "title": "Riper", "author": "Marek Pesout (Poison)", "date": "2003", "typeLetter": "C", "originalModuleExt": "cms", "channels": 2}
 , {"filePath": "Composers/Pesout_Marek/Rise_of_The_Emotions.sap", "fileSize": 6485, "title": "Rise of The Emotions", "author": "Marek Pesout (Poison)", "date": "2013", "typeLetter": "C", "originalModuleExt": "cms", "channels": 2}
 , {"filePath": "Composers/Pesout_Marek/Robot.sap", "fileSize": 3644, "title": "The Robot", "author": "Marek Pesout (Poison)", "date": "", "typeLetter": "C", "originalModuleExt": "cmc"}
@@ -3909,7 +3909,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Radecki_Michal/Spark_Absorber.sap", "fileSize": 4840, "title": "Spark Absorber", "author": "Michal Radecki (stRing)", "date": "2011", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Radecki_Michal/Spark_Absorber_Stereo.sap", "fileSize": 5181, "title": "Spark Absorber - Stereo", "author": "Michal Radecki (stRing)", "date": "2011", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Radecki_Michal/Strong.sap", "fileSize": 4388, "title": "Strong", "author": "Michal Radecki (stRing)", "date": "09/12/2009", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Radecki_Michal/Sudoku_Sweep.sap", "fileSize": 10806, "title": "Sudoku Sweep", "author": "Michal Radecki (stRing)", "date": "11/10/2006", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 4, "defaultSong": 2}
+, {"filePath": "Composers/Radecki_Michal/Sudoku_Sweep.sap", "fileSize": 10806, "title": "Sudoku Sweep", "author": "Michal Radecki (stRing)", "date": "11/10/2006", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 4, "defaultSongIndex": 2}
 , {"filePath": "Composers/Radecki_Michal/Swieta_2008.sap", "fileSize": 5128, "title": "Swieta 2008", "author": "Michal Radecki (stRing)", "date": "27/11/2008", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Radecki_Michal/Szmer_Szesciu_Szarych_Szpa.sap", "fileSize": 5040, "title": "Szmer Szesciu Szarych Szparek", "author": "Michal Radecki (stRing)", "date": "10/08/2011", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Radecki_Michal/Szorty.sap", "fileSize": 3722, "title": "Szorty", "author": "Michal Radecki (stRing)", "date": "2009", "typeLetter": "B", "originalModuleExt": "rmt"}
@@ -3960,7 +3960,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Radzikowski_Ireneusz/Sweet_Fantasy.sap", "fileSize": 5781, "title": "Sweet Fantasy", "author": "Ireneusz Radzikowski (Jager)", "date": "1996", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Radzikowski_Ireneusz/Sweet_Fantasy_Intro.sap", "fileSize": 4061, "title": "Sweet Fantasy Intro", "author": "Ireneusz Radzikowski (Jager)", "date": "1996", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Radzikowski_Ireneusz/Swiateczny_Power_Max_Mix.sap", "fileSize": 19118, "title": "Swiateczny Power Max Mix - wersja disco polo", "author": "Ireneusz Radzikowski (Jager)", "date": "1998", "typeLetter": "D", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Radzikowski_Ireneusz/Terminator_2_Judgement_Day.sap", "fileSize": 7379, "title": "Terminator 2 - Judgement Day", "author": "Ireneusz Radzikowski (Jager)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 4, "defaultSong": 2}
+, {"filePath": "Composers/Radzikowski_Ireneusz/Terminator_2_Judgement_Day.sap", "fileSize": 7379, "title": "Terminator 2 - Judgement Day", "author": "Ireneusz Radzikowski (Jager)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 4, "defaultSongIndex": 2}
 , {"filePath": "Composers/Radzikowski_Ireneusz/Terra_Titanic_96.sap", "fileSize": 9884, "title": "Terra Titanic '96", "author": "Ireneusz Radzikowski (Jager)", "date": "1996", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Radzikowski_Ireneusz/The_Best_Car.sap", "fileSize": 5167, "title": "The Best Car", "author": "Ireneusz Radzikowski (Jager)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Radzikowski_Ireneusz/The_Great_Commandment.sap", "fileSize": 4129, "title": "The Great Commandment", "author": "Ireneusz Radzikowski (Jager)", "date": "", "typeLetter": "C", "originalModuleExt": "sap"}
@@ -4199,7 +4199,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Sasik_Marcel/Moner_1.sap", "fileSize": 4341, "title": "Moner - 1", "author": "Marcel Sasik (Imaic) & Gabriel Takacs (GMX)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5}
 , {"filePath": "Composers/Sasik_Marcel/Moner_2.sap", "fileSize": 3784, "title": "Moner - 2", "author": "Marcel Sasik (Imaic) & Gabriel Takacs (GMX)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Sasik_Marcel/Moner_3.sap", "fileSize": 4901, "title": "Moner - 3", "author": "Marcel Sasik (Imaic) & Gabriel Takacs (GMX)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc"}
-, {"filePath": "Composers/Scarim_Nicholas/Grandmas_House.sap", "fileSize": 1639, "title": "Grandma's House", "author": "Nicholas Scarim", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3, "defaultSong": 2}
+, {"filePath": "Composers/Scarim_Nicholas/Grandmas_House.sap", "fileSize": 1639, "title": "Grandma's House", "author": "Nicholas Scarim", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3, "defaultSongIndex": 2}
 , {"filePath": "Composers/Scarim_Nicholas/Spy_vs_Spy.sap", "fileSize": 1749, "title": "Spy vs Spy", "author": "Nicholas Scarim", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Scarim_Nicholas/Spy_vs_Spy_Arctic_Antics.sap", "fileSize": 507, "title": "Spy vs Spy: Arctic Antics", "author": "Nicholas Scarim", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Scarim_Nicholas/Spy_vs_Spy_Island_Caper.sap", "fileSize": 1218, "title": "Spy vs Spy: The Island Caper", "author": "Nicholas Scarim", "date": "1985", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -4234,7 +4234,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Skwiot_Stanislaw/Fortuna.sap", "fileSize": 4735, "title": "Fortuna", "author": "Stanislaw Skwiot (Stanley)", "date": "1992-1993", "typeLetter": "C", "originalModuleExt": "sap", "songs": 4}
 , {"filePath": "Composers/Skwiot_Stanislaw/Jaskiniowiec.sap", "fileSize": 4314, "title": "Jaskiniowiec", "author": "Stanislaw Skwiot (Stanley)", "date": "1995", "typeLetter": "C", "originalModuleExt": "sap", "songs": 2}
 , {"filePath": "Composers/Skwiot_Stanislaw/Krucjata.sap", "fileSize": 3111, "title": "Krucjata", "author": "Stanislaw Skwiot (Stanley)", "date": "1993", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Skwiot_Stanislaw/Magia_Krysztalu.sap", "fileSize": 5344, "title": "Magia Krysztalu", "author": "Stanislaw Skwiot (Stanley)", "date": "1992", "typeLetter": "C", "originalModuleExt": "cmr", "songs": 4, "defaultSong": 2}
+, {"filePath": "Composers/Skwiot_Stanislaw/Magia_Krysztalu.sap", "fileSize": 5344, "title": "Magia Krysztalu", "author": "Stanislaw Skwiot (Stanley)", "date": "1992", "typeLetter": "C", "originalModuleExt": "cmr", "songs": 4, "defaultSongIndex": 2}
 , {"filePath": "Composers/Skwiot_Stanislaw/Music_from_Poland_1.sap", "fileSize": 3723, "title": "Music from Poland - 1", "author": "Stanislaw Skwiot (Stanley)", "date": "1992", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Skwiot_Stanislaw/Music_from_Poland_2.sap", "fileSize": 3592, "title": "Music from Poland - 2", "author": "Stanislaw Skwiot (Stanley)", "date": "1992", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Skwiot_Stanislaw/Music_from_Poland_3.sap", "fileSize": 3514, "title": "Music from Poland - 3", "author": "Stanislaw Skwiot (Stanley)", "date": "1992", "typeLetter": "C", "originalModuleExt": "sap"}
@@ -4498,7 +4498,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Swierszcz_Piotr/Rebellion_Battle.sap", "fileSize": 4654, "title": "Rebellion: Battle", "author": "Piotr Swierszcz (Samurai)", "date": "1994", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Swierszcz_Piotr/Rebellion_Rise.sap", "fileSize": 4105, "title": "Rebellion: Rise", "author": "Piotr Swierszcz (Samurai)", "date": "1994", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Swierszcz_Piotr/Rebellion_Victory.sap", "fileSize": 4170, "title": "Rebellion: Victory", "author": "Piotr Swierszcz (Samurai)", "date": "1994", "typeLetter": "C", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Swierszcz_Piotr/Resal.sap", "fileSize": 14957, "title": "Resal", "author": "Piotr Swierszcz (Samurai)", "date": "1994", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSong": 4}
+, {"filePath": "Composers/Swierszcz_Piotr/Resal.sap", "fileSize": 14957, "title": "Resal", "author": "Piotr Swierszcz (Samurai)", "date": "1994", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSongIndex": 4}
 , {"filePath": "Composers/Swierszcz_Piotr/Reverse_1.sap", "fileSize": 3589, "title": "Reverse - 1", "author": "Piotr Swierszcz (Samurai)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Swierszcz_Piotr/Reverse_2.sap", "fileSize": 4930, "title": "Reverse - 2", "author": "Piotr Swierszcz (Samurai)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Swierszcz_Piotr/Roxette.sap", "fileSize": 5016, "title": "Roxette", "author": "Piotr Swierszcz (Samurai)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
@@ -4535,7 +4535,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Sychowicz_Lukasz/Czary.sap", "fileSize": 5278, "title": "Czary", "author": "Lukasz Sychowicz (X-Ray)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5}
 , {"filePath": "Composers/Sychowicz_Lukasz/Czubek.sap", "fileSize": 3611, "title": "Czubek", "author": "Lukasz Sychowicz (X-Ray)", "date": "199?", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Czyrak.sap", "fileSize": 3626, "title": "Czyrak", "author": "Lukasz Sychowicz (X-Ray)", "date": "", "typeLetter": "B", "originalModuleExt": "mpt"}
-, {"filePath": "Composers/Sychowicz_Lukasz/Ddk.sap", "fileSize": 6315, "title": "Ddk", "author": "Lukasz Sychowicz (X-Ray)", "date": "1994 <?>", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5, "defaultSong": 1}
+, {"filePath": "Composers/Sychowicz_Lukasz/Ddk.sap", "fileSize": 6315, "title": "Ddk", "author": "Lukasz Sychowicz (X-Ray)", "date": "1994 <?>", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5, "defaultSongIndex": 1}
 , {"filePath": "Composers/Sychowicz_Lukasz/Drab.sap", "fileSize": 488, "title": "Drab", "author": "Lukasz Sychowicz (X-Ray)", "date": "12/02/2003", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Draka.sap", "fileSize": 4261, "title": "Draka", "author": "Lukasz Sychowicz (X-Ray)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2}
 , {"filePath": "Composers/Sychowicz_Lukasz/Dred.sap", "fileSize": 4353, "title": "Dred", "author": "Lukasz Sychowicz (X-Ray)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 3}
@@ -4780,7 +4780,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Szpilowski_Michal/Cybernoid_II.sap", "fileSize": 8680, "title": "Cybernoid II", "author": "Michal Szpilowski (Miker)", "date": "12/2018", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Szpilowski_Michal/Cyborg_1.sap", "fileSize": 4303, "title": "Cyborg 1", "author": "Michal Szpilowski (Miker)", "date": "1994", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Szpilowski_Michal/Cyborg_2.sap", "fileSize": 5946, "title": "Cyborg 2", "author": "Michal Szpilowski (Miker)", "date": "1994", "typeLetter": "C", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Szpilowski_Michal/Cyborg_Ingame.sap", "fileSize": 4886, "title": "Cyborg - Ingame", "author": "Michal Szpilowski (Miker)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5, "defaultSong": 3}
+, {"filePath": "Composers/Szpilowski_Michal/Cyborg_Ingame.sap", "fileSize": 4886, "title": "Cyborg - Ingame", "author": "Michal Szpilowski (Miker)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5, "defaultSongIndex": 3}
 , {"filePath": "Composers/Szpilowski_Michal/Das_Boot_X.sap", "fileSize": 5941, "title": "Das Boot X", "author": "Michal Szpilowski (Miker)", "date": "2005", "typeLetter": "B", "originalModuleExt": "mpt", "songs": 6}
 , {"filePath": "Composers/Szpilowski_Michal/Das_Boot_X_Intro.sap", "fileSize": 4391, "title": "Das Boot X - Intro", "author": "Michal Szpilowski (Miker)", "date": "2005", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Szpilowski_Michal/DelMes.sap", "fileSize": 3199, "title": "DelMes", "author": "Michal Szpilowski (Miker)", "date": "28/12/2003", "typeLetter": "C", "originalModuleExt": "cmc"}
@@ -4791,7 +4791,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Szpilowski_Michal/Disturbance.sap", "fileSize": 4876, "title": "Disturbance", "author": "Michal Szpilowski (Miker)", "date": "03/2007", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Szpilowski_Michal/Docent.sap", "fileSize": 4730, "title": "Docent", "author": "Michal Szpilowski (Miker)", "date": "1996 <?>", "typeLetter": "C", "originalModuleExt": "cmr", "songs": 5}
 , {"filePath": "Composers/Szpilowski_Michal/Dom_w_Dolinie_Mgiel.sap", "fileSize": 15943, "title": "Dom w Dolinie Mgiel", "author": "Michal Szpilowski (Miker)", "date": "1996 <?>", "typeLetter": "D", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Szpilowski_Michal/Drac040.sap", "fileSize": 9061, "title": "Drac040", "author": "Michal Szpilowski (Miker)", "date": "23-26/07/2010", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2, "songs": 2, "defaultSong": 1}
+, {"filePath": "Composers/Szpilowski_Michal/Drac040.sap", "fileSize": 9061, "title": "Drac040", "author": "Michal Szpilowski (Miker)", "date": "23-26/07/2010", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2, "songs": 2, "defaultSongIndex": 1}
 , {"filePath": "Composers/Szpilowski_Michal/Druid.sap", "fileSize": 3755, "title": "Druid", "author": "Michal Szpilowski (Miker)", "date": "26/09/2013", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Szpilowski_Michal/Dr_Mario.sap", "fileSize": 11482, "title": "Dr. Mario", "author": "Michal Szpilowski (Miker)", "date": "03/2010", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 6}
 , {"filePath": "Composers/Szpilowski_Michal/D_Polou.sap", "fileSize": 5190, "title": "D-Polou", "author": "Michal Szpilowski (Miker)", "date": "1996 <?>", "typeLetter": "B", "originalModuleExt": "mpt"}
@@ -4808,7 +4808,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Szpilowski_Michal/Faza_2.sap", "fileSize": 4433, "title": "Faza 2", "author": "Michal Szpilowski (Miker)", "date": "1999", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Szpilowski_Michal/Final_Lap.sap", "fileSize": 4490, "title": "Final Lap", "author": "Michal Szpilowski (Miker)", "date": "1997", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Szpilowski_Michal/Flimbo_s_Quest.sap", "fileSize": 4274, "title": "Flimbo's Quest", "author": "Michal Szpilowski (Miker)", "date": "28/07/2008", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Szpilowski_Michal/Flimbo_s_Quest_Ingame.sap", "fileSize": 11856, "title": "Flimbo's Quest - Ingame", "author": "Michal Szpilowski (Miker)", "date": "2018", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 5, "defaultSong": 1}
+, {"filePath": "Composers/Szpilowski_Michal/Flimbo_s_Quest_Ingame.sap", "fileSize": 11856, "title": "Flimbo's Quest - Ingame", "author": "Michal Szpilowski (Miker)", "date": "2018", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 5, "defaultSongIndex": 1}
 , {"filePath": "Composers/Szpilowski_Michal/Flimbo_s_Quest_Title.sap", "fileSize": 6236, "title": "Flimbo's Quest - Title", "author": "Michal Szpilowski (Miker)", "date": "2018", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 2}
 , {"filePath": "Composers/Szpilowski_Michal/Flip_It.sap", "fileSize": 3325, "title": "Flip It!", "author": "Michal Szpilowski (Miker)", "date": "1997 <?>", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Szpilowski_Michal/Flowers_Mania.sap", "fileSize": 8107, "title": "Flowers Mania", "author": "Michal Szpilowski (Miker)", "date": "05/2006", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 7}
@@ -4830,7 +4830,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Szpilowski_Michal/Happy_Days.sap", "fileSize": 5544, "title": "Happy Days", "author": "Michal Szpilowski (Miker)", "date": "21/10/2017", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Szpilowski_Michal/Happy_New_Year_2015.sap", "fileSize": 4117, "title": "Happy New Year 2015", "author": "Michal Szpilowski (Miker)", "date": "12/2014", "typeLetter": "C", "originalModuleExt": "cmr"}
 , {"filePath": "Composers/Szpilowski_Michal/Hello_Mr_6502.sap", "fileSize": 4903, "title": "Hello Mr 6502", "author": "Michal Szpilowski (Miker)", "date": "2005", "typeLetter": "B", "originalModuleExt": "mpt"}
-, {"filePath": "Composers/Szpilowski_Michal/Herman_Ingame.sap", "fileSize": 4940, "title": "Herman - Ingame", "author": "Michal Szpilowski (Miker)", "date": "1994 <?>", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSong": 1}
+, {"filePath": "Composers/Szpilowski_Michal/Herman_Ingame.sap", "fileSize": 4940, "title": "Herman - Ingame", "author": "Michal Szpilowski (Miker)", "date": "1994 <?>", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSongIndex": 1}
 , {"filePath": "Composers/Szpilowski_Michal/Herman_Intro.sap", "fileSize": 3418, "title": "Herman - Intro", "author": "Michal Szpilowski (Miker)", "date": "1994 <?>", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Szpilowski_Michal/Hitting.sap", "fileSize": 6221, "title": "Hitting", "author": "Michal Szpilowski (Miker)", "date": "1993 <?>", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 6}
 , {"filePath": "Composers/Szpilowski_Michal/Hope.sap", "fileSize": 4986, "title": "Hope!", "author": "Michal Szpilowski (Miker)", "date": "1997 <?>", "typeLetter": "B", "originalModuleExt": "mpt"}
@@ -4842,7 +4842,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Szpilowski_Michal/Jan_Ken_Pon_Game.sap", "fileSize": 3502, "title": "Jan Ken Pon - Game", "author": "Michal Szpilowski (Miker)", "date": "2013", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 3}
 , {"filePath": "Composers/Szpilowski_Michal/Jan_Ken_Pon_Menu.sap", "fileSize": 3394, "title": "Jan Ken Pon - Menu", "author": "Michal Szpilowski (Miker)", "date": "2013", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Szpilowski_Michal/Jetboy.sap", "fileSize": 6354, "title": "Jetboy", "author": "Michal Szpilowski (Miker)", "date": "2007", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 3}
-, {"filePath": "Composers/Szpilowski_Michal/Jewel_Bits.sap", "fileSize": 8781, "title": "Jewel Bits", "author": "Michal Szpilowski (Miker)", "date": "05-08/2010", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 5, "defaultSong": 1}
+, {"filePath": "Composers/Szpilowski_Michal/Jewel_Bits.sap", "fileSize": 8781, "title": "Jewel Bits", "author": "Michal Szpilowski (Miker)", "date": "05-08/2010", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 5, "defaultSongIndex": 1}
 , {"filePath": "Composers/Szpilowski_Michal/Joint.sap", "fileSize": 4416, "title": "Joint", "author": "Michal Szpilowski (Miker)", "date": "1998", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Szpilowski_Michal/Kaktus.sap", "fileSize": 4891, "title": "Kaktus", "author": "Michal Szpilowski (Miker)", "date": "199?", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 4}
 , {"filePath": "Composers/Szpilowski_Michal/Kombi_Nietykalni.sap", "fileSize": 4331, "title": "Kombi - Nietykalni", "author": "Michal Szpilowski (Miker)", "date": "1994 <?>", "typeLetter": "C", "originalModuleExt": "cmr"}
@@ -4969,9 +4969,9 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Szpilowski_Michal/Thalion_Intro.sap", "fileSize": 3872, "title": "Thalion Intro", "author": "Michal Szpilowski (Miker)", "date": "25/11/2008", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Szpilowski_Michal/There_Are_Many_Sheep_in_Ou.sap", "fileSize": 6580, "title": "There Are Many Sheep in Outer Mongolia", "author": "Michal Szpilowski (Miker)", "date": "09/2013", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Szpilowski_Michal/The_Duel.sap", "fileSize": 3509, "title": "The Duel", "author": "Michal Szpilowski (Miker)", "date": "2008", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Szpilowski_Michal/The_Nutty_Professor.sap", "fileSize": 6806, "title": "The Nutty Professor", "author": "Michal Szpilowski (Miker)", "date": "11-12/2009", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 3, "defaultSong": 2}
+, {"filePath": "Composers/Szpilowski_Michal/The_Nutty_Professor.sap", "fileSize": 6806, "title": "The Nutty Professor", "author": "Michal Szpilowski (Miker)", "date": "11-12/2009", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 3, "defaultSongIndex": 2}
 , {"filePath": "Composers/Szpilowski_Michal/The_Rocky_Horror_Show_Demo.sap", "fileSize": 5014, "title": "The Rocky Horror Show Demo", "author": "Michal Szpilowski (Miker)", "date": "09/12/2017", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Szpilowski_Michal/Time_Pilot.sap", "fileSize": 4500, "title": "Time Pilot", "author": "Michal Szpilowski (Miker)", "date": "2017", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 6, "defaultSong": 1}
+, {"filePath": "Composers/Szpilowski_Michal/Time_Pilot.sap", "fileSize": 4500, "title": "Time Pilot", "author": "Michal Szpilowski (Miker)", "date": "2017", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 6, "defaultSongIndex": 1}
 , {"filePath": "Composers/Szpilowski_Michal/Tomcat.sap", "fileSize": 5689, "title": "Tomcat", "author": "Michal Szpilowski (Miker)", "date": "04/2010", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5}
 , {"filePath": "Composers/Szpilowski_Michal/Too_Hard_Matter.sap", "fileSize": 10913, "title": "Too Hard Matter", "author": "Michal Szpilowski (Miker)", "date": "1996", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Szpilowski_Michal/Torvak.sap", "fileSize": 6189, "title": "Torvak", "author": "Michal Szpilowski (Miker)", "date": "2007", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
@@ -4981,7 +4981,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Szpilowski_Michal/Twin_Cars.sap", "fileSize": 4170, "title": "Twin Cars", "author": "Michal Szpilowski (Miker)", "date": "22/02/2016", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 5}
 , {"filePath": "Composers/Szpilowski_Michal/Two.sap", "fileSize": 4636, "title": "Two <?>", "author": "Michal Szpilowski (Miker)", "date": "199?", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Szpilowski_Michal/Tyrian_Zanac5.sap", "fileSize": 3576, "title": "Tyrian-Zanac5", "author": "Michal Szpilowski (Miker)", "date": "03/02/2007", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Szpilowski_Michal/UFO_Hunt.sap", "fileSize": 4290, "title": "UFO Hunt", "author": "Michal Szpilowski (Miker)", "date": "15/04/2018", "typeLetter": "C", "originalModuleExt": "cmr", "songs": 9, "defaultSong": 7}
+, {"filePath": "Composers/Szpilowski_Michal/UFO_Hunt.sap", "fileSize": 4290, "title": "UFO Hunt", "author": "Michal Szpilowski (Miker)", "date": "15/04/2018", "typeLetter": "C", "originalModuleExt": "cmr", "songs": 9, "defaultSongIndex": 7}
 , {"filePath": "Composers/Szpilowski_Michal/Unknown_Game.sap", "fileSize": 6565, "title": "Unknown Game", "author": "Michal Szpilowski (Miker)", "date": "1996 <?>", "typeLetter": "B", "originalModuleExt": "mpt", "songs": 4}
 , {"filePath": "Composers/Szpilowski_Michal/Vagabond.sap", "fileSize": 5617, "title": "Vagabond", "author": "Michal Szpilowski (Miker)", "date": "1997 <?>", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Szpilowski_Michal/VasMes.sap", "fileSize": 3108, "title": "VasMes", "author": "Michal Szpilowski (Miker)", "date": "28/12/2003", "typeLetter": "C", "originalModuleExt": "cmc"}
@@ -4998,7 +4998,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Szpilowski_Michal/X_Mass.sap", "fileSize": 3417, "title": "X-Mass", "author": "Michal Szpilowski (Miker)", "date": "2005", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Szpilowski_Michal/X_Mass_Greetings_Part.sap", "fileSize": 5851, "title": "X-Mass Greetings Part", "author": "Michal Szpilowski (Miker)", "date": "1994 <?>", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Szpilowski_Michal/Yie_Another_Kung_Fu_Jingle.sap", "fileSize": 6827, "title": "Yie Another Kung Fu - Jingles", "author": "Michal Szpilowski (Miker)", "date": "03/2009", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 12}
-, {"filePath": "Composers/Szpilowski_Michal/Yie_Ar_Kung_Fu.sap", "fileSize": 6121, "title": "Yie Ar Kung Fu", "author": "Michal Szpilowski (Miker)", "date": "2005", "typeLetter": "B", "originalModuleExt": "sap", "songs": 11, "defaultSong": 8}
+, {"filePath": "Composers/Szpilowski_Michal/Yie_Ar_Kung_Fu.sap", "fileSize": 6121, "title": "Yie Ar Kung Fu", "author": "Michal Szpilowski (Miker)", "date": "2005", "typeLetter": "B", "originalModuleExt": "sap", "songs": 11, "defaultSongIndex": 8}
 , {"filePath": "Composers/Szpilowski_Michal/Yie_Ar_Kung_Fu_Title.sap", "fileSize": 6031, "title": "Yie Ar Kung Fu - Title", "author": "Michal Szpilowski (Miker)", "date": "2006", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Szpilowski_Michal/ZybeXXX.sap", "fileSize": 4981, "title": "ZybeXXX", "author": "Michal Szpilowski (Miker)", "date": "14/11/2004", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Szurgot_Robert/Pentagram_4_Croceth.sap", "fileSize": 5443, "title": "Pentagram #4 - Croceth", "author": "Robert Szurgot (Casper)", "date": "1997", "typeLetter": "B", "originalModuleExt": "mpt"}
@@ -5143,15 +5143,15 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Vybostok_Marian/Implosion_Credits.sap", "fileSize": 13826, "title": "Implosion - Credits", "author": "Marian Vybostok (Goldmaster)", "date": "1997", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Vybostok_Marian/Risa_Zla_1.sap", "fileSize": 3237, "title": "Risa Zla 1", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Vybostok_Marian/Risa_Zla_2.sap", "fileSize": 4225, "title": "Risa Zla 2", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
-, {"filePath": "Composers/Vybostok_Marian/Robot_Assault_Demo.sap", "fileSize": 4194, "title": "Robot Assault Demo", "author": "Marian Vybostok (Goldmaster)", "date": "199?", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSong": 1}
+, {"filePath": "Composers/Vybostok_Marian/Robot_Assault_Demo.sap", "fileSize": 4194, "title": "Robot Assault Demo", "author": "Marian Vybostok (Goldmaster)", "date": "199?", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSongIndex": 1}
 , {"filePath": "Composers/Vybostok_Marian/Shakings.sap", "fileSize": 12697, "title": "Shakings", "author": "Marian Vybostok (Goldmaster)", "date": "1997", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Vybostok_Marian/Street_Fighter_II_Demo_2.sap", "fileSize": 3348, "title": "Street Fighter II Demo - 2", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Vybostok_Marian/Street_Fighter_II_Demo_3.sap", "fileSize": 3418, "title": "Street Fighter II Demo - 3", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Vybostok_Marian/Street_Fighter_II_Demo_4.sap", "fileSize": 3228, "title": "Street Fighter II Demo - 4", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Vybostok_Marian/Wanted_Intro_1.sap", "fileSize": 4092, "title": "Wanted Intro - 1", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Vybostok_Marian/Wanted_Intro_2.sap", "fileSize": 4136, "title": "Wanted Intro - 2", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
-, {"filePath": "Composers/Vybostok_Marian/Wanted_Part_1.sap", "fileSize": 4197, "title": "Wanted Part 1", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSong": 1}
-, {"filePath": "Composers/Vybostok_Marian/Wanted_Part_2.sap", "fileSize": 4034, "title": "Wanted Part 2", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSong": 1}
+, {"filePath": "Composers/Vybostok_Marian/Wanted_Part_1.sap", "fileSize": 4197, "title": "Wanted Part 1", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSongIndex": 1}
+, {"filePath": "Composers/Vybostok_Marian/Wanted_Part_2.sap", "fileSize": 4034, "title": "Wanted Part 2", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSongIndex": 1}
 , {"filePath": "Composers/Vybostok_Marian/Wanted_Part_3_1.sap", "fileSize": 3295, "title": "Wanted Part 3 - 1", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Vybostok_Marian/Wanted_Part_3_2.sap", "fileSize": 3661, "title": "Wanted Part 3 - 2", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Vybostok_Marian/Wanted_Part_3_3.sap", "fileSize": 3305, "title": "Wanted Part 3 - 3", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
@@ -5165,8 +5165,8 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Vybostok_Marian/Wanted_Part_4_Terror_II.sap", "fileSize": 3539, "title": "Wanted Part 4 - Terror II", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Vybostok_Marian/Wanted_Part_4_Zeus_Mix.sap", "fileSize": 3343, "title": "Wanted Part 4 - Zeus Mix", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Vybostok_Marian/Wanted_Part_5.sap", "fileSize": 3769, "title": "Wanted Part 5", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
-, {"filePath": "Composers/Vybostok_Marian/Wanted_Part_6.sap", "fileSize": 3383, "title": "Wanted Part 6", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSong": 1}
-, {"filePath": "Composers/Vybostok_Marian/Wanted_Part_7.sap", "fileSize": 3703, "title": "Wanted Part 7", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSong": 1}
+, {"filePath": "Composers/Vybostok_Marian/Wanted_Part_6.sap", "fileSize": 3383, "title": "Wanted Part 6", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSongIndex": 1}
+, {"filePath": "Composers/Vybostok_Marian/Wanted_Part_7.sap", "fileSize": 3703, "title": "Wanted Part 7", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSongIndex": 1}
 , {"filePath": "Composers/Vybostok_Marian/Wanted_Part_8.sap", "fileSize": 3657, "title": "Wanted Part 8", "author": "Marian Vybostok (Goldmaster)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Walters_Sean/Clay_Horse_Meth_Soldier.sap", "fileSize": 3489, "title": "Clay Horse Meth Soldier", "author": "Sean Walters (B00daW)", "date": "17/02/2008", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Walters_Sean/I_Just_Turned_Down.sap", "fileSize": 6490, "title": "I Just Turned Down Sex and a Movie to Upload This", "author": "Sean Walters (B00daW)", "date": "24/08/2011", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
@@ -5182,7 +5182,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Wasiel_Bartek/Candy_Mountain.sap", "fileSize": 22899, "title": "Candy Mountain", "author": "Bartek Wasiel (BeWu)", "date": "2011", "typeLetter": "B", "originalModuleExt": "tm2", "channels": 2}
 , {"filePath": "Composers/Wasiel_Bartek/Dark_Lamp.sap", "fileSize": 16443, "title": "Dark Lamp", "author": "Bartek Wasiel (BeWu)", "date": "14/03/2004", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
 , {"filePath": "Composers/Wasiel_Bartek/Dropsy_King.sap", "fileSize": 15230, "title": "Dropsy King", "author": "Bartek Wasiel (BeWu)", "date": "12/2003", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
-, {"filePath": "Composers/Wasiel_Bartek/Dynablaster_Ingame.sap", "fileSize": 8460, "title": "Dynablaster - Ingame", "author": "Bartek Wasiel (BeWu)", "date": "2004", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2, "songs": 5, "defaultSong": 4}
+, {"filePath": "Composers/Wasiel_Bartek/Dynablaster_Ingame.sap", "fileSize": 8460, "title": "Dynablaster - Ingame", "author": "Bartek Wasiel (BeWu)", "date": "2004", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2, "songs": 5, "defaultSongIndex": 4}
 , {"filePath": "Composers/Wasiel_Bartek/Dzyngol.sap", "fileSize": 11383, "title": "Dzyngol", "author": "Bartek Wasiel (BeWu)", "date": "03/2004", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
 , {"filePath": "Composers/Wasiel_Bartek/Forever.sap", "fileSize": 16132, "title": "Forever", "author": "Bartek Wasiel (BeWu)", "date": "2005", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
 , {"filePath": "Composers/Wasiel_Bartek/Heavy_Traffic.sap", "fileSize": 17879, "title": "Heavy Traffic", "author": "Bartek Wasiel (BeWu)", "date": "2013", "typeLetter": "B", "originalModuleExt": "tm2", "channels": 2}
@@ -5568,7 +5568,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Games/Abracadabra.sap", "fileSize": 865, "title": "Abracadabra!", "author": "", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
 , {"filePath": "Games/Action_Biker.sap", "fileSize": 1109, "title": "Action Biker", "author": "", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Adebar.sap", "fileSize": 324, "title": "Adebar", "author": "", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Games/Airball.sap", "fileSize": 3435, "title": "Airball", "author": "", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSong": 1}
+, {"filePath": "Games/Airball.sap", "fileSize": 3435, "title": "Airball", "author": "", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSongIndex": 1}
 , {"filePath": "Games/Airline.sap", "fileSize": 4714, "title": "Airline", "author": "", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Air_Rescue.sap", "fileSize": 1975, "title": "Air Rescue", "author": "", "date": "1991", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Air_Rescue_I.sap", "fileSize": 715, "title": "Air Rescue I", "author": "", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -5588,7 +5588,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Games/Atari_Greed.sap", "fileSize": 5145, "title": "Atari Greed", "author": "Carsten Strotmann (Cas) & Winfried Piegsda (WiP)", "date": "2004", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Ataroid.sap", "fileSize": 1861, "title": "Ataroid", "author": "", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Atomia.sap", "fileSize": 4532, "title": "Atomia", "author": "Mateusz Radziszewski", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 6}
-, {"filePath": "Games/Atomix_Plus.sap", "fileSize": 2758, "title": "Atomix Plus", "author": "Martin Cupek & Rudolf Skala", "date": "1993", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3, "defaultSong": 2}
+, {"filePath": "Games/Atomix_Plus.sap", "fileSize": 2758, "title": "Atomix Plus", "author": "Martin Cupek & Rudolf Skala", "date": "1993", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3, "defaultSongIndex": 2}
 , {"filePath": "Games/Axilox.sap", "fileSize": 4333, "title": "Axilox", "author": "Tomasz Dajczak", "date": "1993", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Games/Axis_Slotmachine.sap", "fileSize": 1929, "title": "Axis Slotmachine", "author": "Christoph Schulte-Vennbur", "date": "1985", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Ballistic_Interceptor.sap", "fileSize": 269, "title": "Ballistic Interceptor", "author": "", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
@@ -5633,16 +5633,16 @@ const asma = {"composerInfos": [
 , {"filePath": "Games/Decathlon.sap", "fileSize": 326, "title": "Decathlon", "author": "", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
 , {"filePath": "Games/Decision_in_the_Desert.sap", "fileSize": 1549, "title": "Decision in the Desert", "author": "", "date": "1985", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Deflektor.sap", "fileSize": 2148, "title": "Deflektor", "author": "", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Games/Deneb.sap", "fileSize": 4418, "title": "Deneb", "author": "Robert Drag", "date": "1993", "typeLetter": "C", "originalModuleExt": "sap", "songs": 3, "defaultSong": 1}
-, {"filePath": "Games/Desert_Falcon.sap", "fileSize": 3336, "title": "Desert Falcon", "author": "", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap", "songs": 32, "defaultSong": 3}
+, {"filePath": "Games/Deneb.sap", "fileSize": 4418, "title": "Deneb", "author": "Robert Drag", "date": "1993", "typeLetter": "C", "originalModuleExt": "sap", "songs": 3, "defaultSongIndex": 1}
+, {"filePath": "Games/Desert_Falcon.sap", "fileSize": 3336, "title": "Desert Falcon", "author": "", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap", "songs": 32, "defaultSongIndex": 3}
 , {"filePath": "Games/Despatch_Rider.sap", "fileSize": 1032, "title": "Despatch Rider", "author": "Jez Huntington", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Diamonds.sap", "fileSize": 291, "title": "Diamonds", "author": "", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Digi_Duck.sap", "fileSize": 5338, "title": "Digi Duck", "author": "Bartosz Galazka", "date": "1992", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 3}
 , {"filePath": "Games/Dimension_X.sap", "fileSize": 376, "title": "Dimension X", "author": "Steve Hales <?>", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Dog_Daze_Deluxe.sap", "fileSize": 659, "title": "Dog Daze Deluxe", "author": "Phil Young", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3}
 , {"filePath": "Games/Domain_of_The_Undead.sap", "fileSize": 5680, "title": "The Domain of the Undead", "author": "A. Guilfoyle", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3}
-, {"filePath": "Games/Donkey_Kong.sap", "fileSize": 1920, "title": "Donkey Kong", "author": "Landon Dyer <?>", "date": "1983 <?>", "typeLetter": "B", "originalModuleExt": "sap", "songs": 16, "defaultSong": 14}
-, {"filePath": "Games/Donkey_Kong_Junior.sap", "fileSize": 3886, "title": "Donkey Kong Junior", "author": "", "date": "1983 <?>", "typeLetter": "B", "originalModuleExt": "sap", "songs": 18, "defaultSong": 8}
+, {"filePath": "Games/Donkey_Kong.sap", "fileSize": 1920, "title": "Donkey Kong", "author": "Landon Dyer <?>", "date": "1983 <?>", "typeLetter": "B", "originalModuleExt": "sap", "songs": 16, "defaultSongIndex": 14}
+, {"filePath": "Games/Donkey_Kong_Junior.sap", "fileSize": 3886, "title": "Donkey Kong Junior", "author": "", "date": "1983 <?>", "typeLetter": "B", "originalModuleExt": "sap", "songs": 18, "defaultSongIndex": 8}
 , {"filePath": "Games/Do_Akcji.sap", "fileSize": 4489, "title": "Do Akcji", "author": "Rafal Senator", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5}
 , {"filePath": "Games/Dragonriders_of_Perm.sap", "fileSize": 2597, "title": "Dragonriders of Perm", "author": "", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 11}
 , {"filePath": "Games/Drelbs.sap", "fileSize": 1576, "title": "Drelbs", "author": "Kelly Jones <?>", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -5653,14 +5653,14 @@ const asma = {"composerInfos": [
 , {"filePath": "Games/Duch.sap", "fileSize": 3728, "title": "Duch", "author": "", "date": "1996", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5}
 , {"filePath": "Games/Ducks_Ahoy.sap", "fileSize": 1729, "title": "Ducks Ahoy!", "author": "", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap", "songs": 8}
 , {"filePath": "Games/Dziedzictwo_Gigantow.sap", "fileSize": 3652, "title": "Dziedzictwo Gigantow", "author": "Tomasz Sadza", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
-, {"filePath": "Games/Easy_Money.sap", "fileSize": 3723, "title": "Easy Money", "author": "Robert Drag", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSong": 1}
+, {"filePath": "Games/Easy_Money.sap", "fileSize": 3723, "title": "Easy Money", "author": "Robert Drag", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2, "defaultSongIndex": 1}
 , {"filePath": "Games/Eist.sap", "fileSize": 3632, "title": "Eist", "author": "Piotr Miller", "date": "1992", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 4}
 , {"filePath": "Games/Electrician.sap", "fileSize": 13699, "title": "Electrician", "author": "", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Elevator_Repairman.sap", "fileSize": 342, "title": "Elevator Repairman", "author": "Fred Caprilli", "date": "1985", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Emil_Hilf.sap", "fileSize": 404, "title": "Emil-Hilf", "author": "Dieter Barthold", "date": "1990", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Enigmatix.sap", "fileSize": 1581, "title": "Enigmatix", "author": "Stephen A. Firth <?>", "date": "1992", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Erosion.sap", "fileSize": 3423, "title": "Erosion", "author": "", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Games/Eureka.sap", "fileSize": 4823, "title": "Eureka - Game Music", "author": "Tomasz Dajczak", "date": "1992", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 4, "defaultSong": 3}
+, {"filePath": "Games/Eureka.sap", "fileSize": 4823, "title": "Eureka - Game Music", "author": "Tomasz Dajczak", "date": "1992", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 4, "defaultSongIndex": 3}
 , {"filePath": "Games/Evader.sap", "fileSize": 413, "title": "Evader", "author": "Alan Reeve <?>", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Fidget.sap", "fileSize": 770, "title": "Fidget", "author": "Amin Hoque <?>", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Final_Legacy.sap", "fileSize": 723, "title": "Final Legacy", "author": "", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -5679,7 +5679,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Games/Gangway.sap", "fileSize": 1396, "title": "Gangway", "author": "Carl Maschmeyer", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap", "songs": 7}
 , {"filePath": "Games/Gemstone_Warrior.sap", "fileSize": 1397, "title": "Gemstone Warrior", "author": "", "date": "1985", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Gemy.sap", "fileSize": 569, "title": "Gem'y", "author": "Thomas Wozniak <?>", "date": "1992", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
-, {"filePath": "Games/Genetic_Drift.sap", "fileSize": 1077, "title": "Genetic Drift", "author": "Scott Schram <?>", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3, "defaultSong": 2}
+, {"filePath": "Games/Genetic_Drift.sap", "fileSize": 1077, "title": "Genetic Drift", "author": "Scott Schram <?>", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3, "defaultSongIndex": 2}
 , {"filePath": "Games/Geo.sap", "fileSize": 1003, "title": "Geo", "author": "", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Geografia.sap", "fileSize": 3597, "title": "Geografia", "author": "Robert Poskrobek", "date": "1992", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Games/Geometria.sap", "fileSize": 4047, "title": "Geometria", "author": "Tomasz Nowak", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
@@ -5737,7 +5737,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Games/Jumpman_Junior.sap", "fileSize": 1471, "title": "Jumpman Junior", "author": "", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 9}
 , {"filePath": "Games/Jungle_Hunt.sap", "fileSize": 796, "title": "Jungle Hunt", "author": "", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5}
 , {"filePath": "Games/Kaiser.sap", "fileSize": 1271, "title": "Kaiser", "author": "", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Games/Kampfstern_Galactica.sap", "fileSize": 1452, "title": "Kampfstern Galactica", "author": "Carsten Reitz", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2, "defaultSong": 1}
+, {"filePath": "Games/Kampfstern_Galactica.sap", "fileSize": 1452, "title": "Kampfstern Galactica", "author": "Carsten Reitz", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2, "defaultSongIndex": 1}
 , {"filePath": "Games/Kangaroo.sap", "fileSize": 396, "title": "Kangaroo", "author": "", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Karateka.sap", "fileSize": 2454, "title": "Karateka", "author": "Francis Mechner", "date": "1985", "typeLetter": "B", "originalModuleExt": "sap", "songs": 7}
 , {"filePath": "Games/Kasiarz.sap", "fileSize": 3409, "title": "Kasiarz", "author": "Artur Kaminski", "date": "1994", "typeLetter": "C", "originalModuleExt": "sap"}
@@ -5764,7 +5764,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Games/Loaded_Brain.sap", "fileSize": 1149, "title": "Loaded Brain", "author": "", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Loco.sap", "fileSize": 2847, "title": "Loco", "author": "", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Logic_Levels.sap", "fileSize": 484, "title": "Logic Levels", "author": "Frieda Lekkerkerker", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Games/Lords_of_Conquest.sap", "fileSize": 4843, "title": "Lords of Conquest", "author": "Mark Sutton-Smith", "date": "1986 <?>", "typeLetter": "B", "originalModuleExt": "sap", "songs": 7, "defaultSong": 6}
+, {"filePath": "Games/Lords_of_Conquest.sap", "fileSize": 4843, "title": "Lords of Conquest", "author": "Mark Sutton-Smith", "date": "1986 <?>", "typeLetter": "B", "originalModuleExt": "sap", "songs": 7, "defaultSongIndex": 6}
 , {"filePath": "Games/Los_Angeles_1984.sap", "fileSize": 854, "title": "Los Angeles 1984 Games", "author": "", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap", "songs": 10}
 , {"filePath": "Games/Mad_Marbles.sap", "fileSize": 1488, "title": "Mad Marbles", "author": "Frederik Holst <?>", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Mad_Marble_Maze.sap", "fileSize": 380, "title": "Mad Marble Maze", "author": "", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -5772,12 +5772,12 @@ const asma = {"composerInfos": [
 , {"filePath": "Games/Mail_Order_Monsters.sap", "fileSize": 3013, "title": "Mail Order Monsters", "author": "", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
 , {"filePath": "Games/Mario_Bros.sap", "fileSize": 1040, "title": "Mario Bros", "author": "", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5}
 , {"filePath": "Games/Masters_of_Time.sap", "fileSize": 471, "title": "Masters of Time", "author": "", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Games/Master_of_the_Lamps.sap", "fileSize": 4902, "title": "Master of the Lamps", "author": "Russell Lieblich", "date": "1985", "typeLetter": "B", "originalModuleExt": "sap", "songs": 14, "defaultSong": 2}
+, {"filePath": "Games/Master_of_the_Lamps.sap", "fileSize": 4902, "title": "Master of the Lamps", "author": "Russell Lieblich", "date": "1985", "typeLetter": "B", "originalModuleExt": "sap", "songs": 14, "defaultSongIndex": 2}
 , {"filePath": "Games/Maszyna_Czasu.sap", "fileSize": 1535, "title": "Maszyna Czasu", "author": "Krzysztof Rutkowski", "date": "1994", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Match_Racer.sap", "fileSize": 823, "title": "Match Racer", "author": "Bill Hooper <?>", "date": "1981", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Math_Mileage.sap", "fileSize": 561, "title": "Math Mileage", "author": "Marcia Burrows <?>", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Maxi_Golf.sap", "fileSize": 1404, "title": "Maxi Golf", "author": "John G. Horan <?>", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap", "songs": 6}
-, {"filePath": "Games/Mediator.sap", "fileSize": 4462, "title": "Mediator", "author": "Michael Hedley", "date": "1985", "typeLetter": "B", "originalModuleExt": "sap", "songs": 8, "defaultSong": 6}
+, {"filePath": "Games/Mediator.sap", "fileSize": 4462, "title": "Mediator", "author": "Michael Hedley", "date": "1985", "typeLetter": "B", "originalModuleExt": "sap", "songs": 8, "defaultSongIndex": 6}
 , {"filePath": "Games/Mental_Age_Demo.sap", "fileSize": 5069, "title": "Mental Age - Demo", "author": "<?> (Joe Ripper)", "date": "1994", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
 , {"filePath": "Games/Mickey_in_the_Great_Outdoo.sap", "fileSize": 2734, "title": "Mickey in the Great Outdoors", "author": "", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Milk_Race.sap", "fileSize": 2518, "title": "Milk Race", "author": "Tiny Williams", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3}
@@ -5787,11 +5787,11 @@ const asma = {"composerInfos": [
 , {"filePath": "Games/Monkey_Magic.sap", "fileSize": 2487, "title": "Monkey Magic", "author": "Richard Skelhorn", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap", "songs": 4}
 , {"filePath": "Games/Montezumas_Revenge.sap", "fileSize": 1391, "title": "Montezuma's Revenge", "author": "Robert Jaeger", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3}
 , {"filePath": "Games/Moon_Patrol.sap", "fileSize": 1174, "title": "Moon Patrol", "author": "", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap", "songs": 6}
-, {"filePath": "Games/Morky.sap", "fileSize": 405, "title": "Morky", "author": "Eric Hamman", "date": "", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3, "defaultSong": 2}
+, {"filePath": "Games/Morky.sap", "fileSize": 405, "title": "Morky", "author": "Eric Hamman", "date": "", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3, "defaultSongIndex": 2}
 , {"filePath": "Games/Mountain_King.sap", "fileSize": 753, "title": "Mountain King", "author": "", "date": "1982 <?>", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5}
 , {"filePath": "Games/Mouse_Trap.sap", "fileSize": 8728, "title": "Mouse Trap", "author": "Brian Jobling", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Mouskattack.sap", "fileSize": 865, "title": "Mouskattack", "author": "John Harris <?>", "date": "1981", "typeLetter": "B", "originalModuleExt": "sap", "songs": 4}
-, {"filePath": "Games/Movie_Musical_Madness.sap", "fileSize": 3299, "title": "Movie Musical Madness", "author": "", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap", "songs": 21, "defaultSong": 20}
+, {"filePath": "Games/Movie_Musical_Madness.sap", "fileSize": 3299, "title": "Movie Musical Madness", "author": "", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap", "songs": 21, "defaultSongIndex": 20}
 , {"filePath": "Games/Mozgprocesor.sap", "fileSize": 3063, "title": "Mozgprocesor", "author": "Tomasz Hernik", "date": "1991", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Mr_Bear.sap", "fileSize": 1584, "title": "Mr. Bear", "author": "", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Mr_Do.sap", "fileSize": 2432, "title": "Mr. Do!", "author": "", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap", "songs": 7}
@@ -5844,12 +5844,12 @@ const asma = {"composerInfos": [
 , {"filePath": "Games/Pole_Position.sap", "fileSize": 1435, "title": "Pole Position", "author": "", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
 , {"filePath": "Games/Pooyan.sap", "fileSize": 3974, "title": "Pooyan", "author": "", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
 , {"filePath": "Games/Popcorn.sap", "fileSize": 357, "title": "Popcorn", "author": "Mark Sloatman & Cathy Sloatman", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Games/Popeye.sap", "fileSize": 1726, "title": "Popeye", "author": "", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 8, "defaultSong": 2}
+, {"filePath": "Games/Popeye.sap", "fileSize": 1726, "title": "Popeye", "author": "", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 8, "defaultSongIndex": 2}
 , {"filePath": "Games/Preppie.sap", "fileSize": 2595, "title": "Preppie!", "author": "", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap", "songs": 4}
 , {"filePath": "Games/Preppie_II.sap", "fileSize": 3042, "title": "Preppie! II", "author": "", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 4}
 , {"filePath": "Games/Professor_IQ.sap", "fileSize": 227, "title": "Professor I.Q.", "author": "Robert T. Bonifacio", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Project_Fireblast.sap", "fileSize": 5648, "title": "Project Fireblast", "author": "Martin Koenig", "date": "1992", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Games/Protector_mastertronic.sap", "fileSize": 3945, "title": "Protector", "author": "Anthony Wilson <?>", "date": "1989", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSong": 2}
+, {"filePath": "Games/Protector_mastertronic.sap", "fileSize": 3945, "title": "Protector", "author": "Anthony Wilson <?>", "date": "1989", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSongIndex": 2}
 , {"filePath": "Games/Pro_Mountain_Biker.sap", "fileSize": 2941, "title": "Pro Mountain Biker", "author": "Paul Tonge (Orange Spoon)", "date": "1989", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
 , {"filePath": "Games/Puzzle_Panic.sap", "fileSize": 1096, "title": "Puzzle Panic", "author": "Bob Polin <?>", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
 , {"filePath": "Games/Puzzlito.sap", "fileSize": 4631, "title": "Puzzlito", "author": "", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -5885,7 +5885,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Games/Showdown_Hockey.sap", "fileSize": 520, "title": "Showdown Hockey!", "author": "", "date": "1991", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3}
 , {"filePath": "Games/Show_Down.sap", "fileSize": 1756, "title": "Show Down", "author": "Ralf Woitinas", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Silicon.sap", "fileSize": 270, "title": "Silicon", "author": "David Jones <?>", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Games/Simple_Minds.sap", "fileSize": 4110, "title": "Simple Minds", "author": "Erik Stok (TCC)", "date": "1994", "typeLetter": "C", "originalModuleExt": "sap", "songs": 6, "defaultSong": 4}
+, {"filePath": "Games/Simple_Minds.sap", "fileSize": 4110, "title": "Simple Minds", "author": "Erik Stok (TCC)", "date": "1994", "typeLetter": "C", "originalModuleExt": "sap", "songs": 6, "defaultSongIndex": 4}
 , {"filePath": "Games/Skateboard.sap", "fileSize": 411, "title": "Skateboard a Cross-Country Race", "author": "", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Skywriter.sap", "fileSize": 1586, "title": "Skywriter", "author": "D. M. Zink <?>", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
 , {"filePath": "Games/Sky_Blazer.sap", "fileSize": 381, "title": "Sky Blazer", "author": "Tony Suzuki <?>", "date": "1981", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -5901,7 +5901,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Games/Spelunker.sap", "fileSize": 931, "title": "Spelunker", "author": "Tim Martin", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Spiky_Harold.sap", "fileSize": 1055, "title": "Spiky Harold", "author": "", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Spys_Demise.sap", "fileSize": 2971, "title": "Spy's Demise", "author": "Robert Hardy", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Games/Spy_Games_Ingame.sap", "fileSize": 7277, "title": "Spy Games - Ingame", "author": "<?> (Wudka) & <?> (Kobylka)", "date": "1993", "typeLetter": "B", "originalModuleExt": "sap", "songs": 4, "defaultSong": 3}
+, {"filePath": "Games/Spy_Games_Ingame.sap", "fileSize": 7277, "title": "Spy Games - Ingame", "author": "<?> (Wudka) & <?> (Kobylka)", "date": "1993", "typeLetter": "B", "originalModuleExt": "sap", "songs": 4, "defaultSongIndex": 3}
 , {"filePath": "Games/Spy_Hunter.sap", "fileSize": 1277, "title": "Spy Hunter", "author": "", "date": "1984", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Starbowl_Football.sap", "fileSize": 687, "title": "Starbowl Football", "author": "", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Stargunner.sap", "fileSize": 1109, "title": "Stargunner", "author": "Alex Leavens <?>", "date": "1985", "typeLetter": "B", "originalModuleExt": "sap"}
