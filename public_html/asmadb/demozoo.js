@@ -142,7 +142,7 @@ class Demozoo {
 	}
 
 	getFindTitleHTML(production) {
-		return "<a href=\"https://asma.atari.org/asmadb/asma.html?searchKeyword=" + production.title + "\" target=\"blank\">searching</a>";
+		return "<a href=\"https://asma.atari.org/asmadb/?searchKeyword=" + production.title + "\" target=\"blank\">searching</a>";
 	}
 
 	checkDemozoo() {

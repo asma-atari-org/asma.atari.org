@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://asma.atari.org/index.html</loc>
+    <loc>https://asma.atari.org/</loc>
     <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://asma.atari.org/asmadb/asma.html</loc>
+    <loc>https://asma.atari.org/asmadb/</loc>
     <changefreq>weekly</changefreq>
   </url>
 </urlset>
