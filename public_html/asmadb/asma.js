@@ -844,13 +844,13 @@ class ASMA {
 	setFileInfoContent(fileInfo, content) {
 		fileInfo.content = content;
 		if (fileInfo.hardware == Hardware.ATARI800) {
-			const localAsap = new ASAP();
+			const asapInfo = new ASAPInfo();
 			try {
-				localAsap.load(fileInfo.getFilePath(), fileInfo.content, fileInfo.content.length);
+				asapInfo.load(fileInfo.getFilePath(), fileInfo.content, fileInfo.content.length);
 			} catch (exception) {
 				throw "Cannot load \"" + fileInfo.getFilePath() + "\": " + exception;
 			}
-			fileInfo.asapInfo = localAsap.getInfo();
+			fileInfo.asapInfo = asapInfo;
 			fileInfo.saveExtensions = [];
 			ASAPWriter.getSaveExts(fileInfo.saveExtensions, fileInfo.asapInfo, fileInfo.content, fileInfo.content.length);
 		} else {
