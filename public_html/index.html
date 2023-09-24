@@ -10,9 +10,18 @@
 <link rel="canonical" href="https://asma.atari.org/index.html">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="google-site-verification" content="Vu-IchBIVWXikhfwVXlQAwmssGD0_ohKv9jggIBeqg8">
+<script>
+function initialize(){
+	// URLs with schema "file://" do not support the implicit resolution of the "index.html" used for shortening the URLs.
+	if (document.location.protocol == "file:"){
+		var searchForm = document.getElementById("searchForm");
+		searchForm.action = searchForm.action + "/index.html";
+	}
+};
+</script>
 </head>
 
-<body class="main_body">
+<body class="main_body" onload="initialize()">>
  <div id="tabstrip" style="height: 23px; margin: 0px" class="border">
 
   <table style="border-spacing: 0px; margin: 0px; border-collapse: collapse;">
@@ -34,7 +43,7 @@
   <tr style="padding: 0px;">
    <td class="sections">
     <div id="top" class="main_search">
-     <form action="asmadb/" method="GET">
+     <form id="searchForm" action="asmadb" method="GET">
       <input name="searchKeyword" type="search" placeholder="Song or author..." class="main_search_field"> <input type="submit" value="Search" class="main_search_field">
      </form>
     </div>
