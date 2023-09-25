@@ -1,7 +1,7 @@
 /*
  * asapweb.js - pure JavaScript ASAP for web browsers
  *
- * Copyright (C) 2009-2021  Piotr Fusik
+ * Copyright (C) 2009-2023  Piotr Fusik
  *
  * This file is part of ASAP (Another Slight Atari Player),
  * see http://asap.sourceforge.net
@@ -21,8 +21,10 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-const asap = {
-	stop : function()
+import { ASAP, ASAPSampleFormat } from "./asap-with-asapwriter.js";
+
+export const asapWeb = {
+	stop()
 	{
 		if (this.processor) {
 			this.processor.disconnect();
@@ -30,7 +32,7 @@ const asap = {
 		}
 	},
 
-	playContent : function(filename, content, song)
+	playContent(filename, content, song)
 	{
 		const asap = new ASAP();
 		asap.load(filename, content, content.length);
@@ -42,7 +44,7 @@ const asap = {
 		this.stop();
 		const length = 4096;
 		const channels = asap.getInfo().getChannels();
-		const buffer = new Uint8Array(new ArrayBuffer(length * channels));
+		const buffer = new Uint8Array(length * channels);
 
 		const AudioContext = window.AudioContext || window.webkitAudioContext;
 		if (this.context)
@@ -67,7 +69,7 @@ const asap = {
 			this.onUpdate();
 	},
 
-	togglePause : function()
+	togglePause()
 	{
 		if (this.context) {
 			switch (this.context.state) {
@@ -84,7 +86,7 @@ const asap = {
 		return null;
 	},
 
-	isPaused : function()
+	isPaused()
 	{
 		if (this.context) {
 			switch (this.context.state) {
@@ -99,7 +101,7 @@ const asap = {
 		return null;
 	},
 
-	playUrl : function(url, song)
+	playUrl(url, song)
 	{
 		const request = new XMLHttpRequest();
 		request.open("GET", url, true);
@@ -111,10 +113,19 @@ const asap = {
 		request.send();
 	},
 
-	playFile : function(file)
+	playFile(file)
 	{
 		const reader = new FileReader();
 		reader.onload = e => this.playContent(file.name, new Uint8Array(e.target.result));
 		reader.readAsArrayBuffer(file);
+	},
+
+	seek(position)
+	{
+		if (!this.context)
+			return;
+		this.context.suspend();
+		this.asap.seek(position);
+		this.context.resume();
 	}
 };

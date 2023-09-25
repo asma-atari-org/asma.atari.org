@@ -1,11 +1,637 @@
-// Generated automatically with "cito". Do not edit.
-
-"use strict";
+// Generated automatically with "fut". Do not edit.
 
 const NmiStatus = {
 	RESET : 0,
 	ON_V_BLANK : 1,
 	WAS_V_BLANK : 2
+}
+
+/**
+ * Atari 8-bit chip music emulator.
+ * This class performs no I/O operations - all music data must be passed in byte arrays.
+ */
+export class ASAP
+{
+	constructor()
+	{
+		this.#silenceCycles = 0;
+		this.#cpu.asap = this;
+	}
+
+	/**
+	 * Default output sample rate.
+	 */
+	static SAMPLE_RATE = 44100;
+	nextEventCycle;
+	#cpu = new Cpu6502();
+	#nextScanlineCycle;
+	#nmist;
+	#consol;
+	#covox = new Uint8Array(4);
+	#pokeys = new PokeyPair();
+	#moduleInfo = new ASAPInfo();
+	#nextPlayerCycle;
+	#tmcPerFrameCounter;
+	#currentSong;
+	#currentDuration;
+	#blocksPlayed;
+	#silenceCycles;
+	#silenceCyclesCounter;
+	#gtiaOrCovoxPlayedThisFrame;
+	#currentSampleRate = 44100;
+
+	/**
+	 * Returns the output sample rate.
+	 */
+	getSampleRate()
+	{
+		return this.#currentSampleRate;
+	}
+
+	/**
+	 * Sets the output sample rate.
+	 */
+	setSampleRate(sampleRate)
+	{
+		this.#currentSampleRate = sampleRate;
+	}
+
+	/**
+	 * Enables silence detection.
+	 * Causes playback to stop after the specified period of silence.
+	 * @param seconds Length of silence which ends playback. Zero disables silence detection.
+	 */
+	detectSilence(seconds)
+	{
+		this.#silenceCyclesCounter = this.#silenceCycles = seconds * 1773447;
+	}
+
+	peekHardware(addr)
+	{
+		switch (addr & 65311) {
+		case 53268:
+			return this.#moduleInfo.isNtsc() ? 15 : 1;
+		case 53279:
+			return ~this.#consol & 15;
+		case 53770:
+		case 53786:
+		case 53774:
+		case 53790:
+			return this.#pokeys.peek(addr, this.#cpu.cycle);
+		case 53772:
+		case 53788:
+		case 53775:
+		case 53791:
+			return 255;
+		case 54283:
+		case 54299:
+			let cycle = this.#cpu.cycle;
+			if (cycle > (this.#moduleInfo.isNtsc() ? 29868 : 35568))
+				return 0;
+			return cycle / 228 | 0;
+		case 54287:
+		case 54303:
+			switch (this.#nmist) {
+			case NmiStatus.RESET:
+				return 31;
+			case NmiStatus.WAS_V_BLANK:
+				return 95;
+			default:
+				return this.#cpu.cycle < 28291 ? 31 : 95;
+			}
+		default:
+			return this.#cpu.memory[addr];
+		}
+	}
+
+	pokeHardware(addr, data)
+	{
+		if (addr >> 8 == 210) {
+			let t = this.#pokeys.poke(addr, data, this.#cpu.cycle);
+			if (this.nextEventCycle > t)
+				this.nextEventCycle = t;
+		}
+		else if ((addr & 65295) == 54282) {
+			let x = this.#cpu.cycle % 114;
+			this.#cpu.cycle += (x <= 106 ? 106 : 220) - x;
+		}
+		else if ((addr & 65295) == 54287) {
+			this.#nmist = this.#cpu.cycle < 28292 ? NmiStatus.ON_V_BLANK : NmiStatus.RESET;
+		}
+		else if ((addr & 65280) == this.#moduleInfo.getCovoxAddress()) {
+			let pokey;
+			addr &= 3;
+			if (addr == 0 || addr == 3)
+				pokey = this.#pokeys.basePokey;
+			else
+				pokey = this.#pokeys.extraPokey;
+			let delta = data - this.#covox[addr];
+			if (delta != 0) {
+				pokey.addExternalDelta(this.#pokeys, this.#cpu.cycle, delta << 17);
+				this.#covox[addr] = data;
+				this.#gtiaOrCovoxPlayedThisFrame = true;
+			}
+		}
+		else if ((addr & 65311) == 53279) {
+			let delta = ((this.#consol & 8) - (data & 8)) << 20;
+			if (delta != 0) {
+				let cycle = this.#cpu.cycle;
+				this.#pokeys.basePokey.addExternalDelta(this.#pokeys, cycle, delta);
+				this.#pokeys.extraPokey.addExternalDelta(this.#pokeys, cycle, delta);
+				this.#gtiaOrCovoxPlayedThisFrame = true;
+			}
+			this.#consol = data;
+		}
+		else
+			this.#cpu.memory[addr] = data;
+	}
+
+	#call6502(addr)
+	{
+		this.#cpu.memory[53760] = 32;
+		this.#cpu.memory[53761] = addr & 255;
+		this.#cpu.memory[53762] = addr >> 8;
+		this.#cpu.memory[53763] = 210;
+		this.#cpu.pc = 53760;
+	}
+
+	#call6502Player()
+	{
+		let player = this.#moduleInfo.player;
+		switch (this.#moduleInfo.type) {
+		case ASAPModuleType.SAP_B:
+			this.#call6502(player);
+			break;
+		case ASAPModuleType.SAP_C:
+		case ASAPModuleType.CMC:
+		case ASAPModuleType.CM3:
+		case ASAPModuleType.CMR:
+		case ASAPModuleType.CMS:
+			this.#call6502(player + 6);
+			break;
+		case ASAPModuleType.SAP_D:
+			if (player >= 0) {
+				this.#cpu.pushPc();
+				this.#cpu.memory[53760] = 8;
+				this.#cpu.memory[53761] = 72;
+				this.#cpu.memory[53762] = 138;
+				this.#cpu.memory[53763] = 72;
+				this.#cpu.memory[53764] = 152;
+				this.#cpu.memory[53765] = 72;
+				this.#cpu.memory[53766] = 32;
+				this.#cpu.memory[53767] = player & 255;
+				this.#cpu.memory[53768] = player >> 8;
+				this.#cpu.memory[53769] = 104;
+				this.#cpu.memory[53770] = 168;
+				this.#cpu.memory[53771] = 104;
+				this.#cpu.memory[53772] = 170;
+				this.#cpu.memory[53773] = 104;
+				this.#cpu.memory[53774] = 64;
+				this.#cpu.pc = 53760;
+			}
+			break;
+		case ASAPModuleType.SAP_S:
+			let i = this.#cpu.memory[69] - 1;
+			this.#cpu.memory[69] = i & 255;
+			if (i == 0)
+				this.#cpu.memory[45179] = (this.#cpu.memory[45179] + 1) & 255;
+			break;
+		case ASAPModuleType.DLT:
+			this.#call6502(player + 259);
+			break;
+		case ASAPModuleType.MPT:
+		case ASAPModuleType.RMT:
+		case ASAPModuleType.TM2:
+		case ASAPModuleType.FC:
+			this.#call6502(player + 3);
+			break;
+		case ASAPModuleType.TMC:
+			if (--this.#tmcPerFrameCounter <= 0) {
+				this.#tmcPerFrameCounter = this.#cpu.memory[this.#moduleInfo.getMusicAddress() + 31];
+				this.#call6502(player + 3);
+			}
+			else
+				this.#call6502(player + 6);
+			break;
+		}
+	}
+
+	isIrq()
+	{
+		return this.#pokeys.basePokey.irqst != 255;
+	}
+
+	handleEvent()
+	{
+		let cycle = this.#cpu.cycle;
+		if (cycle >= this.#nextScanlineCycle) {
+			if (cycle - this.#nextScanlineCycle < 50)
+				this.#cpu.cycle = cycle += 9;
+			this.#nextScanlineCycle += 114;
+			if (cycle >= this.#nextPlayerCycle) {
+				this.#call6502Player();
+				this.#nextPlayerCycle += 114 * this.#moduleInfo.getPlayerRateScanlines();
+			}
+		}
+		let nextEventCycle = this.#nextScanlineCycle;
+		nextEventCycle = this.#pokeys.basePokey.checkIrq(cycle, nextEventCycle);
+		nextEventCycle = this.#pokeys.extraPokey.checkIrq(cycle, nextEventCycle);
+		this.nextEventCycle = nextEventCycle;
+	}
+
+	#do6502Frame()
+	{
+		this.nextEventCycle = 0;
+		this.#nextScanlineCycle = 0;
+		this.#nmist = this.#nmist == NmiStatus.RESET ? NmiStatus.ON_V_BLANK : NmiStatus.WAS_V_BLANK;
+		let cycles = this.#moduleInfo.isNtsc() ? 29868 : 35568;
+		this.#cpu.doFrame(cycles);
+		this.#cpu.cycle -= cycles;
+		if (this.#nextPlayerCycle != 8388608)
+			this.#nextPlayerCycle -= cycles;
+		for (let i = 3;; i >>= 1) {
+			this.#pokeys.basePokey.channels[i].endFrame(cycles);
+			this.#pokeys.extraPokey.channels[i].endFrame(cycles);
+			if (i == 0)
+				break;
+		}
+		return cycles;
+	}
+
+	#doFrame()
+	{
+		this.#gtiaOrCovoxPlayedThisFrame = false;
+		this.#pokeys.startFrame();
+		let cycles = this.#do6502Frame();
+		this.#pokeys.endFrame(cycles);
+		return cycles;
+	}
+
+	/**
+	 * Loads music data ("module").
+	 * @param filename Filename, used to determine the format.
+	 * @param module Contents of the file.
+	 * @param moduleLen Length of the file.
+	 */
+	load(filename, module, moduleLen)
+	{
+		this.#moduleInfo.load(filename, module, moduleLen);
+		let playerRoutine = ASAP6502.getPlayerRoutine(this.#moduleInfo);
+		if (playerRoutine != null) {
+			let player = ASAPInfo.getWord(playerRoutine, 2);
+			let playerLastByte = ASAPInfo.getWord(playerRoutine, 4);
+			let music = this.#moduleInfo.getMusicAddress();
+			if (music <= playerLastByte)
+				throw "Module address conflicts with the player routine";
+			this.#cpu.memory[19456] = 0;
+			if (this.#moduleInfo.type == ASAPModuleType.FC)
+				this.#cpu.memory.set(module.subarray(0, moduleLen), music);
+			else
+				this.#cpu.memory.set(module.subarray(6, 6 + moduleLen - 6), music);
+			this.#cpu.memory.set(playerRoutine.subarray(6, 6 + playerLastByte + 1 - player), player);
+			if (this.#moduleInfo.player < 0)
+				this.#moduleInfo.player = player;
+			return;
+		}
+		this.#cpu.memory.fill(0);
+		let moduleIndex = this.#moduleInfo.headerLen + 2;
+		while (moduleIndex + 5 <= moduleLen) {
+			let startAddr = ASAPInfo.getWord(module, moduleIndex);
+			let blockLen = ASAPInfo.getWord(module, moduleIndex + 2) + 1 - startAddr;
+			if (blockLen <= 0 || moduleIndex + blockLen > moduleLen)
+				throw "Invalid binary block";
+			moduleIndex += 4;
+			this.#cpu.memory.set(module.subarray(moduleIndex, moduleIndex + blockLen), startAddr);
+			moduleIndex += blockLen;
+			if (moduleIndex == moduleLen)
+				return;
+			if (moduleIndex + 7 <= moduleLen && module[moduleIndex] == 255 && module[moduleIndex + 1] == 255)
+				moduleIndex += 2;
+		}
+		throw "Invalid binary block";
+	}
+
+	/**
+	 * Returns information about the loaded module.
+	 */
+	getInfo()
+	{
+		return this.#moduleInfo;
+	}
+
+	#do6502Init(pc, a, x, y)
+	{
+		this.#cpu.pc = pc;
+		this.#cpu.a = a & 255;
+		this.#cpu.x = x & 255;
+		this.#cpu.y = y & 255;
+		this.#cpu.memory[53760] = 210;
+		this.#cpu.memory[510] = 255;
+		this.#cpu.memory[511] = 209;
+		this.#cpu.s = 253;
+		for (let frame = 0; frame < 50; frame++) {
+			this.#do6502Frame();
+			if (this.#cpu.pc == 53760)
+				return;
+		}
+		throw "INIT routine didn't return";
+	}
+
+	/**
+	 * Mutes the selected POKEY channels.
+	 * @param mask An 8-bit mask which selects POKEY channels to be muted.
+	 */
+	mutePokeyChannels(mask)
+	{
+		this.#pokeys.basePokey.mute(mask);
+		this.#pokeys.extraPokey.mute(mask >> 4);
+	}
+
+	/**
+	 * Prepares playback of the specified song of the loaded module.
+	 * @param song Zero-based song index.
+	 * @param duration Playback time in milliseconds, -1 means infinity.
+	 */
+	playSong(song, duration)
+	{
+		if (song < 0 || song >= this.#moduleInfo.getSongs())
+			throw "Song number out of range";
+		this.#currentSong = song;
+		this.#currentDuration = duration;
+		this.#nextPlayerCycle = 8388608;
+		this.#blocksPlayed = 0;
+		this.#silenceCyclesCounter = this.#silenceCycles;
+		this.#cpu.reset();
+		this.#nmist = NmiStatus.ON_V_BLANK;
+		this.#consol = 8;
+		this.#covox[0] = 128;
+		this.#covox[1] = 128;
+		this.#covox[2] = 128;
+		this.#covox[3] = 128;
+		this.#pokeys.initialize(this.#moduleInfo.isNtsc(), this.#moduleInfo.getChannels() > 1, this.#currentSampleRate);
+		this.mutePokeyChannels(255);
+		let player = this.#moduleInfo.player;
+		let music = this.#moduleInfo.getMusicAddress();
+		switch (this.#moduleInfo.type) {
+		case ASAPModuleType.SAP_B:
+			this.#do6502Init(this.#moduleInfo.getInitAddress(), song, 0, 0);
+			break;
+		case ASAPModuleType.SAP_C:
+		case ASAPModuleType.CMC:
+		case ASAPModuleType.CM3:
+		case ASAPModuleType.CMR:
+		case ASAPModuleType.CMS:
+			this.#do6502Init(player + 3, 112, music, music >> 8);
+			this.#do6502Init(player + 3, 0, song, 0);
+			break;
+		case ASAPModuleType.SAP_D:
+		case ASAPModuleType.SAP_S:
+			this.#cpu.pc = this.#moduleInfo.getInitAddress();
+			this.#cpu.a = song;
+			this.#cpu.x = 0;
+			this.#cpu.y = 0;
+			this.#cpu.s = 255;
+			break;
+		case ASAPModuleType.DLT:
+			this.#do6502Init(player + 256, 0, 0, this.#moduleInfo.songPos[song]);
+			break;
+		case ASAPModuleType.MPT:
+			this.#do6502Init(player, 0, music >> 8, music);
+			this.#do6502Init(player, 2, this.#moduleInfo.songPos[song], 0);
+			break;
+		case ASAPModuleType.RMT:
+			this.#do6502Init(player, this.#moduleInfo.songPos[song], music, music >> 8);
+			break;
+		case ASAPModuleType.TMC:
+		case ASAPModuleType.TM2:
+			this.#do6502Init(player, 112, music >> 8, music);
+			this.#do6502Init(player, 0, song, 0);
+			this.#tmcPerFrameCounter = 1;
+			break;
+		case ASAPModuleType.FC:
+			this.#do6502Init(player, song, 0, 0);
+			break;
+		}
+		this.mutePokeyChannels(0);
+		this.#nextPlayerCycle = 0;
+	}
+
+	/**
+	 * Returns current playback position in blocks.
+	 * A block is one sample or a pair of samples for stereo.
+	 */
+	getBlocksPlayed()
+	{
+		return this.#blocksPlayed;
+	}
+
+	/**
+	 * Returns current playback position in milliseconds.
+	 */
+	getPosition()
+	{
+		return this.#blocksPlayed * 10 / (this.#currentSampleRate / 100 | 0) | 0;
+	}
+
+	#millisecondsToBlocks(milliseconds)
+	{
+		let ms = BigInt(milliseconds);
+		return Number(ms * BigInt(this.#currentSampleRate) / 1000n);
+	}
+
+	/**
+	 * Changes the playback position.
+	 * @param block The requested absolute position in samples (always 44100 per second, even in stereo).
+	 */
+	seekSample(block)
+	{
+		if (block < this.#blocksPlayed)
+			this.playSong(this.#currentSong, this.#currentDuration);
+		while (this.#blocksPlayed + this.#pokeys.readySamplesEnd < block) {
+			this.#blocksPlayed += this.#pokeys.readySamplesEnd;
+			this.#doFrame();
+		}
+		this.#pokeys.readySamplesStart = block - this.#blocksPlayed;
+		this.#blocksPlayed = block;
+	}
+
+	/**
+	 * Changes the playback position.
+	 * @param position The requested absolute position in milliseconds.
+	 */
+	seek(position)
+	{
+		this.seekSample(this.#millisecondsToBlocks(position));
+	}
+
+	static #putLittleEndian(buffer, offset, value)
+	{
+		buffer[offset] = value & 255;
+		buffer[offset + 1] = value >> 8 & 255;
+		buffer[offset + 2] = value >> 16 & 255;
+		buffer[offset + 3] = value >> 24 & 255;
+	}
+
+	static #fourCC(s)
+	{
+		return (s.charCodeAt(0) | s.charCodeAt(1) << 8 | s.charCodeAt(2) << 16 | s.charCodeAt(3) << 24) & 2147483647;
+	}
+
+	static #putLittleEndians(buffer, offset, value1, value2)
+	{
+		ASAP.#putLittleEndian(buffer, offset, value1);
+		ASAP.#putLittleEndian(buffer, offset + 4, value2);
+	}
+
+	static #putWavMetadata(buffer, offset, fourCC, value)
+	{
+		let len = value.length;
+		if (len > 0) {
+			ASAP.#putLittleEndians(buffer, offset, fourCC, (len | 1) + 1);
+			offset += 8;
+			for (let i = 0; i < len; i++)
+				buffer[offset++] = value.charCodeAt(i);
+			buffer[offset++] = 0;
+			if ((len & 1) == 0)
+				buffer[offset++] = 0;
+		}
+		return offset;
+	}
+
+	/**
+	 * Fills leading bytes of the specified buffer with WAV file header.
+	 * Returns the number of changed bytes.
+	 * @param buffer The destination buffer.
+	 * @param format Format of samples.
+	 * @param metadata Include metadata (title, author, date).
+	 */
+	getWavHeader(buffer, format, metadata)
+	{
+		let use16bit = format != ASAPSampleFormat.U8 ? 1 : 0;
+		let blockSize = this.#moduleInfo.getChannels() << use16bit;
+		let bytesPerSecond = this.#currentSampleRate * blockSize;
+		let totalBlocks = this.#millisecondsToBlocks(this.#currentDuration);
+		let nBytes = (totalBlocks - this.#blocksPlayed) * blockSize;
+		ASAP.#putLittleEndian(buffer, 8, 1163280727);
+		ASAP.#putLittleEndians(buffer, 12, 544501094, 16);
+		buffer[20] = 1;
+		buffer[21] = 0;
+		buffer[22] = this.#moduleInfo.getChannels();
+		buffer[23] = 0;
+		ASAP.#putLittleEndians(buffer, 24, this.#currentSampleRate, bytesPerSecond);
+		buffer[32] = blockSize;
+		buffer[33] = 0;
+		buffer[34] = 8 << use16bit;
+		buffer[35] = 0;
+		let i = 36;
+		if (metadata) {
+			let year = this.#moduleInfo.getYear();
+			if (this.#moduleInfo.getTitle().length > 0 || this.#moduleInfo.getAuthor().length > 0 || year > 0) {
+				ASAP.#putLittleEndian(buffer, 44, 1330007625);
+				i = ASAP.#putWavMetadata(buffer, 48, 1296125513, this.#moduleInfo.getTitle());
+				i = ASAP.#putWavMetadata(buffer, i, 1414676809, this.#moduleInfo.getAuthor());
+				if (year > 0) {
+					ASAP.#putLittleEndians(buffer, i, 1146241865, 6);
+					for (let j = 3; j >= 0; j--) {
+						buffer[i + 8 + j] = 48 + year % 10;
+						year = year / 10 | 0;
+					}
+					buffer[i + 12] = 0;
+					buffer[i + 13] = 0;
+					i += 14;
+				}
+				ASAP.#putLittleEndians(buffer, 36, 1414744396, i - 44);
+			}
+		}
+		ASAP.#putLittleEndians(buffer, 0, 1179011410, i + nBytes);
+		ASAP.#putLittleEndians(buffer, i, 1635017060, nBytes);
+		return i + 8;
+	}
+
+	#generateAt(buffer, bufferOffset, bufferLen, format)
+	{
+		if (this.#silenceCycles > 0 && this.#silenceCyclesCounter <= 0)
+			return 0;
+		let blockShift = this.#moduleInfo.getChannels() - (format == ASAPSampleFormat.U8 ? 1 : 0);
+		let bufferBlocks = bufferLen >> blockShift;
+		if (this.#currentDuration > 0) {
+			let totalBlocks = this.#millisecondsToBlocks(this.#currentDuration);
+			if (bufferBlocks > totalBlocks - this.#blocksPlayed)
+				bufferBlocks = totalBlocks - this.#blocksPlayed;
+		}
+		let block = 0;
+		for (;;) {
+			let blocks = this.#pokeys.generate(buffer, bufferOffset + (block << blockShift), bufferBlocks - block, format);
+			this.#blocksPlayed += blocks;
+			block += blocks;
+			if (block >= bufferBlocks)
+				break;
+			let cycles = this.#doFrame();
+			if (this.#silenceCycles > 0) {
+				if (this.#pokeys.isSilent() && !this.#gtiaOrCovoxPlayedThisFrame) {
+					this.#silenceCyclesCounter -= cycles;
+					if (this.#silenceCyclesCounter <= 0)
+						break;
+				}
+				else
+					this.#silenceCyclesCounter = this.#silenceCycles;
+			}
+		}
+		return block << blockShift;
+	}
+
+	/**
+	 * Fills the specified buffer with generated samples.
+	 * @param buffer The destination buffer.
+	 * @param bufferLen Number of bytes to fill.
+	 * @param format Format of samples.
+	 */
+	generate(buffer, bufferLen, format)
+	{
+		return this.#generateAt(buffer, 0, bufferLen, format);
+	}
+
+	/**
+	 * Returns POKEY channel volume - an integer between 0 and 15.
+	 * @param channel POKEY channel number (from 0 to 7).
+	 */
+	getPokeyChannelVolume(channel)
+	{
+		let pokey = (channel & 4) == 0 ? this.#pokeys.basePokey : this.#pokeys.extraPokey;
+		return pokey.channels[channel & 3].audc & 15;
+	}
+}
+
+class ASAP6502
+{
+
+	static getPlayerRoutine(info)
+	{
+		switch (info.type) {
+		case ASAPModuleType.CMC:
+			return Fu.cmc_obx;
+		case ASAPModuleType.CM3:
+			return Fu.cm3_obx;
+		case ASAPModuleType.CMR:
+			return Fu.cmr_obx;
+		case ASAPModuleType.CMS:
+			return Fu.cms_obx;
+		case ASAPModuleType.DLT:
+			return Fu.dlt_obx;
+		case ASAPModuleType.MPT:
+			return Fu.mpt_obx;
+		case ASAPModuleType.RMT:
+			return info.getChannels() == 1 ? Fu.rmt4_obx : Fu.rmt8_obx;
+		case ASAPModuleType.TMC:
+			return Fu.tmc_obx;
+		case ASAPModuleType.TM2:
+			return Fu.tm2_obx;
+		case ASAPModuleType.FC:
+			return Fu.fc_obx;
+		default:
+			return null;
+		}
+	}
 }
 
 const ASAPModuleType = {
@@ -25,6 +651,3762 @@ const ASAPModuleType = {
 	FC : 13
 }
 
+class DurationParser
+{
+	#source;
+	#position;
+	#length;
+
+	#parseDigit(max)
+	{
+		if (this.#position >= this.#length)
+			throw "Invalid duration";
+		let digit = this.#source.charCodeAt(this.#position++) - 48;
+		if (digit < 0 || digit > max)
+			throw "Invalid duration";
+		return digit;
+	}
+
+	parse(s)
+	{
+		this.#source = s;
+		this.#position = 0;
+		this.#length = s.length;
+		let result = this.#parseDigit(9);
+		let digit;
+		if (this.#position < this.#length) {
+			digit = s.charCodeAt(this.#position) - 48;
+			if (digit >= 0 && digit <= 9) {
+				this.#position++;
+				result = result * 10 + digit;
+			}
+			if (this.#position < this.#length && s.charCodeAt(this.#position) == 58) {
+				this.#position++;
+				digit = this.#parseDigit(5);
+				result = result * 60 + digit * 10;
+				digit = this.#parseDigit(9);
+				result += digit;
+			}
+		}
+		result *= 1000;
+		if (this.#position >= this.#length)
+			return result;
+		if (s.charCodeAt(this.#position++) != 46)
+			throw "Invalid duration";
+		digit = this.#parseDigit(9);
+		result += digit * 100;
+		if (this.#position >= this.#length)
+			return result;
+		digit = this.#parseDigit(9);
+		result += digit * 10;
+		if (this.#position >= this.#length)
+			return result;
+		digit = this.#parseDigit(9);
+		result += digit;
+		return result;
+	}
+}
+
+/**
+ * Information about a music file.
+ */
+export class ASAPInfo
+{
+	constructor()
+	{
+	}
+
+	/**
+	 * ASAP version - major part.
+	 */
+	static VERSION_MAJOR = 6;
+
+	/**
+	 * ASAP version - minor part.
+	 */
+	static VERSION_MINOR = 0;
+
+	/**
+	 * ASAP version - micro part.
+	 */
+	static VERSION_MICRO = 0;
+
+	/**
+	 * ASAP version as a string.
+	 */
+	static VERSION = "6.0.0";
+
+	/**
+	 * Years ASAP was created in.
+	 */
+	static YEARS = "2005-2023";
+
+	/**
+	 * Short credits for ASAP.
+	 */
+	static CREDITS = "Another Slight Atari Player (C) 2005-2023 Piotr Fusik\nCMC, MPT, TMC, TM2 players (C) 1994-2005 Marcin Lewandowski\nRMT player (C) 2002-2005 Radek Sterba\nDLT player (C) 2009 Marek Konopka\nCMS player (C) 1999 David Spilka\nFC player (C) 2011 Jerzy Kut\n";
+
+	/**
+	 * Short license notice.
+	 * Display after the credits.
+	 */
+	static COPYRIGHT = "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.";
+
+	/**
+	 * Maximum length of a supported input file.
+	 * You may assume that files longer than this are not supported by ASAP.
+	 */
+	static MAX_MODULE_LENGTH = 65000;
+
+	/**
+	 * Maximum length of text metadata.
+	 */
+	static MAX_TEXT_LENGTH = 127;
+
+	/**
+	 * Maximum number of songs in a file.
+	 */
+	static MAX_SONGS = 32;
+	#filename;
+	#author;
+	#title;
+	#date;
+	#channels;
+	#songs;
+	#defaultSong;
+	#durations = new Int32Array(32);
+	#loops = new Array(32);
+	#ntsc;
+	type;
+	#fastplay;
+	#music;
+	#init;
+	player;
+	#covoxAddr;
+	headerLen;
+	songPos = new Uint8Array(32);
+
+	static #isValidChar(c)
+	{
+		return c >= 32 && c <= 124 && c != 96 && c != 123;
+	}
+
+	static #checkValidChar(c)
+	{
+		if (!ASAPInfo.#isValidChar(c))
+			throw "Invalid character";
+	}
+
+	static getWord(array, i)
+	{
+		return array[i] + (array[i + 1] << 8);
+	}
+
+	#parseModule(module, moduleLen)
+	{
+		if ((module[0] != 255 || module[1] != 255) && (module[0] != 0 || module[1] != 0))
+			throw "Invalid two leading bytes of the module";
+		this.#music = ASAPInfo.getWord(module, 2);
+		let musicLastByte = ASAPInfo.getWord(module, 4);
+		if (this.#music <= 55295 && musicLastByte >= 53248)
+			throw "Module address conflicts with hardware registers";
+		let blockLen = musicLastByte + 1 - this.#music;
+		if (6 + blockLen != moduleLen) {
+			if (this.type != ASAPModuleType.RMT || 11 + blockLen > moduleLen)
+				throw "Module length doesn't match headers";
+			let infoAddr = ASAPInfo.getWord(module, 6 + blockLen);
+			if (infoAddr != this.#music + blockLen)
+				throw "Invalid address of RMT info";
+			let infoLen = ASAPInfo.getWord(module, 8 + blockLen) + 1 - infoAddr;
+			if (10 + blockLen + infoLen != moduleLen)
+				throw "Invalid RMT info block";
+		}
+	}
+
+	#addSong(playerCalls)
+	{
+		let scanlines = BigInt(playerCalls * this.#fastplay);
+		this.#durations[this.#songs++] = Number(scanlines * 38000n / 591149n);
+	}
+
+	#parseCmcSong(module, pos)
+	{
+		let tempo = module[25];
+		let playerCalls = 0;
+		let repStartPos = 0;
+		let repEndPos = 0;
+		let repTimes = 0;
+		const seen = new Uint8Array(85);
+		while (pos >= 0 && pos < 85) {
+			if (pos == repEndPos && repTimes > 0) {
+				for (let i = 0; i < 85; i++)
+					if (seen[i] == 1 || seen[i] == 3)
+						seen[i] = 0;
+				repTimes--;
+				pos = repStartPos;
+			}
+			if (seen[pos] != 0) {
+				if (seen[pos] != 1)
+					this.#loops[this.#songs] = true;
+				break;
+			}
+			seen[pos] = 1;
+			let p1 = module[518 + pos];
+			let p2 = module[603 + pos];
+			let p3 = module[688 + pos];
+			if (p1 == 254 || p2 == 254 || p3 == 254) {
+				pos++;
+				continue;
+			}
+			p1 |= this.type == ASAPModuleType.CMS ? 7 : 15;
+			switch (p1) {
+			case 135:
+			case 167:
+				pos++;
+				break;
+			case 143:
+				pos = -1;
+				break;
+			case 151:
+				if (p2 < 128) {
+					playerCalls += p2;
+					if (p3 < 128)
+						playerCalls += p3 * 50;
+				}
+				pos++;
+				break;
+			case 159:
+				pos = p2;
+				break;
+			case 175:
+				pos -= p2;
+				break;
+			case 191:
+				pos += p2;
+				break;
+			case 207:
+				if (p2 < 128) {
+					tempo = p2;
+					pos++;
+				}
+				else
+					pos = -1;
+				break;
+			case 223:
+				pos++;
+				repStartPos = pos;
+				repEndPos = pos + p2;
+				repTimes = p3 - 1;
+				break;
+			case 239:
+				this.#loops[this.#songs] = true;
+				pos = -1;
+				break;
+			default:
+				p2 = repTimes > 0 ? 3 : 2;
+				for (p1 = 0; p1 < 85; p1++)
+					if (seen[p1] == 1)
+						seen[p1] = p2;
+				playerCalls += tempo * (this.type == ASAPModuleType.CM3 ? 48 : 64);
+				pos++;
+				break;
+			}
+		}
+		this.#addSong(playerCalls);
+	}
+
+	#parseCmc(module, moduleLen, type)
+	{
+		if (moduleLen < 774)
+			throw "Module too short";
+		this.type = type;
+		this.#parseModule(module, moduleLen);
+		let lastPos = 84;
+		while (--lastPos >= 0) {
+			if (module[518 + lastPos] < 176 || module[603 + lastPos] < 64 || module[688 + lastPos] < 64)
+				break;
+			if (this.#channels == 2) {
+				if (module[774 + lastPos] < 176 || module[859 + lastPos] < 64 || module[944 + lastPos] < 64)
+					break;
+			}
+		}
+		this.#songs = 0;
+		this.#parseCmcSong(module, 0);
+		for (let pos = 0; pos < lastPos && this.#songs < 32; pos++)
+			if (module[518 + pos] == 143 || module[518 + pos] == 239)
+				this.#parseCmcSong(module, pos + 1);
+	}
+
+	static #isDltTrackEmpty(module, pos)
+	{
+		return module[8198 + pos] >= 67 && module[8454 + pos] >= 64 && module[8710 + pos] >= 64 && module[8966 + pos] >= 64;
+	}
+
+	static #isDltPatternEnd(module, pos, i)
+	{
+		for (let ch = 0; ch < 4; ch++) {
+			let pattern = module[8198 + (ch << 8) + pos];
+			if (pattern < 64) {
+				let offset = 6 + (pattern << 7) + (i << 1);
+				if ((module[offset] & 128) == 0 && (module[offset + 1] & 128) != 0)
+					return true;
+			}
+		}
+		return false;
+	}
+
+	#parseDltSong(module, seen, pos)
+	{
+		while (pos < 128 && !seen[pos] && ASAPInfo.#isDltTrackEmpty(module, pos))
+			seen[pos++] = true;
+		this.songPos[this.#songs] = pos;
+		let playerCalls = 0;
+		let loop = false;
+		let tempo = 6;
+		while (pos < 128) {
+			if (seen[pos]) {
+				loop = true;
+				break;
+			}
+			seen[pos] = true;
+			let p1 = module[8198 + pos];
+			if (p1 == 64 || ASAPInfo.#isDltTrackEmpty(module, pos))
+				break;
+			if (p1 == 65)
+				pos = module[8326 + pos];
+			else if (p1 == 66)
+				tempo = module[8326 + pos++];
+			else {
+				for (let i = 0; i < 64 && !ASAPInfo.#isDltPatternEnd(module, pos, i); i++)
+					playerCalls += tempo;
+				pos++;
+			}
+		}
+		if (playerCalls > 0) {
+			this.#loops[this.#songs] = loop;
+			this.#addSong(playerCalls);
+		}
+	}
+
+	#parseDlt(module, moduleLen)
+	{
+		if (moduleLen != 11270 && moduleLen != 11271)
+			throw "Invalid module length";
+		this.type = ASAPModuleType.DLT;
+		this.#parseModule(module, moduleLen);
+		if (this.#music != 8192)
+			throw "Unsupported module address";
+		const seen = new Array(128);
+		this.#songs = 0;
+		for (let pos = 0; pos < 128 && this.#songs < 32; pos++) {
+			if (!seen[pos])
+				this.#parseDltSong(module, seen, pos);
+		}
+		if (this.#songs == 0)
+			throw "No songs found";
+	}
+
+	#parseMptSong(module, globalSeen, songLen, pos)
+	{
+		let addrToOffset = ASAPInfo.getWord(module, 2) - 6;
+		let tempo = module[463];
+		let playerCalls = 0;
+		const seen = new Uint8Array(256);
+		const patternOffset = new Int32Array(4);
+		const blankRows = new Int32Array(4);
+		const blankRowsCounter = new Int32Array(4);
+		while (pos < songLen) {
+			if (seen[pos] != 0) {
+				if (seen[pos] != 1)
+					this.#loops[this.#songs] = true;
+				break;
+			}
+			seen[pos] = 1;
+			globalSeen[pos] = true;
+			let i = module[464 + pos * 2];
+			if (i == 255) {
+				pos = module[465 + pos * 2];
+				continue;
+			}
+			let ch;
+			for (ch = 3; ch >= 0; ch--) {
+				i = module[454 + ch] + (module[458 + ch] << 8) - addrToOffset;
+				i = module[i + pos * 2];
+				if (i >= 64)
+					break;
+				i <<= 1;
+				i = ASAPInfo.getWord(module, 70 + i);
+				patternOffset[ch] = i == 0 ? 0 : i - addrToOffset;
+				blankRowsCounter[ch] = 0;
+			}
+			if (ch >= 0)
+				break;
+			for (i = 0; i < songLen; i++)
+				if (seen[i] == 1)
+					seen[i] = 2;
+			for (let patternRows = module[462]; --patternRows >= 0;) {
+				for (ch = 3; ch >= 0; ch--) {
+					if (patternOffset[ch] == 0)
+						continue;
+					if (--blankRowsCounter[ch] >= 0)
+						continue;
+					for (;;) {
+						i = module[patternOffset[ch]++];
+						if (i < 64 || i == 254)
+							break;
+						if (i < 128)
+							continue;
+						if (i < 192) {
+							blankRows[ch] = i - 128;
+							continue;
+						}
+						if (i < 208)
+							continue;
+						if (i < 224) {
+							tempo = i - 207;
+							continue;
+						}
+						patternRows = 0;
+					}
+					blankRowsCounter[ch] = blankRows[ch];
+				}
+				playerCalls += tempo;
+			}
+			pos++;
+		}
+		if (playerCalls > 0)
+			this.#addSong(playerCalls);
+	}
+
+	#parseMpt(module, moduleLen)
+	{
+		if (moduleLen < 464)
+			throw "Module too short";
+		this.type = ASAPModuleType.MPT;
+		this.#parseModule(module, moduleLen);
+		let track0Addr = ASAPInfo.getWord(module, 2) + 458;
+		if (module[454] + (module[458] << 8) != track0Addr)
+			throw "Invalid address of the first track";
+		let songLen = (module[455] + (module[459] << 8) - track0Addr) >> 1;
+		if (songLen > 254)
+			throw "Song too long";
+		const globalSeen = new Array(256);
+		this.#songs = 0;
+		for (let pos = 0; pos < songLen && this.#songs < 32; pos++) {
+			if (!globalSeen[pos]) {
+				this.songPos[this.#songs] = pos;
+				this.#parseMptSong(module, globalSeen, songLen, pos);
+			}
+		}
+		if (this.#songs == 0)
+			throw "No songs found";
+	}
+
+	static #getRmtInstrumentFrames(module, instrument, volume, volumeFrame, onExtraPokey)
+	{
+		let addrToOffset = ASAPInfo.getWord(module, 2) - 6;
+		instrument = ASAPInfo.getWord(module, 14) - addrToOffset + (instrument << 1);
+		if (module[instrument + 1] == 0)
+			return 0;
+		instrument = ASAPInfo.getWord(module, instrument) - addrToOffset;
+		let perFrame = module[12];
+		let playerCall = volumeFrame * perFrame;
+		let playerCalls = playerCall;
+		let index = module[instrument] + 1 + playerCall * 3;
+		let indexEnd = module[instrument + 2] + 3;
+		let indexLoop = module[instrument + 3];
+		if (indexLoop >= indexEnd)
+			return 0;
+		let volumeSlideDepth = module[instrument + 6];
+		let volumeMin = module[instrument + 7];
+		if (index >= indexEnd)
+			index = (index - indexEnd) % (indexEnd - indexLoop) + indexLoop;
+		else {
+			do {
+				let vol = module[instrument + index];
+				if (onExtraPokey)
+					vol >>= 4;
+				if ((vol & 15) >= ASAPInfo.#GET_RMT_INSTRUMENT_FRAMES_RMT_VOLUME_SILENT[volume])
+					playerCalls = playerCall + 1;
+				playerCall++;
+				index += 3;
+			}
+			while (index < indexEnd);
+		}
+		if (volumeSlideDepth == 0)
+			return playerCalls / perFrame | 0;
+		let volumeSlide = 128;
+		let silentLoop = false;
+		for (;;) {
+			if (index >= indexEnd) {
+				if (silentLoop)
+					break;
+				silentLoop = true;
+				index = indexLoop;
+			}
+			let vol = module[instrument + index];
+			if (onExtraPokey)
+				vol >>= 4;
+			if ((vol & 15) >= ASAPInfo.#GET_RMT_INSTRUMENT_FRAMES_RMT_VOLUME_SILENT[volume]) {
+				playerCalls = playerCall + 1;
+				silentLoop = false;
+			}
+			playerCall++;
+			index += 3;
+			volumeSlide -= volumeSlideDepth;
+			if (volumeSlide < 0) {
+				volumeSlide += 256;
+				if (--volume <= volumeMin)
+					break;
+			}
+		}
+		return playerCalls / perFrame | 0;
+	}
+
+	#parseRmtSong(module, globalSeen, songLen, posShift, pos)
+	{
+		let addrToOffset = ASAPInfo.getWord(module, 2) - 6;
+		let tempo = module[11];
+		let frames = 0;
+		let songOffset = ASAPInfo.getWord(module, 20) - addrToOffset;
+		let patternLoOffset = ASAPInfo.getWord(module, 16) - addrToOffset;
+		let patternHiOffset = ASAPInfo.getWord(module, 18) - addrToOffset;
+		const seen = new Uint8Array(256);
+		const patternBegin = new Int32Array(8);
+		const patternOffset = new Int32Array(8);
+		const blankRows = new Int32Array(8);
+		const instrumentNo = new Int32Array(8);
+		const instrumentFrame = new Int32Array(8);
+		const volumeValue = new Int32Array(8);
+		const volumeFrame = new Int32Array(8);
+		while (pos < songLen) {
+			if (seen[pos] != 0) {
+				if (seen[pos] != 1)
+					this.#loops[this.#songs] = true;
+				break;
+			}
+			seen[pos] = 1;
+			globalSeen[pos] = true;
+			if (module[songOffset + (pos << posShift)] == 254) {
+				pos = module[songOffset + (pos << posShift) + 1];
+				continue;
+			}
+			for (let ch = 0; ch < 1 << posShift; ch++) {
+				let p = module[songOffset + (pos << posShift) + ch];
+				if (p == 255)
+					blankRows[ch] = 256;
+				else {
+					patternOffset[ch] = patternBegin[ch] = module[patternLoOffset + p] + (module[patternHiOffset + p] << 8) - addrToOffset;
+					if (patternOffset[ch] < 0)
+						return;
+					blankRows[ch] = 0;
+				}
+			}
+			for (let i = 0; i < songLen; i++)
+				if (seen[i] == 1)
+					seen[i] = 2;
+			for (let patternRows = module[10]; --patternRows >= 0;) {
+				for (let ch = 0; ch < 1 << posShift; ch++) {
+					if (--blankRows[ch] > 0)
+						continue;
+					for (;;) {
+						let i = module[patternOffset[ch]++];
+						if ((i & 63) < 62) {
+							i += module[patternOffset[ch]++] << 8;
+							if ((i & 63) != 61) {
+								instrumentNo[ch] = i >> 10;
+								instrumentFrame[ch] = frames;
+							}
+							volumeValue[ch] = i >> 6 & 15;
+							volumeFrame[ch] = frames;
+							break;
+						}
+						if (i == 62) {
+							blankRows[ch] = module[patternOffset[ch]++];
+							break;
+						}
+						if ((i & 63) == 62) {
+							blankRows[ch] = i >> 6;
+							break;
+						}
+						if ((i & 191) == 63) {
+							tempo = module[patternOffset[ch]++];
+							continue;
+						}
+						if (i == 191) {
+							patternOffset[ch] = patternBegin[ch] + module[patternOffset[ch]];
+							continue;
+						}
+						patternRows = -1;
+						break;
+					}
+					if (patternRows < 0)
+						break;
+				}
+				if (patternRows >= 0)
+					frames += tempo;
+			}
+			pos++;
+		}
+		let instrumentFrames = 0;
+		for (let ch = 0; ch < 1 << posShift; ch++) {
+			let frame = instrumentFrame[ch];
+			frame += ASAPInfo.#getRmtInstrumentFrames(module, instrumentNo[ch], volumeValue[ch], volumeFrame[ch] - frame, ch >= 4);
+			if (instrumentFrames < frame)
+				instrumentFrames = frame;
+		}
+		if (frames > instrumentFrames) {
+			if (frames - instrumentFrames > 100)
+				this.#loops[this.#songs] = false;
+			frames = instrumentFrames;
+		}
+		if (frames > 0)
+			this.#addSong(frames);
+	}
+
+	static #validateRmt(module, moduleLen)
+	{
+		if (moduleLen < 48)
+			return false;
+		if (module[6] != 82 || module[7] != 77 || module[8] != 84 || module[13] != 1)
+			return false;
+		return true;
+	}
+
+	#parseRmt(module, moduleLen)
+	{
+		if (!ASAPInfo.#validateRmt(module, moduleLen))
+			throw "Invalid RMT file";
+		let posShift;
+		switch (module[9]) {
+		case 52:
+			posShift = 2;
+			break;
+		case 56:
+			this.#channels = 2;
+			posShift = 3;
+			break;
+		default:
+			throw "Unsupported number of channels";
+		}
+		let perFrame = module[12];
+		if (perFrame < 1 || perFrame > 4)
+			throw "Unsupported player call rate";
+		this.type = ASAPModuleType.RMT;
+		this.#parseModule(module, moduleLen);
+		let blockLen = ASAPInfo.getWord(module, 4) + 1 - this.#music;
+		let songLen = ASAPInfo.getWord(module, 4) + 1 - ASAPInfo.getWord(module, 20);
+		if (posShift == 3 && (songLen & 4) != 0 && module[6 + blockLen - 4] == 254)
+			songLen += 4;
+		songLen >>= posShift;
+		if (songLen >= 256)
+			throw "Song too long";
+		const globalSeen = new Array(256);
+		this.#songs = 0;
+		for (let pos = 0; pos < songLen && this.#songs < 32; pos++) {
+			if (!globalSeen[pos]) {
+				this.songPos[this.#songs] = pos;
+				this.#parseRmtSong(module, globalSeen, songLen, posShift, pos);
+			}
+		}
+		this.#fastplay = 312 / perFrame | 0;
+		this.player = 1536;
+		if (this.#songs == 0)
+			throw "No songs found";
+		const title = new Uint8Array(127);
+		let titleLen;
+		for (titleLen = 0; titleLen < 127 && 10 + blockLen + titleLen < moduleLen; titleLen++) {
+			let c = module[10 + blockLen + titleLen];
+			if (c == 0)
+				break;
+			title[titleLen] = ASAPInfo.#isValidChar(c) ? c : 32;
+		}
+		this.#title = new TextDecoder().decode(title.subarray(0, titleLen));
+	}
+
+	#parseTmcSong(module, pos)
+	{
+		let addrToOffset = ASAPInfo.getWord(module, 2) - 6;
+		let tempo = module[36] + 1;
+		let frames = 0;
+		const patternOffset = new Int32Array(8);
+		const blankRows = new Int32Array(8);
+		while (module[437 + pos] < 128) {
+			for (let ch = 7; ch >= 0; ch--) {
+				let pat = module[437 + pos - 2 * ch];
+				patternOffset[ch] = module[166 + pat] + (module[294 + pat] << 8) - addrToOffset;
+				blankRows[ch] = 0;
+			}
+			for (let patternRows = 64; --patternRows >= 0;) {
+				for (let ch = 7; ch >= 0; ch--) {
+					if (--blankRows[ch] >= 0)
+						continue;
+					for (;;) {
+						let i = module[patternOffset[ch]++];
+						if (i < 64) {
+							patternOffset[ch]++;
+							break;
+						}
+						if (i == 64) {
+							i = module[patternOffset[ch]++];
+							if ((i & 127) == 0)
+								patternRows = 0;
+							else
+								tempo = (i & 127) + 1;
+							if (i >= 128)
+								patternOffset[ch]++;
+							break;
+						}
+						if (i < 128) {
+							i = module[patternOffset[ch]++] & 127;
+							if (i == 0)
+								patternRows = 0;
+							else
+								tempo = i + 1;
+							patternOffset[ch]++;
+							break;
+						}
+						if (i < 192)
+							continue;
+						blankRows[ch] = i - 191;
+						break;
+					}
+				}
+				frames += tempo;
+			}
+			pos += 16;
+		}
+		if (module[436 + pos] < 128)
+			this.#loops[this.#songs] = true;
+		this.#addSong(frames);
+	}
+
+	static #parseTmcTitle(title, titleLen, module, moduleOffset)
+	{
+		let lastOffset = moduleOffset + 29;
+		while (module[lastOffset] == 32) {
+			if (--lastOffset < moduleOffset)
+				return titleLen;
+		}
+		if (titleLen > 0) {
+			title[titleLen++] = 32;
+			title[titleLen++] = 124;
+			title[titleLen++] = 32;
+		}
+		while (moduleOffset <= lastOffset) {
+			let c = module[moduleOffset++] & 127;
+			switch (c) {
+			case 20:
+				c = 42;
+				break;
+			case 1:
+			case 3:
+			case 5:
+			case 12:
+			case 14:
+			case 15:
+			case 19:
+				c += 96;
+				break;
+			case 24:
+			case 26:
+				c = 122;
+				break;
+			default:
+				if (!ASAPInfo.#isValidChar(c))
+					c = 32;
+				break;
+			}
+			title[titleLen++] = c;
+		}
+		return titleLen;
+	}
+
+	#parseTmc(module, moduleLen)
+	{
+		if (moduleLen < 464)
+			throw "Module too short";
+		this.type = ASAPModuleType.TMC;
+		this.#parseModule(module, moduleLen);
+		this.#channels = 2;
+		let i = 0;
+		while (module[102 + i] == 0) {
+			if (++i >= 64)
+				throw "No instruments";
+		}
+		let lastPos = (module[102 + i] << 8) + module[38 + i] - ASAPInfo.getWord(module, 2) - 432;
+		if (437 + lastPos >= moduleLen)
+			throw "Module too short";
+		do {
+			if (lastPos <= 0)
+				throw "No songs found";
+			lastPos -= 16;
+		}
+		while (module[437 + lastPos] >= 128);
+		this.#songs = 0;
+		this.#parseTmcSong(module, 0);
+		for (i = 0; i < lastPos && this.#songs < 32; i += 16)
+			if (module[437 + i] >= 128)
+				this.#parseTmcSong(module, i + 16);
+		i = module[37];
+		if (i < 1 || i > 4)
+			throw "Unsupported player call rate";
+		this.#fastplay = 312 / i | 0;
+		const title = new Uint8Array(127);
+		let titleLen = ASAPInfo.#parseTmcTitle(title, 0, module, 6);
+		this.#title = new TextDecoder().decode(title.subarray(0, titleLen));
+	}
+
+	#parseTm2Song(module, pos)
+	{
+		let addrToOffset = ASAPInfo.getWord(module, 2) - 6;
+		let tempo = module[36] + 1;
+		let playerCalls = 0;
+		const patternOffset = new Int32Array(8);
+		const blankRows = new Int32Array(8);
+		for (;;) {
+			let patternRows = module[918 + pos];
+			if (patternRows == 0)
+				break;
+			if (patternRows >= 128) {
+				this.#loops[this.#songs] = true;
+				break;
+			}
+			for (let ch = 7; ch >= 0; ch--) {
+				let pat = module[917 + pos - 2 * ch];
+				patternOffset[ch] = module[262 + pat] + (module[518 + pat] << 8) - addrToOffset;
+				blankRows[ch] = 0;
+			}
+			while (--patternRows >= 0) {
+				for (let ch = 7; ch >= 0; ch--) {
+					if (--blankRows[ch] >= 0)
+						continue;
+					for (;;) {
+						let i = module[patternOffset[ch]++];
+						if (i == 0) {
+							patternOffset[ch]++;
+							break;
+						}
+						if (i < 64) {
+							if (module[patternOffset[ch]++] >= 128)
+								patternOffset[ch]++;
+							break;
+						}
+						if (i < 128) {
+							patternOffset[ch]++;
+							break;
+						}
+						if (i == 128) {
+							blankRows[ch] = module[patternOffset[ch]++];
+							break;
+						}
+						if (i < 192)
+							break;
+						if (i < 208) {
+							tempo = i - 191;
+							continue;
+						}
+						if (i < 224) {
+							patternOffset[ch]++;
+							break;
+						}
+						if (i < 240) {
+							patternOffset[ch] += 2;
+							break;
+						}
+						if (i < 255) {
+							blankRows[ch] = i - 240;
+							break;
+						}
+						blankRows[ch] = 64;
+						break;
+					}
+				}
+				playerCalls += tempo;
+			}
+			pos += 17;
+		}
+		this.#addSong(playerCalls);
+	}
+
+	#parseTm2(module, moduleLen)
+	{
+		if (moduleLen < 932)
+			throw "Module too short";
+		this.type = ASAPModuleType.TM2;
+		this.#parseModule(module, moduleLen);
+		let i = module[37];
+		if (i < 1 || i > 4)
+			throw "Unsupported player call rate";
+		this.#fastplay = 312 / i | 0;
+		this.player = 2048;
+		if (module[31] != 0)
+			this.#channels = 2;
+		let lastPos = 65535;
+		for (i = 0; i < 128; i++) {
+			let instrAddr = module[134 + i] + (module[774 + i] << 8);
+			if (instrAddr != 0 && instrAddr < lastPos)
+				lastPos = instrAddr;
+		}
+		for (i = 0; i < 256; i++) {
+			let patternAddr = module[262 + i] + (module[518 + i] << 8);
+			if (patternAddr != 0 && patternAddr < lastPos)
+				lastPos = patternAddr;
+		}
+		lastPos -= ASAPInfo.getWord(module, 2) + 896;
+		if (902 + lastPos >= moduleLen)
+			throw "Module too short";
+		let c;
+		do {
+			if (lastPos <= 0)
+				throw "No songs found";
+			lastPos -= 17;
+			c = module[918 + lastPos];
+		}
+		while (c == 0 || c >= 128);
+		this.#songs = 0;
+		this.#parseTm2Song(module, 0);
+		for (i = 0; i < lastPos && this.#songs < 32; i += 17) {
+			c = module[918 + i];
+			if (c == 0 || c >= 128)
+				this.#parseTm2Song(module, i + 17);
+		}
+		const title = new Uint8Array(127);
+		let titleLen = ASAPInfo.#parseTmcTitle(title, 0, module, 39);
+		titleLen = ASAPInfo.#parseTmcTitle(title, titleLen, module, 71);
+		titleLen = ASAPInfo.#parseTmcTitle(title, titleLen, module, 103);
+		this.#title = new TextDecoder().decode(title.subarray(0, titleLen));
+	}
+
+	static #afterFF(module, moduleLen, currentOffset)
+	{
+		while (currentOffset < moduleLen) {
+			if (module[currentOffset++] == 255)
+				return currentOffset;
+		}
+		throw "Module too short";
+	}
+
+	static #getFcTrackCommand(module, trackPos, n)
+	{
+		return module[3 + (n << 8) + trackPos[n]];
+	}
+
+	static #isFcSongEnd(module, trackPos)
+	{
+		let allLoop = true;
+		for (let n = 0; n < 3; n++) {
+			if (trackPos[n] >= 256)
+				return true;
+			switch (ASAPInfo.#getFcTrackCommand(module, trackPos, n)) {
+			case 254:
+				return true;
+			case 255:
+				break;
+			default:
+				allLoop = false;
+				break;
+			}
+		}
+		return allLoop;
+	}
+
+	static #validateFc(module, moduleLen)
+	{
+		if (moduleLen < 899)
+			return false;
+		if (module[0] != 38 || module[1] != 35)
+			return false;
+		return true;
+	}
+
+	#parseFc(module, moduleLen)
+	{
+		if (!ASAPInfo.#validateFc(module, moduleLen))
+			throw "Invalid FC file";
+		this.type = ASAPModuleType.FC;
+		this.player = 1024;
+		this.#music = 2560;
+		this.#songs = 0;
+		this.headerLen = -1;
+		const patternOffsets = new Int32Array(64);
+		let currentOffset = 899;
+		for (let i = 0; i < 64; i++) {
+			patternOffsets[i] = currentOffset;
+			currentOffset = ASAPInfo.#afterFF(module, moduleLen, currentOffset);
+		}
+		for (let i = 0; i < 32; i++)
+			currentOffset = ASAPInfo.#afterFF(module, moduleLen, currentOffset);
+		for (let pos = 0; pos < 256 && this.#songs < 32;) {
+			const trackPos = new Int32Array(3);
+			for (let n = 0; n < 3; n++)
+				trackPos[n] = pos;
+			const patternDelay = new Int32Array(3);
+			const noteDuration = new Int32Array(3);
+			const patternPos = new Int32Array(3);
+			let playerCalls = 0;
+			this.#loops[this.#songs] = true;
+			while (!ASAPInfo.#isFcSongEnd(module, trackPos)) {
+				for (let n = 0; n < 3; n++) {
+					if (ASAPInfo.#getFcTrackCommand(module, trackPos, n) == 255)
+						continue;
+					if (patternDelay[n]-- > 0)
+						continue;
+					while (trackPos[n] < 256) {
+						let trackCmd = ASAPInfo.#getFcTrackCommand(module, trackPos, n);
+						if (trackCmd < 64) {
+							let patternCmd = module[patternOffsets[trackCmd] + patternPos[n]++];
+							if (patternCmd < 64) {
+								patternDelay[n] = noteDuration[n];
+								break;
+							}
+							else if (patternCmd < 96)
+								noteDuration[n] = patternCmd - 64;
+							else if (patternCmd == 255) {
+								patternDelay[n] = 0;
+								noteDuration[n] = 0;
+								patternPos[n] = 0;
+								trackPos[n]++;
+							}
+						}
+						else if (trackCmd == 64)
+							trackPos[n] += 2;
+						else if (trackCmd == 254) {
+							this.#loops[this.#songs] = false;
+							break;
+						}
+						else if (trackCmd == 255)
+							break;
+						else
+							trackPos[n]++;
+					}
+				}
+				if (ASAPInfo.#isFcSongEnd(module, trackPos))
+					break;
+				playerCalls += module[2];
+			}
+			pos = -1;
+			for (let n = 0; n < 3; n++) {
+				let nxtrkpos = trackPos[n];
+				if (patternPos[n] > 0)
+					nxtrkpos++;
+				if (pos < nxtrkpos)
+					pos = nxtrkpos;
+			}
+			pos++;
+			if (pos <= 256)
+				this.#addSong(playerCalls);
+		}
+	}
+
+	static #parseText(module, i, argEnd)
+	{
+		let len = argEnd - i - 2;
+		if (i < 0 || len < 0 || module[i] != 34 || module[argEnd - 1] != 34)
+			return "";
+		if (len == 3 && module[i + 1] == 60 && module[i + 2] == 63 && module[i + 3] == 62)
+			return "";
+		return new TextDecoder().decode(module.subarray(i + 1, i + 1 + len));
+	}
+
+	static #hasStringAt(module, moduleIndex, s)
+	{
+		for (const c of s)
+			if (c.codePointAt(0) != module[moduleIndex++])
+				return false;
+		return true;
+	}
+
+	static #parseDec(module, i, argEnd, minVal, maxVal)
+	{
+		if (i < 0)
+			throw "Missing number";
+		let r = 0;
+		while (i < argEnd) {
+			let c = module[i++];
+			if (c < 48 || c > 57)
+				throw "Invalid number";
+			r = r * 10 + c - 48;
+			if (r > maxVal)
+				throw "Number too big";
+		}
+		if (r < minVal)
+			throw "Number too small";
+		return r;
+	}
+
+	static #parseHex(module, i, argEnd)
+	{
+		if (i < 0)
+			throw "Missing number";
+		let r = 0;
+		while (i < argEnd) {
+			let c = module[i++];
+			if (r > 4095)
+				throw "Number too big";
+			r <<= 4;
+			if (c >= 48 && c <= 57)
+				r += c - 48;
+			else if (c >= 65 && c <= 70)
+				r += c - 65 + 10;
+			else if (c >= 97 && c <= 102)
+				r += c - 97 + 10;
+			else
+				throw "Invalid number";
+		}
+		return r;
+	}
+
+	/**
+	 * Returns the number of milliseconds represented by the given string.
+	 * @param s Time in the <code>"mm:ss.xxx"</code> format.
+	 */
+	static parseDuration(s)
+	{
+		const parser = new DurationParser();
+		return parser.parse(s);
+	}
+
+	static #validateSap(module, moduleLen)
+	{
+		return moduleLen >= 30 && ASAPInfo.#hasStringAt(module, 0, "SAP\r\n");
+	}
+
+	#parseSap(module, moduleLen)
+	{
+		if (!ASAPInfo.#validateSap(module, moduleLen))
+			throw "Invalid SAP file";
+		this.#fastplay = -1;
+		let type = 0;
+		let moduleIndex = 5;
+		let durationIndex = 0;
+		while (module[moduleIndex] != 255) {
+			let lineStart = moduleIndex;
+			while (module[moduleIndex] > 32) {
+				if (++moduleIndex >= moduleLen)
+					throw "Invalid SAP file";
+			}
+			let tagLen = moduleIndex - lineStart;
+			let argStart = -1;
+			let argEnd = -1;
+			for (;;) {
+				let c = module[moduleIndex];
+				if (c > 32) {
+					ASAPInfo.#checkValidChar(c);
+					if (argStart < 0)
+						argStart = moduleIndex;
+					argEnd = -1;
+				}
+				else {
+					if (argEnd < 0)
+						argEnd = moduleIndex;
+					if (c == 10)
+						break;
+				}
+				if (++moduleIndex >= moduleLen)
+					throw "Invalid SAP file";
+			}
+			if (++moduleIndex + 6 >= moduleLen)
+				throw "Invalid SAP file";
+			switch (new TextDecoder().decode(module.subarray(lineStart, lineStart + tagLen))) {
+			case "AUTHOR":
+				this.#author = ASAPInfo.#parseText(module, argStart, argEnd);
+				break;
+			case "NAME":
+				this.#title = ASAPInfo.#parseText(module, argStart, argEnd);
+				break;
+			case "DATE":
+				this.#date = ASAPInfo.#parseText(module, argStart, argEnd);
+				break;
+			case "TIME":
+				if (durationIndex >= 32)
+					throw "Too many TIME tags";
+				if (argStart < 0)
+					throw "Missing TIME argument";
+				if (argEnd - argStart > 5 && ASAPInfo.#hasStringAt(module, argEnd - 5, " LOOP")) {
+					this.#loops[durationIndex] = true;
+					argEnd -= 5;
+				}
+				{
+					let arg = new TextDecoder().decode(module.subarray(argStart, argStart + argEnd - argStart));
+					this.#durations[durationIndex++] = ASAPInfo.parseDuration(arg);
+				}
+				break;
+			case "SONGS":
+				this.#songs = ASAPInfo.#parseDec(module, argStart, argEnd, 1, 32);
+				break;
+			case "DEFSONG":
+				this.#defaultSong = ASAPInfo.#parseDec(module, argStart, argEnd, 0, 31);
+				break;
+			case "TYPE":
+				if (argStart < 0)
+					throw "Missing TYPE argument";
+				type = module[argStart];
+				break;
+			case "FASTPLAY":
+				this.#fastplay = ASAPInfo.#parseDec(module, argStart, argEnd, 1, 32767);
+				break;
+			case "MUSIC":
+				this.#music = ASAPInfo.#parseHex(module, argStart, argEnd);
+				break;
+			case "INIT":
+				this.#init = ASAPInfo.#parseHex(module, argStart, argEnd);
+				break;
+			case "PLAYER":
+				this.player = ASAPInfo.#parseHex(module, argStart, argEnd);
+				break;
+			case "COVOX":
+				this.#covoxAddr = ASAPInfo.#parseHex(module, argStart, argEnd);
+				if (this.#covoxAddr != 54784)
+					throw "COVOX should be D600";
+				this.#channels = 2;
+				break;
+			case "STEREO":
+				this.#channels = 2;
+				break;
+			case "NTSC":
+				this.#ntsc = true;
+				break;
+			default:
+				break;
+			}
+		}
+		if (this.#defaultSong >= this.#songs)
+			throw "DEFSONG too big";
+		switch (type) {
+		case 66:
+			if (this.player < 0)
+				throw "Missing PLAYER tag";
+			if (this.#init < 0)
+				throw "Missing INIT tag";
+			this.type = ASAPModuleType.SAP_B;
+			break;
+		case 67:
+			if (this.player < 0)
+				throw "Missing PLAYER tag";
+			if (this.#music < 0)
+				throw "Missing MUSIC tag";
+			this.type = ASAPModuleType.SAP_C;
+			break;
+		case 68:
+			if (this.#init < 0)
+				throw "Missing INIT tag";
+			this.type = ASAPModuleType.SAP_D;
+			break;
+		case 83:
+			if (this.#init < 0)
+				throw "Missing INIT tag";
+			this.type = ASAPModuleType.SAP_S;
+			if (this.#fastplay < 0)
+				this.#fastplay = 78;
+			break;
+		default:
+			throw "Unsupported TYPE";
+		}
+		if (this.#fastplay < 0)
+			this.#fastplay = this.#ntsc ? 262 : 312;
+		if (module[moduleIndex + 1] != 255)
+			throw "Invalid binary header";
+		this.headerLen = moduleIndex;
+	}
+
+	static packExt(ext)
+	{
+		return ext.length == 2 && ext.charCodeAt(0) <= 122 && ext.charCodeAt(1) <= 122 ? ext.charCodeAt(0) | ext.charCodeAt(1) << 8 | 2105376 : ext.length == 3 && ext.charCodeAt(0) <= 122 && ext.charCodeAt(1) <= 122 && ext.charCodeAt(2) <= 122 ? ext.charCodeAt(0) | ext.charCodeAt(1) << 8 | ext.charCodeAt(2) << 16 | 2105376 : 0;
+	}
+
+	static getPackedExt(filename)
+	{
+		let ext = 0;
+		for (let i = filename.length; --i > 0;) {
+			let c = filename.charCodeAt(i);
+			if (c <= 32 || c > 122)
+				return 0;
+			if (c == 46)
+				return ext | 2105376;
+			ext = (ext << 8) + c;
+		}
+		return 0;
+	}
+
+	static #isOurPackedExt(ext)
+	{
+		switch (ext) {
+		case 7364979:
+		case 6516067:
+		case 3370339:
+		case 7499107:
+		case 7564643:
+		case 6516068:
+		case 7629924:
+		case 7630957:
+		case 6582381:
+		case 7630194:
+		case 6516084:
+		case 3698036:
+		case 3304820:
+		case 2122598:
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	/**
+	 * Checks whether the filename represents a module type supported by ASAP.
+	 * Returns <code>true</code> if the filename is supported by ASAP.
+	 * @param filename Filename to check the extension of.
+	 */
+	static isOurFile(filename)
+	{
+		return ASAPInfo.#isOurPackedExt(ASAPInfo.getPackedExt(filename));
+	}
+
+	/**
+	 * Checks whether the filename extension represents a module type supported by ASAP.
+	 * Returns <code>true</code> if the filename extension is supported by ASAP.
+	 * @param ext Filename extension without the leading dot.
+	 */
+	static isOurExt(ext)
+	{
+		return ASAPInfo.#isOurPackedExt(ASAPInfo.packExt(ext));
+	}
+
+	static #guessPackedExt(module, moduleLen)
+	{
+		if (ASAPInfo.#validateSap(module, moduleLen))
+			return 7364979;
+		if (ASAPInfo.#validateFc(module, moduleLen))
+			return 2122598;
+		if (ASAPInfo.#validateRmt(module, moduleLen))
+			return 7630194;
+		throw "Unknown format";
+	}
+
+	/**
+	 * Loads file information.
+	 * @param filename Filename, used to determine the format.
+	 * @param module Contents of the file.
+	 * @param moduleLen Length of the file.
+	 */
+	load(filename, module, moduleLen)
+	{
+		let ext;
+		if (filename != null) {
+			let len = filename.length;
+			let basename = 0;
+			ext = -1;
+			for (let i = len; --i >= 0;) {
+				let c = filename.charCodeAt(i);
+				if (c == 47 || c == 92) {
+					basename = i + 1;
+					break;
+				}
+				if (c == 46)
+					ext = i;
+			}
+			if (ext < 0)
+				throw "Filename has no extension";
+			ext -= basename;
+			if (ext > 127)
+				ext = 127;
+			this.#filename = filename.substring(basename, basename + ext);
+			ext = ASAPInfo.getPackedExt(filename);
+		}
+		else {
+			this.#filename = "";
+			ext = ASAPInfo.#guessPackedExt(module, moduleLen);
+		}
+		this.#author = "";
+		this.#title = "";
+		this.#date = "";
+		this.#channels = 1;
+		this.#songs = 1;
+		this.#defaultSong = 0;
+		for (let i = 0; i < 32; i++) {
+			this.#durations[i] = -1;
+			this.#loops[i] = false;
+		}
+		this.#ntsc = false;
+		this.#fastplay = 312;
+		this.#music = -1;
+		this.#init = -1;
+		this.player = -1;
+		this.#covoxAddr = -1;
+		this.headerLen = 0;
+		switch (ext) {
+		case 7364979:
+			this.#parseSap(module, moduleLen);
+			return;
+		case 6516067:
+			this.#parseCmc(module, moduleLen, ASAPModuleType.CMC);
+			return;
+		case 3370339:
+			this.#parseCmc(module, moduleLen, ASAPModuleType.CM3);
+			return;
+		case 7499107:
+			this.#parseCmc(module, moduleLen, ASAPModuleType.CMR);
+			return;
+		case 7564643:
+			this.#channels = 2;
+			this.#parseCmc(module, moduleLen, ASAPModuleType.CMS);
+			return;
+		case 6516068:
+			this.#fastplay = 156;
+			this.#parseCmc(module, moduleLen, ASAPModuleType.CMC);
+			return;
+		case 7629924:
+			this.#parseDlt(module, moduleLen);
+			return;
+		case 7630957:
+			this.#parseMpt(module, moduleLen);
+			return;
+		case 6582381:
+			this.#fastplay = 156;
+			this.#parseMpt(module, moduleLen);
+			return;
+		case 7630194:
+			this.#parseRmt(module, moduleLen);
+			return;
+		case 6516084:
+		case 3698036:
+			this.#parseTmc(module, moduleLen);
+			return;
+		case 3304820:
+			this.#parseTm2(module, moduleLen);
+			return;
+		case 2122598:
+			this.#parseFc(module, moduleLen);
+			return;
+		default:
+			throw "Unknown filename extension";
+		}
+	}
+
+	static #checkValidText(s)
+	{
+		if (s.length > 127)
+			throw "Text too long";
+		for (const c of s)
+			ASAPInfo.#checkValidChar(c.codePointAt(0));
+	}
+
+	/**
+	 * Returns author's name.
+	 * A nickname may be included in parentheses after the real name.
+	 * Multiple authors are separated with <code>" &amp; "</code>.
+	 * An empty string means the author is unknown.
+	 */
+	getAuthor()
+	{
+		return this.#author;
+	}
+
+	/**
+	 * Sets author's name.
+	 * A nickname may be included in parentheses after the real name.
+	 * Multiple authors are separated with <code>" &amp; "</code>.
+	 * An empty string means the author is unknown.
+	 * @param value New author's name for the current music.
+	 */
+	setAuthor(value)
+	{
+		ASAPInfo.#checkValidText(value);
+		this.#author = value;
+	}
+
+	/**
+	 * Returns music title.
+	 * An empty string means the title is unknown.
+	 */
+	getTitle()
+	{
+		return this.#title;
+	}
+
+	/**
+	 * Sets music title.
+	 * An empty string means the title is unknown.
+	 * @param value New title for the current music.
+	 */
+	setTitle(value)
+	{
+		ASAPInfo.#checkValidText(value);
+		this.#title = value;
+	}
+
+	/**
+	 * Returns music title or filename.
+	 * If title is unknown returns filename without the path or extension.
+	 */
+	getTitleOrFilename()
+	{
+		return this.#title.length > 0 ? this.#title : this.#filename;
+	}
+
+	/**
+	 * Returns music creation date.
+	 * 
+	 * <p>Some of the possible formats are:
+	 * <ul>
+	 * <li>YYYY</li>
+	 * <li>MM/YYYY</li>
+	 * <li>DD/MM/YYYY</li>
+	 * <li>YYYY-YYYY</li>
+	 * </ul>
+	 * <p>An empty string means the date is unknown.
+	 */
+	getDate()
+	{
+		return this.#date;
+	}
+
+	/**
+	 * Sets music creation date.
+	 * 
+	 * <p>Some of the possible formats are:
+	 * <ul>
+	 * <li>YYYY</li>
+	 * <li>MM/YYYY</li>
+	 * <li>DD/MM/YYYY</li>
+	 * <li>YYYY-YYYY</li>
+	 * </ul>
+	 * <p>An empty string means the date is unknown.
+	 * @param value New music creation date.
+	 */
+	setDate(value)
+	{
+		ASAPInfo.#checkValidText(value);
+		this.#date = value;
+	}
+
+	#checkDate()
+	{
+		let n = this.#date.length;
+		switch (n) {
+		case 4:
+		case 7:
+		case 10:
+			break;
+		default:
+			return -1;
+		}
+		for (let i = 0; i < n; i++) {
+			let c = this.#date.charCodeAt(i);
+			if (i == n - 5 || i == n - 8) {
+				if (c != 47)
+					return -1;
+			}
+			else if (c < 48 || c > 57)
+				return -1;
+		}
+		return n;
+	}
+
+	#getTwoDateDigits(i)
+	{
+		return (this.#date.charCodeAt(i) - 48) * 10 + this.#date.charCodeAt(i + 1) - 48;
+	}
+
+	/**
+	 * Returns music creation year.
+	 * -1 means the year is unknown.
+	 */
+	getYear()
+	{
+		let n = this.#checkDate();
+		if (n < 0)
+			return -1;
+		return this.#getTwoDateDigits(n - 4) * 100 + this.#getTwoDateDigits(n - 2);
+	}
+
+	/**
+	 * Returns music creation month (1-12).
+	 * -1 means the month is unknown.
+	 */
+	getMonth()
+	{
+		let n = this.#checkDate();
+		if (n < 7)
+			return -1;
+		return this.#getTwoDateDigits(n - 7);
+	}
+
+	/**
+	 * Returns day of month of the music creation date.
+	 * -1 means the day is unknown.
+	 */
+	getDayOfMonth()
+	{
+		let n = this.#checkDate();
+		if (n != 10)
+			return -1;
+		return this.#getTwoDateDigits(0);
+	}
+
+	/**
+	 * Returns 1 for mono or 2 for stereo.
+	 */
+	getChannels()
+	{
+		return this.#channels;
+	}
+
+	/**
+	 * Returns number of songs in the file.
+	 */
+	getSongs()
+	{
+		return this.#songs;
+	}
+
+	/**
+	 * Returns 0-based index of the "main" song.
+	 * The specified song should be played by default.
+	 */
+	getDefaultSong()
+	{
+		return this.#defaultSong;
+	}
+
+	/**
+	 * Sets the 0-based index of the "main" song.
+	 * @param song New default song.
+	 */
+	setDefaultSong(song)
+	{
+		if (song < 0 || song >= this.#songs)
+			throw "Song out of range";
+		this.#defaultSong = song;
+	}
+
+	/**
+	 * Returns length of the specified song.
+	 * The length is specified in milliseconds. -1 means the length is indeterminate.
+	 * @param song Song to get length of, 0-based.
+	 */
+	getDuration(song)
+	{
+		return this.#durations[song];
+	}
+
+	/**
+	 * Sets length of the specified song.
+	 * The length is specified in milliseconds. -1 means the length is indeterminate.
+	 * @param song Song to set length of, 0-based.
+	 * @param duration New length in milliseconds.
+	 */
+	setDuration(song, duration)
+	{
+		if (song < 0 || song >= this.#songs)
+			throw "Song out of range";
+		this.#durations[song] = duration;
+	}
+
+	/**
+	 * Returns information whether the specified song loops.
+	 * 
+	 * <p>Returns:
+	 * <ul>
+	 * <li><code>true</code> if the song loops</li>
+	 * <li><code>false</code> if the song stops</li>
+	 * </ul>
+	 * @param song Song to check for looping, 0-based.
+	 */
+	getLoop(song)
+	{
+		return this.#loops[song];
+	}
+
+	/**
+	 * Sets information whether the specified song loops.
+	 * 
+	 * <p>Use:
+	 * <ul>
+	 * <li><code>true</code> if the song loops</li>
+	 * <li><code>false</code> if the song stops</li>
+	 * </ul>
+	 * @param song Song to set as looping, 0-based.
+	 * @param loop <code>true</code> if the song loops.
+	 */
+	setLoop(song, loop)
+	{
+		if (song < 0 || song >= this.#songs)
+			throw "Song out of range";
+		this.#loops[song] = loop;
+	}
+
+	/**
+	 * Returns <code>true</code> for an NTSC song and <code>false</code> for a PAL song.
+	 */
+	isNtsc()
+	{
+		return this.#ntsc;
+	}
+
+	/**
+	 * Returns <code>true</code> if NTSC can be set or removed.
+	 */
+	canSetNtsc()
+	{
+		return this.type == ASAPModuleType.SAP_B && this.#fastplay == (this.#ntsc ? 262 : 312);
+	}
+
+	/**
+	 * Marks a SAP file as NTSC or PAL.
+	 * @param ntsc <code>true</code> for NTSC, <code>false</code> for PAL.
+	 */
+	setNtsc(ntsc)
+	{
+		this.#ntsc = ntsc;
+		this.#fastplay = ntsc ? 262 : 312;
+		for (let song = 0; song < this.#songs; song++) {
+			let duration = BigInt(this.#durations[song]);
+			if (duration > 0) {
+				this.#durations[song] = ntsc ? Number(duration * 5956963n / 7159090n) : Number(duration * 7159090n / 5956963n);
+			}
+		}
+	}
+
+	/**
+	 * Returns the letter argument for the TYPE SAP tag.
+	 * Returns zero for non-SAP files.
+	 */
+	getTypeLetter()
+	{
+		switch (this.type) {
+		case ASAPModuleType.SAP_B:
+			return 66;
+		case ASAPModuleType.SAP_C:
+			return 67;
+		case ASAPModuleType.SAP_D:
+			return 68;
+		case ASAPModuleType.SAP_S:
+			return 83;
+		default:
+			return 0;
+		}
+	}
+
+	/**
+	 * Returns player routine rate in Atari scanlines.
+	 */
+	getPlayerRateScanlines()
+	{
+		return this.#fastplay;
+	}
+
+	/**
+	 * Returns approximate player routine rate in Hz.
+	 */
+	getPlayerRateHz()
+	{
+		let scanlineClock = this.#ntsc ? 15699 : 15556;
+		return (scanlineClock + (this.#fastplay >> 1)) / this.#fastplay | 0;
+	}
+
+	/**
+	 * Returns the address of the module.
+	 * Returns -1 if unknown.
+	 */
+	getMusicAddress()
+	{
+		return this.#music;
+	}
+
+	/**
+	 * Causes music to be relocated.
+	 * Use only with <code>ASAPWriter.Write</code>.
+	 * @param address New music address.
+	 */
+	setMusicAddress(address)
+	{
+		if (address < 0 || address >= 65535)
+			throw "Invalid music address";
+		this.#music = address;
+	}
+
+	/**
+	 * Returns the address of the player initialization routine.
+	 * Returns -1 if no initialization routine.
+	 */
+	getInitAddress()
+	{
+		return this.#init;
+	}
+
+	/**
+	 * Returns the address of the player routine.
+	 */
+	getPlayerAddress()
+	{
+		return this.player;
+	}
+
+	/**
+	 * Returns the address of the COVOX chip.
+	 * Returns -1 if no COVOX enabled.
+	 */
+	getCovoxAddress()
+	{
+		return this.#covoxAddr;
+	}
+
+	/**
+	 * Returns the length of the SAP header in bytes.
+	 */
+	getSapHeaderLength()
+	{
+		return this.headerLen;
+	}
+
+	/**
+	 * Returns the offset of instrument names for RMT module.
+	 * Returns -1 if not an RMT module or RMT module without instrument names.
+	 * @param module Content of the RMT file.
+	 * @param moduleLen Length of the RMT file.
+	 */
+	getInstrumentNamesOffset(module, moduleLen)
+	{
+		if (this.type != ASAPModuleType.RMT)
+			return -1;
+		for (let offset = ASAPInfo.getWord(module, 4) - ASAPInfo.getWord(module, 2) + 12; offset < moduleLen; offset++) {
+			if (module[offset - 1] == 0)
+				return offset;
+		}
+		return -1;
+	}
+
+	/**
+	 * Returns human-readable description of the filename extension.
+	 * @param ext Filename extension without the leading dot.
+	 */
+	static getExtDescription(ext)
+	{
+		switch (ASAPInfo.packExt(ext)) {
+		case 7364979:
+			return "Slight Atari Player";
+		case 6516067:
+			return "Chaos Music Composer";
+		case 3370339:
+			return "CMC \"3/4\"";
+		case 7499107:
+			return "CMC \"Rzog\"";
+		case 7564643:
+			return "Stereo Double CMC";
+		case 6516068:
+			return "CMC DoublePlay";
+		case 7629924:
+			return "Delta Music Composer";
+		case 7630957:
+			return "Music ProTracker";
+		case 6582381:
+			return "MPT DoublePlay";
+		case 7630194:
+			return "Raster Music Tracker";
+		case 6516084:
+		case 3698036:
+			return "Theta Music Composer 1.x";
+		case 3304820:
+			return "Theta Music Composer 2.x";
+		case 2122598:
+			return "Future Composer";
+		case 7890296:
+			return "Atari 8-bit executable";
+		default:
+			throw "Unknown extension";
+		}
+	}
+
+	getRmtSapOffset(module, moduleLen)
+	{
+		if (this.player != 13315)
+			return -1;
+		let offset = this.headerLen + ASAPInfo.getWord(module, this.headerLen + 4) - ASAPInfo.getWord(module, this.headerLen + 2) + 7;
+		if (offset + 6 >= moduleLen || module[offset + 4] != 82 || module[offset + 5] != 77 || module[offset + 6] != 84)
+			return -1;
+		return offset;
+	}
+
+	getOriginalModuleType(module, moduleLen)
+	{
+		switch (this.type) {
+		case ASAPModuleType.SAP_B:
+			if ((this.#init == 1019 || this.#init == 1017) && this.player == 1283)
+				return ASAPModuleType.DLT;
+			if (((this.#init == 1267 || this.#init == 1263) && this.player == 1283) || (this.#init == 62707 && this.player == 62723))
+				return ASAPModuleType.MPT;
+			if (this.#init == 3200 || this.getRmtSapOffset(module, moduleLen) > 0)
+				return ASAPModuleType.RMT;
+			if (this.#init == 1269 || this.#init == 62709 || this.#init == 1266 || ((this.#init == 1255 || this.#init == 62695 || this.#init == 1252) && this.#fastplay == 156) || ((this.#init == 1253 || this.#init == 62693 || this.#init == 1250) && (this.#fastplay == 104 || this.#fastplay == 78)))
+				return ASAPModuleType.TMC;
+			if ((this.#init == 4224 && this.player == 1283) || (this.#init == 4992 && this.player == 2051))
+				return ASAPModuleType.TM2;
+			if (this.#init == 1024 && this.player == 1027)
+				return ASAPModuleType.FC;
+			return this.type;
+		case ASAPModuleType.SAP_C:
+			if ((this.player == 1280 || this.player == 62720) && moduleLen >= 1024) {
+				if (this.#channels > 1)
+					return ASAPModuleType.CMS;
+				if (module[moduleLen - 170] == 30)
+					return ASAPModuleType.CMR;
+				if (module[moduleLen - 909] == 48)
+					return ASAPModuleType.CM3;
+				return ASAPModuleType.CMC;
+			}
+			return this.type;
+		default:
+			return this.type;
+		}
+	}
+
+	/**
+	 * Returns the extension of the original module format.
+	 * For native modules it simply returns their extension.
+	 * For the SAP format it attempts to detect the original module format.
+	 * @param module Contents of the file.
+	 * @param moduleLen Length of the file.
+	 */
+	getOriginalModuleExt(module, moduleLen)
+	{
+		switch (this.getOriginalModuleType(module, moduleLen)) {
+		case ASAPModuleType.CMC:
+			return this.#fastplay == 156 ? "dmc" : "cmc";
+		case ASAPModuleType.CM3:
+			return "cm3";
+		case ASAPModuleType.CMR:
+			return "cmr";
+		case ASAPModuleType.CMS:
+			return "cms";
+		case ASAPModuleType.DLT:
+			return "dlt";
+		case ASAPModuleType.MPT:
+			return this.#fastplay == 156 ? "mpd" : "mpt";
+		case ASAPModuleType.RMT:
+			return "rmt";
+		case ASAPModuleType.TMC:
+			return "tmc";
+		case ASAPModuleType.TM2:
+			return "tm2";
+		case ASAPModuleType.FC:
+			return "fc";
+		default:
+			return null;
+		}
+	}
+
+	static #GET_RMT_INSTRUMENT_FRAMES_RMT_VOLUME_SILENT = new Uint8Array([ 16, 8, 4, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1 ]);
+}
+
+class ASAPNativeModuleWriter
+{
+	writer;
+	sourceModule;
+	sourceOffset;
+	#addressDiff;
+
+	#getByte(offset)
+	{
+		return this.sourceModule[this.sourceOffset + offset];
+	}
+
+	getWord(offset)
+	{
+		return ASAPInfo.getWord(this.sourceModule, this.sourceOffset + offset);
+	}
+
+	#copy(endOffset)
+	{
+		this.writer.writeBytes(this.sourceModule, this.sourceOffset + this.writer.outputOffset, this.sourceOffset + endOffset);
+	}
+
+	#relocateBytes(lowOffset, highOffset, count, shift)
+	{
+		lowOffset += this.sourceOffset;
+		highOffset += this.sourceOffset;
+		for (let i = 0; i < count; i++) {
+			let address = this.sourceModule[lowOffset + i] + (this.sourceModule[highOffset + i] << 8);
+			if (address != 0 && address != 65535)
+				address += this.#addressDiff;
+			this.writer.writeByte(address >> shift & 255);
+		}
+	}
+
+	#relocateLowHigh(count)
+	{
+		let lowOffset = this.writer.outputOffset;
+		this.#relocateBytes(lowOffset, lowOffset + count, count, 0);
+		this.#relocateBytes(lowOffset, lowOffset + count, count, 8);
+	}
+
+	#relocateWords(count)
+	{
+		while (--count >= 0) {
+			let address = this.getWord(this.writer.outputOffset);
+			if (address != 0 && address != 65535)
+				address += this.#addressDiff;
+			this.writer.writeWord(address);
+		}
+	}
+
+	write(info, type, moduleLen)
+	{
+		let startAddr = this.getWord(2);
+		this.#addressDiff = info.getMusicAddress() < 0 ? 0 : info.getMusicAddress() - startAddr;
+		if (this.getWord(4) + this.#addressDiff > 65535)
+			throw "Address set too high";
+		switch (type) {
+		case ASAPModuleType.CMC:
+		case ASAPModuleType.CM3:
+		case ASAPModuleType.CMR:
+		case ASAPModuleType.CMS:
+			this.#relocateWords(3);
+			this.#copy(26);
+			this.#relocateLowHigh(64);
+			break;
+		case ASAPModuleType.DLT:
+			this.#relocateWords(3);
+			break;
+		case ASAPModuleType.MPT:
+			this.#relocateWords(99);
+			this.#copy(454);
+			this.#relocateLowHigh(4);
+			break;
+		case ASAPModuleType.RMT:
+			this.writer.writeWord(65535);
+			this.#relocateWords(2);
+			this.#copy(14);
+			let patternLowAddress = this.getWord(16);
+			this.#relocateWords((patternLowAddress - startAddr - 8) >> 1);
+			this.#relocateLowHigh(this.getWord(18) - patternLowAddress);
+			let songOffset = 6 + this.getWord(20) - startAddr;
+			this.#copy(songOffset);
+			let songEnd = 7 + this.getWord(4) - startAddr;
+			while (songOffset + 3 < songEnd) {
+				let nextSongOffset = songOffset + this.#getByte(9) - 48;
+				if (this.#getByte(songOffset) == 254) {
+					this.#copy(songOffset + 2);
+					this.#relocateWords(1);
+				}
+				if (nextSongOffset > songEnd)
+					nextSongOffset = songEnd;
+				this.#copy(nextSongOffset);
+				songOffset = nextSongOffset;
+			}
+			this.#copy(songEnd);
+			if (moduleLen >= songEnd + 5)
+				this.#relocateWords(2);
+			break;
+		case ASAPModuleType.TMC:
+			this.#relocateWords(3);
+			this.#copy(38);
+			this.#relocateLowHigh(64);
+			this.#relocateLowHigh(128);
+			break;
+		case ASAPModuleType.TM2:
+			this.#relocateWords(3);
+			this.#copy(134);
+			this.#relocateBytes(134, 774, 128, 0);
+			this.#relocateLowHigh(256);
+			this.#relocateBytes(134, 774, 128, 8);
+			break;
+		default:
+			throw "Impossible conversion";
+		}
+		this.#copy(moduleLen);
+	}
+}
+
+/**
+ * Static methods for writing modules in different formats.
+ */
+export class ASAPWriter
+{
+	constructor()
+	{
+	}
+
+	/**
+	 * Maximum number of extensions returned by <code>GetSaveExts</code>.
+	 */
+	static MAX_SAVE_EXTS = 3;
+
+	/**
+	 * Enumerates possible file types the given module can be written as.
+	 * Returns the number of extensions written to <code>exts</code>.
+	 * @param exts Receives filename extensions without the leading dot.
+	 * @param info File information.
+	 * @param module Contents of the file.
+	 * @param moduleLen Length of the file.
+	 */
+	static getSaveExts(exts, info, module, moduleLen)
+	{
+		let i = 0;
+		switch (info.type) {
+		case ASAPModuleType.SAP_B:
+		case ASAPModuleType.SAP_C:
+			exts[i++] = "sap";
+			let ext = info.getOriginalModuleExt(module, moduleLen);
+			if (ext != null)
+				exts[i++] = ext;
+			exts[i++] = "xex";
+			break;
+		case ASAPModuleType.SAP_D:
+			exts[i++] = "sap";
+			if (info.getPlayerRateScanlines() == 312)
+				exts[i++] = "xex";
+			break;
+		case ASAPModuleType.SAP_S:
+			exts[i++] = "sap";
+			break;
+		default:
+			exts[i++] = info.getOriginalModuleExt(module, moduleLen);
+			exts[i++] = "sap";
+			exts[i++] = "xex";
+			break;
+		}
+		return i;
+	}
+
+	static #twoDigitsToString(result, offset, value)
+	{
+		result[offset] = 48 + (value / 10 | 0);
+		result[offset + 1] = 48 + value % 10;
+	}
+
+	static #secondsToString(result, offset, value)
+	{
+		if (value < 0 || value >= 6000000)
+			return false;
+		value = value / 1000 | 0;
+		ASAPWriter.#twoDigitsToString(result, offset, value / 60 | 0);
+		result[offset + 2] = 58;
+		ASAPWriter.#twoDigitsToString(result, offset + 3, value % 60);
+		return true;
+	}
+
+	/**
+	 * Maximum length of text representation of a duration.
+	 * Corresponds to the longest format which is <code>"mm:ss.xxx"</code>.
+	 */
+	static MAX_DURATION_LENGTH = 9;
+
+	/**
+	 * Writes text representation of the given duration.
+	 * Returns the number of bytes written to <code>result</code>.
+	 * @param result The output buffer.
+	 * @param value Number of milliseconds.
+	 */
+	static durationToString(result, value)
+	{
+		if (!ASAPWriter.#secondsToString(result, 0, value))
+			return 0;
+		value %= 1000;
+		if (value == 0)
+			return 5;
+		result[5] = 46;
+		ASAPWriter.#twoDigitsToString(result, 6, value / 10 | 0);
+		value %= 10;
+		if (value == 0)
+			return 8;
+		result[8] = 48 + value;
+		return 9;
+	}
+	output;
+	outputOffset;
+	#outputEnd;
+
+	/**
+	 * Sets the destination array for <code>Write</code>.
+	 * @param output The destination array.
+	 * @param startIndex The array offset to start writing at.
+	 * @param endIndex The array offset to finish writing before.
+	 */
+	setOutput(output, startIndex, endIndex)
+	{
+		this.output = output;
+		this.outputOffset = startIndex;
+		this.#outputEnd = endIndex;
+	}
+
+	writeByte(value)
+	{
+		if (this.outputOffset >= this.#outputEnd)
+			throw "Output full";
+		this.output[this.outputOffset++] = value;
+	}
+
+	writeWord(value)
+	{
+		this.writeByte(value & 255);
+		this.writeByte(value >> 8);
+	}
+
+	writeBytes(array, startIndex, endIndex)
+	{
+		let length = endIndex - startIndex;
+		if (this.outputOffset + length > this.#outputEnd)
+			throw "Output full";
+		this.output.set(array.subarray(startIndex, startIndex + length), this.outputOffset);
+		this.outputOffset += length;
+	}
+
+	#writeString(s)
+	{
+		for (const c of s)
+			this.writeByte(c.codePointAt(0));
+	}
+
+	#writeDec(value)
+	{
+		if (value >= 10) {
+			this.#writeDec(value / 10 | 0);
+			value %= 10;
+		}
+		this.writeByte(48 + value);
+	}
+
+	#writeTextSapTag(tag, value)
+	{
+		this.#writeString(tag);
+		this.writeByte(34);
+		if (value.length == 0)
+			value = "<?>";
+		this.#writeString(value);
+		this.writeByte(34);
+		this.writeByte(13);
+		this.writeByte(10);
+	}
+
+	#writeDecSapTag(tag, value)
+	{
+		this.#writeString(tag);
+		this.#writeDec(value);
+		this.writeByte(13);
+		this.writeByte(10);
+	}
+
+	#writeHexSapTag(tag, value)
+	{
+		if (value < 0)
+			return;
+		this.#writeString(tag);
+		for (let i = 12; i >= 0; i -= 4) {
+			let digit = value >> i & 15;
+			this.writeByte(digit + (digit < 10 ? 48 : 55));
+		}
+		this.writeByte(13);
+		this.writeByte(10);
+	}
+
+	#writeSapHeader(info, type, init, player)
+	{
+		this.#writeString("SAP\r\n");
+		this.#writeTextSapTag("AUTHOR ", info.getAuthor());
+		this.#writeTextSapTag("NAME ", info.getTitle());
+		this.#writeTextSapTag("DATE ", info.getDate());
+		if (info.getSongs() > 1) {
+			this.#writeDecSapTag("SONGS ", info.getSongs());
+			if (info.getDefaultSong() > 0)
+				this.#writeDecSapTag("DEFSONG ", info.getDefaultSong());
+		}
+		if (info.getChannels() > 1)
+			this.#writeString("STEREO\r\n");
+		if (info.isNtsc())
+			this.#writeString("NTSC\r\n");
+		this.#writeString("TYPE ");
+		this.writeByte(type);
+		this.writeByte(13);
+		this.writeByte(10);
+		if (info.getPlayerRateScanlines() != (type == 83 ? 78 : 312) || info.isNtsc())
+			this.#writeDecSapTag("FASTPLAY ", info.getPlayerRateScanlines());
+		if (type == 67)
+			this.#writeHexSapTag("MUSIC ", info.getMusicAddress());
+		this.#writeHexSapTag("INIT ", init);
+		this.#writeHexSapTag("PLAYER ", player);
+		this.#writeHexSapTag("COVOX ", info.getCovoxAddress());
+		for (let song = 0; song < info.getSongs(); song++) {
+			if (info.getDuration(song) < 0)
+				break;
+			this.#writeString("TIME ");
+			const s = new Uint8Array(9);
+			this.writeBytes(s, 0, ASAPWriter.durationToString(s, info.getDuration(song)));
+			if (info.getLoop(song))
+				this.#writeString(" LOOP");
+			this.writeByte(13);
+			this.writeByte(10);
+		}
+	}
+
+	#writeExecutableHeader(initAndPlayer, info, type, init, player)
+	{
+		if (initAndPlayer == null)
+			this.#writeSapHeader(info, type, init, player);
+		else {
+			initAndPlayer[0] = init;
+			initAndPlayer[1] = player;
+		}
+	}
+
+	#writePlaTaxLda0()
+	{
+		this.writeByte(104);
+		this.writeByte(170);
+		this.writeByte(169);
+		this.writeByte(0);
+	}
+
+	#writeCmcInit(initAndPlayer, info)
+	{
+		if (initAndPlayer == null)
+			return;
+		this.writeWord(4064);
+		this.writeWord(4080);
+		this.writeByte(72);
+		let music = info.getMusicAddress();
+		this.writeByte(162);
+		this.writeByte(music & 255);
+		this.writeByte(160);
+		this.writeByte(music >> 8);
+		this.writeByte(169);
+		this.writeByte(112);
+		this.writeByte(32);
+		this.writeWord(initAndPlayer[1] + 3);
+		this.#writePlaTaxLda0();
+		this.writeByte(76);
+		this.writeWord(initAndPlayer[1] + 3);
+		initAndPlayer[0] = 4064;
+		initAndPlayer[1] += 6;
+	}
+
+	#writeExecutableFromSap(initAndPlayer, info, type, module, moduleLen)
+	{
+		this.#writeExecutableHeader(initAndPlayer, info, type, info.getInitAddress(), info.player);
+		this.writeBytes(module, info.headerLen, moduleLen);
+	}
+
+	#writeExecutableHeaderForSongPos(initAndPlayer, info, player, codeForOneSong, codeForManySongs, playerOffset)
+	{
+		if (info.getSongs() != 1) {
+			this.#writeExecutableHeader(initAndPlayer, info, 66, player - codeForManySongs, player + playerOffset);
+			return player - codeForManySongs - info.getSongs();
+		}
+		this.#writeExecutableHeader(initAndPlayer, info, 66, player - codeForOneSong, player + playerOffset);
+		return player - codeForOneSong;
+	}
+
+	writeExecutable(initAndPlayer, info, module, moduleLen)
+	{
+		let playerRoutine = ASAP6502.getPlayerRoutine(info);
+		let player = -1;
+		let playerLastByte = -1;
+		let music = info.getMusicAddress();
+		if (playerRoutine != null) {
+			player = ASAPInfo.getWord(playerRoutine, 2);
+			playerLastByte = ASAPInfo.getWord(playerRoutine, 4);
+			if (music <= playerLastByte)
+				throw "Module address conflicts with the player routine";
+		}
+		let startAddr;
+		switch (info.type) {
+		case ASAPModuleType.SAP_B:
+			this.#writeExecutableFromSap(initAndPlayer, info, 66, module, moduleLen);
+			break;
+		case ASAPModuleType.SAP_C:
+			this.#writeExecutableFromSap(initAndPlayer, info, 67, module, moduleLen);
+			this.#writeCmcInit(initAndPlayer, info);
+			break;
+		case ASAPModuleType.SAP_D:
+			this.#writeExecutableFromSap(initAndPlayer, info, 68, module, moduleLen);
+			break;
+		case ASAPModuleType.SAP_S:
+			this.#writeExecutableFromSap(initAndPlayer, info, 83, module, moduleLen);
+			break;
+		case ASAPModuleType.CMC:
+		case ASAPModuleType.CM3:
+		case ASAPModuleType.CMR:
+		case ASAPModuleType.CMS:
+			this.#writeExecutableHeader(initAndPlayer, info, 67, -1, player);
+			this.writeWord(65535);
+			this.writeBytes(module, 2, moduleLen);
+			this.writeBytes(playerRoutine, 2, playerLastByte - player + 7);
+			this.#writeCmcInit(initAndPlayer, info);
+			break;
+		case ASAPModuleType.DLT:
+			startAddr = this.#writeExecutableHeaderForSongPos(initAndPlayer, info, player, 5, 7, 259);
+			if (moduleLen == 11270) {
+				this.writeBytes(module, 0, 4);
+				this.writeWord(19456);
+				this.writeBytes(module, 6, moduleLen);
+				this.writeByte(0);
+			}
+			else
+				this.writeBytes(module, 0, moduleLen);
+			this.writeWord(startAddr);
+			this.writeWord(playerLastByte);
+			if (info.getSongs() != 1) {
+				this.writeBytes(info.songPos, 0, info.getSongs());
+				this.writeByte(170);
+				this.writeByte(188);
+				this.writeWord(startAddr);
+			}
+			else {
+				this.writeByte(160);
+				this.writeByte(0);
+			}
+			this.writeByte(76);
+			this.writeWord(player + 256);
+			this.writeBytes(playerRoutine, 6, playerLastByte - player + 7);
+			break;
+		case ASAPModuleType.MPT:
+			startAddr = this.#writeExecutableHeaderForSongPos(initAndPlayer, info, player, 13, 17, 3);
+			this.writeBytes(module, 0, moduleLen);
+			this.writeWord(startAddr);
+			this.writeWord(playerLastByte);
+			if (info.getSongs() != 1) {
+				this.writeBytes(info.songPos, 0, info.getSongs());
+				this.writeByte(72);
+			}
+			this.writeByte(160);
+			this.writeByte(music & 255);
+			this.writeByte(162);
+			this.writeByte(music >> 8);
+			this.writeByte(169);
+			this.writeByte(0);
+			this.writeByte(32);
+			this.writeWord(player);
+			if (info.getSongs() != 1) {
+				this.writeByte(104);
+				this.writeByte(168);
+				this.writeByte(190);
+				this.writeWord(startAddr);
+			}
+			else {
+				this.writeByte(162);
+				this.writeByte(0);
+			}
+			this.writeByte(169);
+			this.writeByte(2);
+			this.writeBytes(playerRoutine, 6, playerLastByte - player + 7);
+			break;
+		case ASAPModuleType.RMT:
+			this.#writeExecutableHeader(initAndPlayer, info, 66, 3200, 1539);
+			this.writeBytes(module, 0, ASAPInfo.getWord(module, 4) - music + 7);
+			this.writeWord(3200);
+			if (info.getSongs() != 1) {
+				this.writeWord(3210 + info.getSongs());
+				this.writeByte(168);
+				this.writeByte(185);
+				this.writeWord(3211);
+			}
+			else {
+				this.writeWord(3208);
+				this.writeByte(169);
+				this.writeByte(0);
+			}
+			this.writeByte(162);
+			this.writeByte(music & 255);
+			this.writeByte(160);
+			this.writeByte(music >> 8);
+			this.writeByte(76);
+			this.writeWord(1536);
+			if (info.getSongs() != 1)
+				this.writeBytes(info.songPos, 0, info.getSongs());
+			this.writeBytes(playerRoutine, 2, playerLastByte - player + 7);
+			break;
+		case ASAPModuleType.TMC:
+			let perFrame = module[37];
+			let player2 = player + ASAPWriter.#WRITE_EXECUTABLE_TMC_PLAYER_OFFSET[perFrame - 1];
+			startAddr = player2 + ASAPWriter.#WRITE_EXECUTABLE_TMC_INIT_OFFSET[perFrame - 1];
+			if (info.getSongs() != 1)
+				startAddr -= 3;
+			this.#writeExecutableHeader(initAndPlayer, info, 66, startAddr, player2);
+			this.writeBytes(module, 0, moduleLen);
+			this.writeWord(startAddr);
+			this.writeWord(playerLastByte);
+			if (info.getSongs() != 1)
+				this.writeByte(72);
+			this.writeByte(160);
+			this.writeByte(music & 255);
+			this.writeByte(162);
+			this.writeByte(music >> 8);
+			this.writeByte(169);
+			this.writeByte(112);
+			this.writeByte(32);
+			this.writeWord(player);
+			if (info.getSongs() != 1)
+				this.#writePlaTaxLda0();
+			else {
+				this.writeByte(169);
+				this.writeByte(96);
+			}
+			switch (perFrame) {
+			case 2:
+				this.writeByte(6);
+				this.writeByte(0);
+				this.writeByte(76);
+				this.writeWord(player);
+				this.writeByte(165);
+				this.writeByte(0);
+				this.writeByte(230);
+				this.writeByte(0);
+				this.writeByte(74);
+				this.writeByte(144);
+				this.writeByte(5);
+				this.writeByte(176);
+				this.writeByte(6);
+				break;
+			case 3:
+			case 4:
+				this.writeByte(160);
+				this.writeByte(1);
+				this.writeByte(132);
+				this.writeByte(0);
+				this.writeByte(208);
+				this.writeByte(10);
+				this.writeByte(198);
+				this.writeByte(0);
+				this.writeByte(208);
+				this.writeByte(12);
+				this.writeByte(160);
+				this.writeByte(perFrame);
+				this.writeByte(132);
+				this.writeByte(0);
+				this.writeByte(208);
+				this.writeByte(3);
+				break;
+			default:
+				break;
+			}
+			this.writeBytes(playerRoutine, 6, playerLastByte - player + 7);
+			break;
+		case ASAPModuleType.TM2:
+			this.#writeExecutableHeader(initAndPlayer, info, 66, 4992, 2051);
+			this.writeBytes(module, 0, moduleLen);
+			this.writeWord(4992);
+			if (info.getSongs() != 1) {
+				this.writeWord(5008);
+				this.writeByte(72);
+			}
+			else
+				this.writeWord(5006);
+			this.writeByte(160);
+			this.writeByte(music & 255);
+			this.writeByte(162);
+			this.writeByte(music >> 8);
+			this.writeByte(169);
+			this.writeByte(112);
+			this.writeByte(32);
+			this.writeWord(2048);
+			if (info.getSongs() != 1)
+				this.#writePlaTaxLda0();
+			else {
+				this.writeByte(169);
+				this.writeByte(0);
+				this.writeByte(170);
+			}
+			this.writeByte(76);
+			this.writeWord(2048);
+			this.writeBytes(playerRoutine, 2, playerLastByte - player + 7);
+			break;
+		case ASAPModuleType.FC:
+			this.#writeExecutableHeader(initAndPlayer, info, 66, player, player + 3);
+			this.writeWord(65535);
+			this.writeWord(music);
+			this.writeWord(music + moduleLen - 1);
+			this.writeBytes(module, 0, moduleLen);
+			this.writeBytes(playerRoutine, 2, playerLastByte - player + 7);
+			break;
+		}
+	}
+
+	static #padXexInfo(dest, offset, endColumn)
+	{
+		while (offset % 32 != endColumn)
+			dest[offset++] = 32;
+		return offset;
+	}
+
+	static #formatXexInfoText(dest, destLen, endColumn, src, author)
+	{
+		let srcLen = src.length;
+		for (let srcOffset = 0; srcOffset < srcLen;) {
+			let c = src.charCodeAt(srcOffset++);
+			if (c == 32) {
+				if (author && srcOffset < srcLen && src.charCodeAt(srcOffset) == 38) {
+					let authorLen;
+					for (authorLen = 1; srcOffset + authorLen < srcLen; authorLen++) {
+						if (src.charCodeAt(srcOffset + authorLen) == 32 && srcOffset + authorLen + 1 < srcLen && src.charCodeAt(srcOffset + authorLen + 1) == 38)
+							break;
+					}
+					if (authorLen <= 32 && destLen % 32 + 1 + authorLen > 32) {
+						destLen = ASAPWriter.#padXexInfo(dest, destLen, 1);
+						continue;
+					}
+				}
+				let wordLen;
+				for (wordLen = 0; srcOffset + wordLen < srcLen && src.charCodeAt(srcOffset + wordLen) != 32; wordLen++) {
+				}
+				if (wordLen <= 32 && destLen % 32 + 1 + wordLen > 32) {
+					destLen = ASAPWriter.#padXexInfo(dest, destLen, 0);
+					continue;
+				}
+			}
+			dest[destLen++] = c;
+		}
+		return ASAPWriter.#padXexInfo(dest, destLen, endColumn);
+	}
+
+	#writeXexInfoTextDl(address, len, verticalScrollAt)
+	{
+		this.writeByte(verticalScrollAt == 0 ? 98 : 66);
+		this.writeWord(address);
+		for (let i = 32; i < len; i += 32)
+			this.writeByte(i == verticalScrollAt ? 34 : 2);
+	}
+
+	#writeXexInfo(info)
+	{
+		const title = new Uint8Array(256);
+		let titleLen = ASAPWriter.#formatXexInfoText(title, 0, 0, info.getTitle().length == 0 ? "(untitled)" : info.getTitle(), false);
+		const author = new Uint8Array(256);
+		let authorLen;
+		if (info.getAuthor().length > 0) {
+			author[0] = 98;
+			author[1] = 121;
+			author[2] = 32;
+			authorLen = ASAPWriter.#formatXexInfoText(author, 3, 0, info.getAuthor(), true);
+		}
+		else
+			authorLen = 0;
+		const other = new Uint8Array(256);
+		let otherLen = ASAPWriter.#formatXexInfoText(other, 0, 19, info.getDate(), false);
+		otherLen = ASAPWriter.#formatXexInfoText(other, otherLen, 27, info.getChannels() > 1 ? " STEREO" : "   MONO", false);
+		let duration = info.getDuration(info.getDefaultSong());
+		if (duration > 0 && ASAPWriter.#secondsToString(other, otherLen, duration + 999))
+			otherLen += 5;
+		else
+			otherLen = ASAPWriter.#padXexInfo(other, otherLen, 0);
+		let totalCharacters = titleLen + authorLen + otherLen;
+		let totalLines = totalCharacters / 32 | 0;
+		let otherAddress = 64592 - otherLen;
+		let titleAddress = otherAddress - authorLen - 8 - titleLen;
+		this.writeWord(titleAddress);
+		this.writeBytes(Fu.xexinfo_obx, 4, 6);
+		this.writeBytes(title, 0, titleLen);
+		for (let i = 0; i < 8; i++)
+			this.writeByte(85);
+		this.writeBytes(author, 0, authorLen);
+		this.writeBytes(other, 0, otherLen);
+		for (let i = totalLines; i < 26; i++)
+			this.writeByte(112);
+		this.writeByte(48);
+		this.#writeXexInfoTextDl(titleAddress, titleLen, titleLen - 32);
+		this.writeByte(8);
+		this.writeByte(0);
+		for (let i = 0; i < authorLen; i += 32)
+			this.writeByte(2);
+		this.writeByte(16);
+		for (let i = 0; i < otherLen; i += 32)
+			this.writeByte(2);
+		this.writeBytes(Fu.xexinfo_obx, 6, 178);
+	}
+
+	#writeNative(info, module, moduleLen)
+	{
+		const nativeWriter = new ASAPNativeModuleWriter();
+		nativeWriter.writer = this;
+		nativeWriter.sourceModule = module;
+		let type = info.type;
+		switch (type) {
+		case ASAPModuleType.SAP_B:
+		case ASAPModuleType.SAP_C:
+			let offset = info.getRmtSapOffset(module, moduleLen);
+			if (offset > 0) {
+				nativeWriter.sourceOffset = offset - 2;
+				nativeWriter.write(info, ASAPModuleType.RMT, moduleLen - offset + 2);
+				return;
+			}
+			nativeWriter.sourceOffset = info.headerLen;
+			let blockLen = nativeWriter.getWord(4) - nativeWriter.getWord(2) + 7;
+			if (blockLen < 7 || info.headerLen + blockLen >= moduleLen)
+				throw "Cannot extract module from SAP";
+			type = info.getOriginalModuleType(module, moduleLen);
+			if (type == ASAPModuleType.FC)
+				this.writeBytes(module, info.headerLen + 6, info.headerLen + blockLen);
+			else
+				nativeWriter.write(info, type, blockLen);
+			break;
+		case ASAPModuleType.FC:
+			this.writeBytes(module, 0, moduleLen);
+			return;
+		default:
+			nativeWriter.sourceOffset = 0;
+			nativeWriter.write(info, type, moduleLen);
+			break;
+		}
+	}
+
+	/**
+	 * Writes the given module in a possibly different file format.
+	 * @param targetFilename Output filename, used to determine the format.
+	 * @param info File information got from the source file with data updated for the output file.
+	 * @param module Contents of the source file.
+	 * @param moduleLen Length of the source file.
+	 * @param tag Display information (xex output only).
+	 */
+	write(targetFilename, info, module, moduleLen, tag)
+	{
+		let destExt = ASAPInfo.getPackedExt(targetFilename);
+		switch (destExt) {
+		case 7364979:
+			this.writeExecutable(null, info, module, moduleLen);
+			return this.outputOffset;
+		case 7890296:
+			{
+				const initAndPlayer = new Int32Array(2);
+				this.writeExecutable(initAndPlayer, info, module, moduleLen);
+				switch (info.type) {
+				case ASAPModuleType.SAP_D:
+					if (info.getPlayerRateScanlines() != 312)
+						throw "Impossible conversion";
+					this.writeBytes(Fu.xexd_obx, 2, 117);
+					this.writeWord(initAndPlayer[0]);
+					if (initAndPlayer[1] < 0) {
+						this.writeByte(96);
+						this.writeByte(96);
+						this.writeByte(96);
+					}
+					else {
+						this.writeByte(76);
+						this.writeWord(initAndPlayer[1]);
+					}
+					this.writeByte(info.getDefaultSong());
+					break;
+				case ASAPModuleType.SAP_S:
+					throw "Impossible conversion";
+				default:
+					this.writeBytes(Fu.xexb_obx, 2, 183);
+					this.writeWord(initAndPlayer[0]);
+					this.writeByte(76);
+					this.writeWord(initAndPlayer[1]);
+					this.writeByte(info.getDefaultSong());
+					let fastplay = info.getPlayerRateScanlines();
+					this.writeByte(fastplay & 1);
+					this.writeByte((fastplay >> 1) % 156);
+					this.writeByte((fastplay >> 1) % 131);
+					this.writeByte(fastplay / 312 | 0);
+					this.writeByte(fastplay / 262 | 0);
+					break;
+				}
+				if (tag)
+					this.#writeXexInfo(info);
+				this.writeWord(736);
+				this.writeWord(737);
+				this.writeWord(tag ? 256 : 292);
+				const flashPack = new FlashPack();
+				flashPack.compress(this);
+				return this.outputOffset;
+			}
+		default:
+			let possibleExt = info.getOriginalModuleExt(module, moduleLen);
+			if (possibleExt != null) {
+				let packedPossibleExt = ASAPInfo.packExt(possibleExt);
+				if (destExt == packedPossibleExt || (destExt == 3698036 && packedPossibleExt == 6516084)) {
+					this.#writeNative(info, module, moduleLen);
+					return this.outputOffset;
+				}
+			}
+			throw "Impossible conversion";
+		}
+	}
+
+	static #WRITE_EXECUTABLE_TMC_PLAYER_OFFSET = new Int32Array([ 3, -9, -10, -10 ]);
+
+	static #WRITE_EXECUTABLE_TMC_INIT_OFFSET = new Int32Array([ -14, -16, -17, -17 ]);
+}
+
+class Cpu6502
+{
+	asap;
+	memory = new Uint8Array(65536);
+	cycle;
+	pc;
+	a;
+	x;
+	y;
+	s;
+	#nz;
+	#c;
+	#vdi;
+
+	reset()
+	{
+		this.cycle = 0;
+		this.#nz = 0;
+		this.#c = 0;
+		this.#vdi = 0;
+	}
+
+	#peek(addr)
+	{
+		if ((addr & 63744) == 53248)
+			return this.asap.peekHardware(addr);
+		else
+			return this.memory[addr];
+	}
+
+	#poke(addr, data)
+	{
+		if ((addr & 63744) == 53248)
+			this.asap.pokeHardware(addr, data);
+		else
+			this.memory[addr] = data;
+	}
+
+	#peekReadModifyWrite(addr)
+	{
+		if (addr >> 8 == 210) {
+			this.cycle--;
+			let data = this.asap.peekHardware(addr);
+			this.asap.pokeHardware(addr, data);
+			this.cycle++;
+			return data;
+		}
+		return this.memory[addr];
+	}
+
+	#pull()
+	{
+		let s = (this.s + 1) & 255;
+		this.s = s;
+		return this.memory[256 + s];
+	}
+
+	#pullFlags()
+	{
+		let data = this.#pull();
+		this.#nz = ((data & 128) << 1) + (~data & 2);
+		this.#c = data & 1;
+		this.#vdi = data & 76;
+	}
+
+	#push(data)
+	{
+		let s = this.s;
+		this.memory[256 + s] = data;
+		this.s = (s - 1) & 255;
+	}
+
+	pushPc()
+	{
+		this.#push(this.pc >> 8);
+		this.#push(this.pc & 255);
+	}
+
+	#pushFlags(b)
+	{
+		let nz = this.#nz;
+		b += ((nz | nz >> 1) & 128) + this.#vdi + this.#c;
+		if ((nz & 255) == 0)
+			b += 2;
+		this.#push(b);
+	}
+
+	#addWithCarry(data)
+	{
+		let a = this.a;
+		let vdi = this.#vdi;
+		let tmp = a + data + this.#c;
+		this.#nz = tmp & 255;
+		if ((vdi & 8) == 0) {
+			this.#vdi = (vdi & 12) + ((~(data ^ a) & (a ^ tmp)) >> 1 & 64);
+			this.#c = tmp >> 8;
+			this.a = this.#nz;
+		}
+		else {
+			let al = (a & 15) + (data & 15) + this.#c;
+			if (al >= 10) {
+				tmp += al < 26 ? 6 : -10;
+				if (this.#nz != 0)
+					this.#nz = (tmp & 128) + 1;
+			}
+			this.#vdi = (vdi & 12) + ((~(data ^ a) & (a ^ tmp)) >> 1 & 64);
+			if (tmp >= 160) {
+				this.#c = 1;
+				this.a = (tmp - 160) & 255;
+			}
+			else {
+				this.#c = 0;
+				this.a = tmp;
+			}
+		}
+	}
+
+	#subtractWithCarry(data)
+	{
+		let a = this.a;
+		let vdi = this.#vdi;
+		let borrow = this.#c - 1;
+		let tmp = a - data + borrow;
+		let al = (a & 15) - (data & 15) + borrow;
+		this.#vdi = (vdi & 12) + (((data ^ a) & (a ^ tmp)) >> 1 & 64);
+		this.#c = tmp >= 0 ? 1 : 0;
+		this.#nz = this.a = tmp & 255;
+		if ((vdi & 8) != 0) {
+			if (al < 0)
+				this.a += al < -10 ? 10 : -6;
+			if (this.#c == 0)
+				this.a = (this.a - 96) & 255;
+		}
+	}
+
+	#arithmeticShiftLeft(addr)
+	{
+		let data = this.#peekReadModifyWrite(addr);
+		this.#c = data >> 7;
+		data = data << 1 & 255;
+		this.#poke(addr, data);
+		return data;
+	}
+
+	#rotateLeft(addr)
+	{
+		let data = (this.#peekReadModifyWrite(addr) << 1) + this.#c;
+		this.#c = data >> 8;
+		data &= 255;
+		this.#poke(addr, data);
+		return data;
+	}
+
+	#logicalShiftRight(addr)
+	{
+		let data = this.#peekReadModifyWrite(addr);
+		this.#c = data & 1;
+		data >>= 1;
+		this.#poke(addr, data);
+		return data;
+	}
+
+	#rotateRight(addr)
+	{
+		let data = (this.#c << 8) + this.#peekReadModifyWrite(addr);
+		this.#c = data & 1;
+		data >>= 1;
+		this.#poke(addr, data);
+		return data;
+	}
+
+	#decrement(addr)
+	{
+		let data = (this.#peekReadModifyWrite(addr) - 1) & 255;
+		this.#poke(addr, data);
+		return data;
+	}
+
+	#increment(addr)
+	{
+		let data = (this.#peekReadModifyWrite(addr) + 1) & 255;
+		this.#poke(addr, data);
+		return data;
+	}
+
+	#executeIrq(b)
+	{
+		this.pushPc();
+		this.#pushFlags(b);
+		this.#vdi |= 4;
+		this.pc = this.memory[65534] + (this.memory[65535] << 8);
+	}
+
+	#checkIrq()
+	{
+		if ((this.#vdi & 4) == 0 && this.asap.isIrq()) {
+			this.cycle += 7;
+			this.#executeIrq(32);
+		}
+	}
+
+	#shx(addr, data)
+	{
+		addr += this.memory[this.pc++];
+		let hi = this.memory[this.pc++];
+		data &= hi + 1;
+		if (addr >= 256)
+			hi = data - 1;
+		addr += hi << 8;
+		this.#poke(addr, data);
+	}
+
+	/**
+	 * Runs 6502 emulation for the specified number of Atari scanlines.
+	 * Each scanline is 114 cycles of which 9 is taken by ANTIC for memory refresh.
+	 */
+	doFrame(cycleLimit)
+	{
+		while (this.cycle < cycleLimit) {
+			if (this.cycle >= this.asap.nextEventCycle) {
+				this.asap.handleEvent();
+				this.#checkIrq();
+			}
+			let data = this.memory[this.pc++];
+			this.cycle += Cpu6502.#DO_FRAME_OPCODE_CYCLES[data];
+			let addr = 0;
+			switch (data) {
+			case 0:
+				this.pc++;
+				this.#executeIrq(48);
+				continue;
+			case 1:
+			case 3:
+			case 33:
+			case 35:
+			case 65:
+			case 67:
+			case 97:
+			case 99:
+			case 129:
+			case 131:
+			case 161:
+			case 163:
+			case 193:
+			case 195:
+			case 225:
+			case 227:
+				addr = (this.memory[this.pc++] + this.x) & 255;
+				addr = this.memory[addr] + (this.memory[(addr + 1) & 255] << 8);
+				break;
+			case 2:
+			case 18:
+			case 34:
+			case 50:
+			case 66:
+			case 82:
+			case 98:
+			case 114:
+			case 146:
+			case 178:
+			case 210:
+			case 242:
+				this.pc--;
+				this.cycle = this.asap.nextEventCycle;
+				continue;
+			case 4:
+			case 68:
+			case 100:
+			case 20:
+			case 52:
+			case 84:
+			case 116:
+			case 212:
+			case 244:
+			case 128:
+			case 130:
+			case 137:
+			case 194:
+			case 226:
+				this.pc++;
+				continue;
+			case 5:
+			case 6:
+			case 7:
+			case 36:
+			case 37:
+			case 38:
+			case 39:
+			case 69:
+			case 70:
+			case 71:
+			case 101:
+			case 102:
+			case 103:
+			case 132:
+			case 133:
+			case 134:
+			case 135:
+			case 164:
+			case 165:
+			case 166:
+			case 167:
+			case 196:
+			case 197:
+			case 198:
+			case 199:
+			case 228:
+			case 229:
+			case 230:
+			case 231:
+				addr = this.memory[this.pc++];
+				break;
+			case 8:
+				this.#pushFlags(48);
+				continue;
+			case 9:
+			case 41:
+			case 73:
+			case 105:
+			case 160:
+			case 162:
+			case 169:
+			case 192:
+			case 201:
+			case 224:
+			case 233:
+			case 235:
+				addr = this.pc++;
+				break;
+			case 10:
+				this.#c = this.a >> 7;
+				this.#nz = this.a = this.a << 1 & 255;
+				continue;
+			case 11:
+			case 43:
+				this.#nz = this.a &= this.memory[this.pc++];
+				this.#c = this.#nz >> 7;
+				continue;
+			case 12:
+				this.pc += 2;
+				continue;
+			case 13:
+			case 14:
+			case 15:
+			case 44:
+			case 45:
+			case 46:
+			case 47:
+			case 77:
+			case 78:
+			case 79:
+			case 108:
+			case 109:
+			case 110:
+			case 111:
+			case 140:
+			case 141:
+			case 142:
+			case 143:
+			case 172:
+			case 173:
+			case 174:
+			case 175:
+			case 204:
+			case 205:
+			case 206:
+			case 207:
+			case 236:
+			case 237:
+			case 238:
+			case 239:
+				addr = this.memory[this.pc++];
+				addr += this.memory[this.pc++] << 8;
+				break;
+			case 16:
+				if (this.#nz < 128)
+					break;
+				this.pc++;
+				continue;
+			case 17:
+			case 49:
+			case 81:
+			case 113:
+			case 177:
+			case 179:
+			case 209:
+			case 241:
+				let zp = this.memory[this.pc++];
+				addr = this.memory[zp] + this.y;
+				if (addr >= 256)
+					this.cycle++;
+				addr = (addr + (this.memory[(zp + 1) & 255] << 8)) & 65535;
+				break;
+			case 19:
+			case 51:
+			case 83:
+			case 115:
+			case 145:
+			case 211:
+			case 243:
+				addr = this.memory[this.pc++];
+				addr = (this.memory[addr] + (this.memory[(addr + 1) & 255] << 8) + this.y) & 65535;
+				break;
+			case 21:
+			case 22:
+			case 23:
+			case 53:
+			case 54:
+			case 55:
+			case 85:
+			case 86:
+			case 87:
+			case 117:
+			case 118:
+			case 119:
+			case 148:
+			case 149:
+			case 180:
+			case 181:
+			case 213:
+			case 214:
+			case 215:
+			case 245:
+			case 246:
+			case 247:
+				addr = (this.memory[this.pc++] + this.x) & 255;
+				break;
+			case 24:
+				this.#c = 0;
+				continue;
+			case 25:
+			case 57:
+			case 89:
+			case 121:
+			case 185:
+			case 187:
+			case 190:
+			case 191:
+			case 217:
+			case 249:
+				addr = this.memory[this.pc++] + this.y;
+				if (addr >= 256)
+					this.cycle++;
+				addr = (addr + (this.memory[this.pc++] << 8)) & 65535;
+				break;
+			case 27:
+			case 59:
+			case 91:
+			case 123:
+			case 153:
+			case 219:
+			case 251:
+				addr = this.memory[this.pc++] + this.y;
+				addr = (addr + (this.memory[this.pc++] << 8)) & 65535;
+				break;
+			case 28:
+			case 60:
+			case 92:
+			case 124:
+			case 220:
+			case 252:
+				if (this.memory[this.pc] + this.x >= 256)
+					this.cycle++;
+				this.pc += 2;
+				continue;
+			case 29:
+			case 61:
+			case 93:
+			case 125:
+			case 188:
+			case 189:
+			case 221:
+			case 253:
+				addr = this.memory[this.pc++] + this.x;
+				if (addr >= 256)
+					this.cycle++;
+				addr = (addr + (this.memory[this.pc++] << 8)) & 65535;
+				break;
+			case 30:
+			case 31:
+			case 62:
+			case 63:
+			case 94:
+			case 95:
+			case 126:
+			case 127:
+			case 157:
+			case 222:
+			case 223:
+			case 254:
+			case 255:
+				addr = this.memory[this.pc++] + this.x;
+				addr = (addr + (this.memory[this.pc++] << 8)) & 65535;
+				break;
+			case 32:
+				addr = this.memory[this.pc++];
+				this.pushPc();
+				this.pc = addr + (this.memory[this.pc] << 8);
+				continue;
+			case 40:
+				this.#pullFlags();
+				this.#checkIrq();
+				continue;
+			case 42:
+				this.a = (this.a << 1) + this.#c;
+				this.#c = this.a >> 8;
+				this.#nz = this.a &= 255;
+				continue;
+			case 48:
+				if (this.#nz >= 128)
+					break;
+				this.pc++;
+				continue;
+			case 56:
+				this.#c = 1;
+				continue;
+			case 64:
+				this.#pullFlags();
+				this.pc = this.#pull();
+				this.pc += this.#pull() << 8;
+				this.#checkIrq();
+				continue;
+			case 72:
+				this.#push(this.a);
+				continue;
+			case 74:
+				this.#c = this.a & 1;
+				this.#nz = this.a >>= 1;
+				continue;
+			case 75:
+				this.a &= this.memory[this.pc++];
+				this.#c = this.a & 1;
+				this.#nz = this.a >>= 1;
+				continue;
+			case 76:
+				addr = this.memory[this.pc++];
+				this.pc = addr + (this.memory[this.pc] << 8);
+				continue;
+			case 80:
+				if ((this.#vdi & 64) == 0)
+					break;
+				this.pc++;
+				continue;
+			case 88:
+				this.#vdi &= 72;
+				this.#checkIrq();
+				continue;
+			case 96:
+				this.pc = this.#pull();
+				this.pc += (this.#pull() << 8) + 1;
+				continue;
+			case 104:
+				this.#nz = this.a = this.#pull();
+				continue;
+			case 106:
+				this.#nz = (this.#c << 7) + (this.a >> 1);
+				this.#c = this.a & 1;
+				this.a = this.#nz;
+				continue;
+			case 107:
+				data = this.a & this.memory[this.pc++];
+				this.#nz = this.a = (data >> 1) + (this.#c << 7);
+				this.#vdi = (this.#vdi & 12) + ((this.a ^ data) & 64);
+				if ((this.#vdi & 8) == 0)
+					this.#c = data >> 7;
+				else {
+					if ((data & 15) >= 5)
+						this.a = (this.a & 240) + ((this.a + 6) & 15);
+					if (data >= 80) {
+						this.a = (this.a + 96) & 255;
+						this.#c = 1;
+					}
+					else
+						this.#c = 0;
+				}
+				continue;
+			case 112:
+				if ((this.#vdi & 64) != 0)
+					break;
+				this.pc++;
+				continue;
+			case 120:
+				this.#vdi |= 4;
+				continue;
+			case 136:
+				this.#nz = this.y = (this.y - 1) & 255;
+				continue;
+			case 138:
+				this.#nz = this.a = this.x;
+				continue;
+			case 139:
+				data = this.memory[this.pc++];
+				this.a &= (data | 239) & this.x;
+				this.#nz = this.a & data;
+				continue;
+			case 144:
+				if (this.#c == 0)
+					break;
+				this.pc++;
+				continue;
+			case 147:
+				{
+					addr = this.memory[this.pc++];
+					let hi = this.memory[(addr + 1) & 255];
+					addr = this.memory[addr];
+					data = (hi + 1) & this.a & this.x;
+					addr += this.y;
+					if (addr >= 256)
+						hi = data - 1;
+					addr += hi << 8;
+					this.#poke(addr, data);
+				}
+				continue;
+			case 150:
+			case 151:
+			case 182:
+			case 183:
+				addr = (this.memory[this.pc++] + this.y) & 255;
+				break;
+			case 152:
+				this.#nz = this.a = this.y;
+				continue;
+			case 154:
+				this.s = this.x;
+				continue;
+			case 155:
+				this.s = this.a & this.x;
+				this.#shx(this.y, this.s);
+				continue;
+			case 156:
+				this.#shx(this.x, this.y);
+				continue;
+			case 158:
+				this.#shx(this.y, this.x);
+				continue;
+			case 159:
+				this.#shx(this.y, this.a & this.x);
+				continue;
+			case 168:
+				this.#nz = this.y = this.a;
+				continue;
+			case 170:
+				this.#nz = this.x = this.a;
+				continue;
+			case 171:
+				this.#nz = this.x = this.a &= this.memory[this.pc++];
+				continue;
+			case 176:
+				if (this.#c != 0)
+					break;
+				this.pc++;
+				continue;
+			case 184:
+				this.#vdi &= 12;
+				continue;
+			case 186:
+				this.#nz = this.x = this.s;
+				continue;
+			case 200:
+				this.#nz = this.y = (this.y + 1) & 255;
+				continue;
+			case 202:
+				this.#nz = this.x = (this.x - 1) & 255;
+				continue;
+			case 203:
+				this.#nz = this.memory[this.pc++];
+				this.x &= this.a;
+				this.#c = this.x >= this.#nz ? 1 : 0;
+				this.#nz = this.x = (this.x - this.#nz) & 255;
+				continue;
+			case 208:
+				if ((this.#nz & 255) != 0)
+					break;
+				this.pc++;
+				continue;
+			case 216:
+				this.#vdi &= 68;
+				continue;
+			case 232:
+				this.#nz = this.x = (this.x + 1) & 255;
+				continue;
+			case 234:
+			case 26:
+			case 58:
+			case 90:
+			case 122:
+			case 218:
+			case 250:
+				continue;
+			case 240:
+				if ((this.#nz & 255) == 0)
+					break;
+				this.pc++;
+				continue;
+			case 248:
+				this.#vdi |= 8;
+				continue;
+			default:
+				throw new Error();
+			}
+			switch (data) {
+			case 1:
+			case 5:
+			case 9:
+			case 13:
+			case 17:
+			case 21:
+			case 25:
+			case 29:
+				this.#nz = this.a |= this.#peek(addr);
+				break;
+			case 3:
+			case 7:
+			case 15:
+			case 19:
+			case 23:
+			case 27:
+			case 31:
+				this.#nz = this.a |= this.#arithmeticShiftLeft(addr);
+				break;
+			case 6:
+			case 14:
+			case 22:
+			case 30:
+				this.#nz = this.#arithmeticShiftLeft(addr);
+				break;
+			case 16:
+			case 48:
+			case 80:
+			case 112:
+			case 144:
+			case 176:
+			case 208:
+			case 240:
+				addr = (this.memory[this.pc] ^ 128) - 128;
+				this.pc++;
+				addr += this.pc;
+				this.cycle += (addr ^ this.pc) >> 8 != 0 ? 2 : 1;
+				this.pc = addr;
+				break;
+			case 33:
+			case 37:
+			case 41:
+			case 45:
+			case 49:
+			case 53:
+			case 57:
+			case 61:
+				this.#nz = this.a &= this.#peek(addr);
+				break;
+			case 35:
+			case 39:
+			case 47:
+			case 51:
+			case 55:
+			case 59:
+			case 63:
+				this.#nz = this.a &= this.#rotateLeft(addr);
+				break;
+			case 36:
+			case 44:
+				this.#nz = this.#peek(addr);
+				this.#vdi = (this.#vdi & 12) + (this.#nz & 64);
+				this.#nz = ((this.#nz & 128) << 1) + (this.#nz & this.a);
+				break;
+			case 38:
+			case 46:
+			case 54:
+			case 62:
+				this.#nz = this.#rotateLeft(addr);
+				break;
+			case 65:
+			case 69:
+			case 73:
+			case 77:
+			case 81:
+			case 85:
+			case 89:
+			case 93:
+				this.#nz = this.a ^= this.#peek(addr);
+				break;
+			case 67:
+			case 71:
+			case 79:
+			case 83:
+			case 87:
+			case 91:
+			case 95:
+				this.#nz = this.a ^= this.#logicalShiftRight(addr);
+				break;
+			case 70:
+			case 78:
+			case 86:
+			case 94:
+				this.#nz = this.#logicalShiftRight(addr);
+				break;
+			case 97:
+			case 101:
+			case 105:
+			case 109:
+			case 113:
+			case 117:
+			case 121:
+			case 125:
+				this.#addWithCarry(this.#peek(addr));
+				break;
+			case 99:
+			case 103:
+			case 111:
+			case 115:
+			case 119:
+			case 123:
+			case 127:
+				this.#addWithCarry(this.#rotateRight(addr));
+				break;
+			case 102:
+			case 110:
+			case 118:
+			case 126:
+				this.#nz = this.#rotateRight(addr);
+				break;
+			case 108:
+				this.pc = this.memory[addr];
+				if ((++addr & 255) == 0)
+					addr -= 255;
+				this.pc += this.memory[addr] << 8;
+				break;
+			case 129:
+			case 133:
+			case 141:
+			case 145:
+			case 149:
+			case 153:
+			case 157:
+				this.#poke(addr, this.a);
+				break;
+			case 131:
+			case 135:
+			case 143:
+			case 151:
+				this.#poke(addr, this.a & this.x);
+				break;
+			case 132:
+			case 140:
+			case 148:
+				this.#poke(addr, this.y);
+				break;
+			case 134:
+			case 142:
+			case 150:
+				this.#poke(addr, this.x);
+				break;
+			case 160:
+			case 164:
+			case 172:
+			case 180:
+			case 188:
+				this.#nz = this.y = this.#peek(addr);
+				break;
+			case 161:
+			case 165:
+			case 169:
+			case 173:
+			case 177:
+			case 181:
+			case 185:
+			case 189:
+				this.#nz = this.a = this.#peek(addr);
+				break;
+			case 162:
+			case 166:
+			case 174:
+			case 182:
+			case 190:
+				this.#nz = this.x = this.#peek(addr);
+				break;
+			case 163:
+			case 167:
+			case 175:
+			case 179:
+			case 183:
+			case 191:
+				this.#nz = this.x = this.a = this.#peek(addr);
+				break;
+			case 187:
+				this.#nz = this.x = this.a = this.s &= this.#peek(addr);
+				break;
+			case 192:
+			case 196:
+			case 204:
+				this.#nz = this.#peek(addr);
+				this.#c = this.y >= this.#nz ? 1 : 0;
+				this.#nz = (this.y - this.#nz) & 255;
+				break;
+			case 193:
+			case 197:
+			case 201:
+			case 205:
+			case 209:
+			case 213:
+			case 217:
+			case 221:
+				this.#nz = this.#peek(addr);
+				this.#c = this.a >= this.#nz ? 1 : 0;
+				this.#nz = (this.a - this.#nz) & 255;
+				break;
+			case 195:
+			case 199:
+			case 207:
+			case 211:
+			case 215:
+			case 219:
+			case 223:
+				data = this.#decrement(addr);
+				this.#c = this.a >= data ? 1 : 0;
+				this.#nz = (this.a - data) & 255;
+				break;
+			case 198:
+			case 206:
+			case 214:
+			case 222:
+				this.#nz = this.#decrement(addr);
+				break;
+			case 224:
+			case 228:
+			case 236:
+				this.#nz = this.#peek(addr);
+				this.#c = this.x >= this.#nz ? 1 : 0;
+				this.#nz = (this.x - this.#nz) & 255;
+				break;
+			case 225:
+			case 229:
+			case 233:
+			case 235:
+			case 237:
+			case 241:
+			case 245:
+			case 249:
+			case 253:
+				this.#subtractWithCarry(this.#peek(addr));
+				break;
+			case 227:
+			case 231:
+			case 239:
+			case 243:
+			case 247:
+			case 251:
+			case 255:
+				this.#subtractWithCarry(this.#increment(addr));
+				break;
+			case 230:
+			case 238:
+			case 246:
+			case 254:
+				this.#nz = this.#increment(addr);
+				break;
+			default:
+				throw new Error();
+			}
+		}
+	}
+
+	static #DO_FRAME_OPCODE_CYCLES = new Uint8Array([ 7, 6, 2, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6,
+		2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+		6, 6, 2, 8, 3, 3, 5, 5, 4, 2, 2, 2, 4, 4, 6, 6,
+		2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+		6, 6, 2, 8, 3, 3, 5, 5, 3, 2, 2, 2, 3, 4, 6, 6,
+		2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+		6, 6, 2, 8, 3, 3, 5, 5, 4, 2, 2, 2, 5, 4, 6, 6,
+		2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+		2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4,
+		2, 6, 2, 6, 4, 4, 4, 4, 2, 5, 2, 5, 5, 5, 5, 5,
+		2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4,
+		2, 5, 2, 5, 4, 4, 4, 4, 2, 4, 2, 4, 4, 4, 4, 4,
+		2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6,
+		2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+		2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6,
+		2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7 ]);
+}
+
 const FlashPackItemType = {
 	LITERAL : 0,
 	COPY_TWO_BYTES : 1,
@@ -34,10 +4416,365 @@ const FlashPackItemType = {
 	END_OF_STREAM : 5
 }
 
+class FlashPackItem
+{
+	type;
+	value;
+
+	writeValueTo(buffer, index)
+	{
+		switch (this.type) {
+		case FlashPackItemType.LITERAL:
+			buffer[index] = this.value;
+			return 1;
+		case FlashPackItemType.COPY_TWO_BYTES:
+			buffer[index] = (128 - this.value) << 1;
+			return 1;
+		case FlashPackItemType.COPY_THREE_BYTES:
+			buffer[index] = ((128 - this.value) << 1) + 1;
+			return 1;
+		case FlashPackItemType.COPY_MANY_BYTES:
+			buffer[index] = 1;
+			buffer[index + 1] = this.value;
+			return 2;
+		case FlashPackItemType.SET_ADDRESS:
+			let value = this.value - 128;
+			buffer[index] = 0;
+			buffer[index + 1] = value & 255;
+			buffer[index + 2] = value >> 8;
+			return 3;
+		default:
+			buffer[index] = 1;
+			buffer[index + 1] = 0;
+			return 2;
+		}
+	}
+}
+
+class FlashPack
+{
+	constructor()
+	{
+		for (let _i0 = 0; _i0 < 64; _i0++) {
+			this.#items[_i0] = new FlashPackItem();
+		}
+	}
+	#memory = new Int16Array(65536);
+
+	#findHole()
+	{
+		let end = 48159;
+		for (;;) {
+			while (this.#memory[end] >= 0)
+				if (--end < 9216)
+					throw "Too much data to compress";
+			let start = end;
+			while (this.#memory[--start] < 0)
+				if (end - start >= 1023)
+					return end;
+			end = start;
+		}
+	}
+	#compressed = new Uint8Array(65536);
+	#compressedLength;
+	#items = new Array(64);
+	#itemsCount;
+
+	#getInnerFlags(index)
+	{
+		let flags = 1;
+		do {
+			flags <<= 1;
+			if (index < this.#itemsCount) {
+				if (this.#items[index++].type != FlashPackItemType.LITERAL)
+					flags++;
+			}
+		}
+		while (flags < 256);
+		return flags & 255;
+	}
+
+	#putItems()
+	{
+		let outerFlags = 0;
+		for (let i = 0; i < this.#itemsCount; i += 8) {
+			if (this.#getInnerFlags(i) != 0)
+				outerFlags |= 128 >> (i >> 3);
+		}
+		this.#compressed[this.#compressedLength++] = outerFlags;
+		for (let i = 0; i < this.#itemsCount; i++) {
+			if ((i & 7) == 0) {
+				let flags = this.#getInnerFlags(i);
+				if (flags != 0)
+					this.#compressed[this.#compressedLength++] = flags;
+			}
+			this.#compressedLength += this.#items[i].writeValueTo(this.#compressed, this.#compressedLength);
+		}
+	}
+
+	#putItem(type, value)
+	{
+		if (this.#itemsCount >= 64) {
+			this.#putItems();
+			this.#itemsCount = 0;
+		}
+		this.#items[this.#itemsCount].type = type;
+		this.#items[this.#itemsCount].value = value;
+		this.#itemsCount++;
+	}
+
+	#isLiteralPreferred()
+	{
+		return (this.#itemsCount & 7) == 7 && this.#getInnerFlags(this.#itemsCount - 7) == 0;
+	}
+
+	#compressMemoryArea(startAddress, endAddress)
+	{
+		let lastDistance = -1;
+		for (let address = startAddress; address <= endAddress;) {
+			while (this.#memory[address] < 0)
+				if (++address > endAddress)
+					return;
+			this.#putItem(FlashPackItemType.SET_ADDRESS, address);
+			while (address <= endAddress && this.#memory[address] >= 0) {
+				let bestMatch = 0;
+				let bestDistance = -1;
+				for (let backAddress = address - 1; backAddress >= startAddress && address - backAddress < 128; backAddress--) {
+					let match;
+					for (match = 0; address + match <= endAddress; match++) {
+						let data = this.#memory[address + match];
+						if (data < 0 || data != this.#memory[backAddress + match])
+							break;
+					}
+					if (bestMatch < match) {
+						bestMatch = match;
+						bestDistance = address - backAddress;
+					}
+					else if (bestMatch == match && address - backAddress == lastDistance)
+						bestDistance = lastDistance;
+				}
+				switch (bestMatch) {
+				case 0:
+				case 1:
+					this.#putItem(FlashPackItemType.LITERAL, this.#memory[address++]);
+					continue;
+				case 2:
+					this.#putItem(FlashPackItemType.COPY_TWO_BYTES, bestDistance);
+					break;
+				case 3:
+					this.#putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
+					break;
+				case 4:
+					if (bestDistance == lastDistance)
+						this.#putItem(FlashPackItemType.COPY_MANY_BYTES, 4);
+					else if (this.#isLiteralPreferred()) {
+						this.#putItem(FlashPackItemType.LITERAL, this.#memory[address]);
+						this.#putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
+					}
+					else {
+						this.#putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
+						this.#putItem(FlashPackItemType.LITERAL, this.#memory[address + 3]);
+					}
+					break;
+				case 5:
+					if (bestDistance == lastDistance)
+						this.#putItem(FlashPackItemType.COPY_MANY_BYTES, 5);
+					else {
+						this.#putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
+						this.#putItem(FlashPackItemType.COPY_TWO_BYTES, bestDistance);
+					}
+					break;
+				case 6:
+					if (bestDistance == lastDistance)
+						this.#putItem(FlashPackItemType.COPY_MANY_BYTES, 6);
+					else {
+						this.#putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
+						this.#putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
+					}
+					break;
+				default:
+					let length = bestMatch;
+					if (bestDistance != lastDistance) {
+						if (this.#isLiteralPreferred() && length % 255 == 4) {
+							this.#putItem(FlashPackItemType.LITERAL, this.#memory[address]);
+							length--;
+						}
+						this.#putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
+						length -= 3;
+					}
+					else if (this.#isLiteralPreferred() && length % 255 == 1) {
+						this.#putItem(FlashPackItemType.LITERAL, this.#memory[address]);
+						length--;
+					}
+					for (; length > 255; length -= 255)
+						this.#putItem(FlashPackItemType.COPY_MANY_BYTES, 255);
+					switch (length) {
+					case 0:
+						break;
+					case 1:
+						this.#putItem(FlashPackItemType.LITERAL, this.#memory[address + bestMatch - 1]);
+						break;
+					case 2:
+						this.#putItem(FlashPackItemType.COPY_TWO_BYTES, bestDistance);
+						break;
+					case 3:
+						this.#putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
+						break;
+					default:
+						this.#putItem(FlashPackItemType.COPY_MANY_BYTES, length);
+						break;
+					}
+					break;
+				}
+				address += bestMatch;
+				lastDistance = bestDistance;
+			}
+		}
+	}
+
+	#putPoke(address, value)
+	{
+		this.#putItem(FlashPackItemType.SET_ADDRESS, address);
+		this.#putItem(FlashPackItemType.LITERAL, value);
+	}
+
+	compress(w)
+	{
+		for (let i = 0; i < 65536; i++)
+			this.#memory[i] = -1;
+		for (let i = 0; i + 5 <= w.outputOffset;) {
+			let startAddress = w.output[i] + (w.output[i + 1] << 8);
+			if (startAddress == 65535) {
+				i += 2;
+				startAddress = w.output[i] + (w.output[i + 1] << 8);
+			}
+			let endAddress = w.output[i + 2] + (w.output[i + 3] << 8);
+			if (startAddress > endAddress)
+				throw "Start address greater than end address";
+			i += 4;
+			if (i + endAddress - startAddress >= w.outputOffset)
+				throw "Truncated block";
+			while (startAddress <= endAddress)
+				this.#memory[startAddress++] = w.output[i++];
+		}
+		if (this.#memory[736] < 0 || this.#memory[737] < 0)
+			throw "Missing run address";
+		if (this.#memory[252] >= 0 || this.#memory[253] >= 0 || this.#memory[254] >= 0 || this.#memory[255] >= 0)
+			throw "Conflict with decompressor variables";
+		let runAddress = this.#memory[736] + (this.#memory[737] << 8);
+		this.#memory[736] = this.#memory[737] = -1;
+		let depackerEndAddress = this.#findHole();
+		this.#compressedLength = 0;
+		this.#itemsCount = 0;
+		this.#putPoke(54286, 0);
+		this.#putPoke(53774, 0);
+		this.#putPoke(54272, 0);
+		this.#putPoke(54017, 254);
+		this.#putPoke(580, 255);
+		this.#compressMemoryArea(depackerEndAddress, 65535);
+		this.#compressMemoryArea(0, depackerEndAddress);
+		this.#putItem(FlashPackItemType.END_OF_STREAM, 0);
+		this.#putItems();
+		let depackerStartAddress = depackerEndAddress - 87;
+		let compressedStartAddress = depackerStartAddress - this.#compressedLength;
+		if (compressedStartAddress < 8192)
+			throw "Too much compressed data";
+		w.outputOffset = 0;
+		w.writeWord(65535);
+		w.writeWord(54017);
+		w.writeWord(54017);
+		w.writeByte(255);
+		w.writeWord(compressedStartAddress);
+		w.writeWord(depackerEndAddress);
+		w.writeBytes(this.#compressed, 0, this.#compressedLength);
+		w.writeByte(173);
+		w.writeWord(compressedStartAddress);
+		w.writeByte(238);
+		w.writeWord(depackerStartAddress + 1);
+		w.writeByte(208);
+		w.writeByte(3);
+		w.writeByte(238);
+		w.writeWord(depackerStartAddress + 2);
+		w.writeByte(96);
+		w.writeByte(76);
+		w.writeWord(runAddress);
+		w.writeByte(133);
+		w.writeByte(254);
+		w.writeByte(138);
+		w.writeByte(42);
+		w.writeByte(170);
+		w.writeByte(240);
+		w.writeByte(246);
+		w.writeByte(177);
+		w.writeByte(254);
+		w.writeByte(153);
+		w.writeByte(128);
+		w.writeByte(128);
+		w.writeByte(200);
+		w.writeByte(208);
+		w.writeByte(9);
+		w.writeByte(152);
+		w.writeByte(56);
+		w.writeByte(101);
+		w.writeByte(255);
+		w.writeByte(133);
+		w.writeByte(255);
+		w.writeByte(141);
+		w.writeWord(depackerStartAddress + 26);
+		w.writeByte(202);
+		w.writeByte(208);
+		w.writeByte(236);
+		w.writeByte(6);
+		w.writeByte(253);
+		w.writeByte(208);
+		w.writeByte(21);
+		w.writeByte(6);
+		w.writeByte(252);
+		w.writeByte(208);
+		w.writeByte(7);
+		w.writeByte(56);
+		w.writeByte(32);
+		w.writeWord(depackerStartAddress);
+		w.writeByte(42);
+		w.writeByte(133);
+		w.writeByte(252);
+		w.writeByte(169);
+		w.writeByte(1);
+		w.writeByte(144);
+		w.writeByte(4);
+		w.writeByte(32);
+		w.writeWord(depackerStartAddress);
+		w.writeByte(42);
+		w.writeByte(133);
+		w.writeByte(253);
+		w.writeByte(32);
+		w.writeWord(depackerStartAddress);
+		w.writeByte(162);
+		w.writeByte(1);
+		w.writeByte(144);
+		w.writeByte(206);
+		w.writeByte(74);
+		w.writeByte(208);
+		w.writeByte(194);
+		w.writeByte(32);
+		w.writeWord(depackerStartAddress);
+		w.writeByte(176);
+		w.writeByte(193);
+		w.writeByte(168);
+		w.writeByte(32);
+		w.writeWord(depackerStartAddress);
+		w.writeByte(144);
+		w.writeByte(202);
+		w.writeWord(736);
+		w.writeWord(737);
+		w.writeWord(depackerStartAddress + 50);
+	}
+}
+
 /**
  * Format of output samples.
  */
-const ASAPSampleFormat = {
+export const ASAPSampleFormat = {
 	/**
 	 * Unsigned 8-bit.
 	 */
@@ -52,5246 +4789,674 @@ const ASAPSampleFormat = {
 	S16_B_E : 2
 }
 
-/**
- * Atari 8-bit chip music emulator.
- * This class performs no I/O operations - all music data must be passed in byte arrays.
- */
-function ASAP()
+class PokeyChannel
 {
-	this.cpu = new Cpu6502();
-	this.covox = new Uint8Array(4);
-	this.pokeys = new PokeyPair();
-	this.moduleInfo = new ASAPInfo();
-	this.silenceCycles = 0;
-	this.cpu.asap = this;
-}
+	audf;
+	audc;
+	periodCycles;
+	tickCycle;
+	timerCycle;
+	mute;
+	#out;
+	delta;
 
-/**
- * Output sample rate.
- */
-ASAP.SAMPLE_RATE = 44100;
-
-/**
- * Enables silence detection.
- * Causes playback to stop after the specified period of silence.
- * @param seconds Length of silence which ends playback. Zero disables silence detection.
- */
-ASAP.prototype.detectSilence = function(seconds)
-{
-	this.silenceCyclesCounter = this.silenceCycles = seconds * 1773447;
-}
-
-ASAP.prototype.peekHardware = function(addr)
-{
-	switch (addr & 65311) {
-	case 53268:
-		return this.moduleInfo.isNtsc() ? 15 : 1;
-	case 53279:
-		return ~this.consol & 15;
-	case 53770:
-	case 53786:
-	case 53774:
-	case 53790:
-		return this.pokeys.peek(addr, this.cpu.cycle);
-	case 53772:
-	case 53788:
-	case 53775:
-	case 53791:
-		return 255;
-	case 54283:
-	case 54299:
-		let cycle = this.cpu.cycle;
-		if (cycle > (this.moduleInfo.isNtsc() ? 29868 : 35568))
-			return 0;
-		return cycle / 228 | 0;
-	case 54287:
-	case 54303:
-		switch (this.nmist) {
-		case NmiStatus.RESET:
-			return 31;
-		case NmiStatus.WAS_V_BLANK:
-			return 95;
-		default:
-			return this.cpu.cycle < 28291 ? 31 : 95;
-		}
-	default:
-		return this.cpu.memory[addr];
+	initialize()
+	{
+		this.audf = 0;
+		this.audc = 0;
+		this.periodCycles = 28;
+		this.tickCycle = 8388608;
+		this.timerCycle = 8388608;
+		this.mute = 0;
+		this.#out = 0;
+		this.delta = 0;
 	}
-}
 
-ASAP.prototype.pokeHardware = function(addr, data)
-{
-	if (addr >> 8 == 210) {
-		let t = this.pokeys.poke(addr, data, this.cpu.cycle);
-		if (this.nextEventCycle > t)
-			this.nextEventCycle = t;
+	slope(pokey, pokeys, cycle)
+	{
+		this.delta = -this.delta;
+		pokey.addDelta(pokeys, cycle, this.delta);
 	}
-	else if ((addr & 65295) == 54282) {
-		let x = this.cpu.cycle % 114;
-		this.cpu.cycle += (x <= 106 ? 106 : 220) - x;
-	}
-	else if ((addr & 65295) == 54287) {
-		this.nmist = this.cpu.cycle < 28292 ? NmiStatus.ON_V_BLANK : NmiStatus.RESET;
-	}
-	else if ((addr & 65280) == this.moduleInfo.getCovoxAddress()) {
-		let pokey;
-		addr &= 3;
-		if (addr == 0 || addr == 3)
-			pokey = this.pokeys.basePokey;
-		else
-			pokey = this.pokeys.extraPokey;
-		let delta = data - this.covox[addr];
-		if (delta != 0) {
-			pokey.addDelta(this.pokeys, this.cpu.cycle, delta << 17);
-			this.covox[addr] = data;
-			this.gtiaOrCovoxPlayedThisFrame = true;
-		}
-	}
-	else if ((addr & 65311) == 53279) {
-		let delta = ((this.consol & 8) - (data & 8)) << 20;
-		if (delta != 0) {
-			let cycle = this.cpu.cycle;
-			this.pokeys.basePokey.addDelta(this.pokeys, cycle, delta);
-			this.pokeys.extraPokey.addDelta(this.pokeys, cycle, delta);
-			this.gtiaOrCovoxPlayedThisFrame = true;
-		}
-		this.consol = data;
-	}
-	else
-		this.cpu.memory[addr] = data;
-}
 
-ASAP.prototype.call6502 = function(addr)
-{
-	this.cpu.memory[53760] = 32;
-	this.cpu.memory[53761] = addr & 255;
-	this.cpu.memory[53762] = addr >> 8;
-	this.cpu.memory[53763] = 210;
-	this.cpu.pc = 53760;
-}
-
-ASAP.prototype.call6502Player = function()
-{
-	let player = this.moduleInfo.player;
-	switch (this.moduleInfo.type) {
-	case ASAPModuleType.SAP_B:
-		this.call6502(player);
-		break;
-	case ASAPModuleType.SAP_C:
-	case ASAPModuleType.CMC:
-	case ASAPModuleType.CM3:
-	case ASAPModuleType.CMR:
-	case ASAPModuleType.CMS:
-		this.call6502(player + 6);
-		break;
-	case ASAPModuleType.SAP_D:
-		if (player >= 0) {
-			this.cpu.pushPc();
-			this.cpu.memory[53760] = 8;
-			this.cpu.memory[53761] = 72;
-			this.cpu.memory[53762] = 138;
-			this.cpu.memory[53763] = 72;
-			this.cpu.memory[53764] = 152;
-			this.cpu.memory[53765] = 72;
-			this.cpu.memory[53766] = 32;
-			this.cpu.memory[53767] = player & 255;
-			this.cpu.memory[53768] = player >> 8;
-			this.cpu.memory[53769] = 104;
-			this.cpu.memory[53770] = 168;
-			this.cpu.memory[53771] = 104;
-			this.cpu.memory[53772] = 170;
-			this.cpu.memory[53773] = 104;
-			this.cpu.memory[53774] = 64;
-			this.cpu.pc = 53760;
-		}
-		break;
-	case ASAPModuleType.SAP_S:
-		let i = this.cpu.memory[69] - 1;
-		this.cpu.memory[69] = i & 255;
-		if (i == 0)
-			this.cpu.memory[45179] = (this.cpu.memory[45179] + 1) & 255;
-		break;
-	case ASAPModuleType.DLT:
-		this.call6502(player + 259);
-		break;
-	case ASAPModuleType.MPT:
-	case ASAPModuleType.RMT:
-	case ASAPModuleType.TM2:
-	case ASAPModuleType.FC:
-		this.call6502(player + 3);
-		break;
-	case ASAPModuleType.TMC:
-		if (--this.tmcPerFrameCounter <= 0) {
-			this.tmcPerFrameCounter = this.cpu.memory[this.moduleInfo.getMusicAddress() + 31];
-			this.call6502(player + 3);
-		}
-		else
-			this.call6502(player + 6);
-		break;
-	}
-}
-
-ASAP.prototype.isIrq = function()
-{
-	return this.pokeys.basePokey.irqst != 255;
-}
-
-ASAP.prototype.handleEvent = function()
-{
-	let cycle = this.cpu.cycle;
-	if (cycle >= this.nextScanlineCycle) {
-		if (cycle - this.nextScanlineCycle < 50)
-			this.cpu.cycle = cycle += 9;
-		this.nextScanlineCycle += 114;
-		if (cycle >= this.nextPlayerCycle) {
-			this.call6502Player();
-			this.nextPlayerCycle += 114 * this.moduleInfo.getPlayerRateScanlines();
-		}
-	}
-	let nextEventCycle = this.nextScanlineCycle;
-	nextEventCycle = this.pokeys.basePokey.checkIrq(cycle, nextEventCycle);
-	nextEventCycle = this.pokeys.extraPokey.checkIrq(cycle, nextEventCycle);
-	this.nextEventCycle = nextEventCycle;
-}
-
-ASAP.prototype.do6502Frame = function()
-{
-	this.nextEventCycle = 0;
-	this.nextScanlineCycle = 0;
-	this.nmist = this.nmist == NmiStatus.RESET ? NmiStatus.ON_V_BLANK : NmiStatus.WAS_V_BLANK;
-	let cycles = this.moduleInfo.isNtsc() ? 29868 : 35568;
-	this.cpu.doFrame(cycles);
-	this.cpu.cycle -= cycles;
-	if (this.nextPlayerCycle != 8388608)
-		this.nextPlayerCycle -= cycles;
-	for (let i = 3;; i >>= 1) {
-		this.pokeys.basePokey.channels[i].endFrame(cycles);
-		this.pokeys.extraPokey.channels[i].endFrame(cycles);
-		if (i == 0)
-			break;
-	}
-	return cycles;
-}
-
-ASAP.prototype.doFrame = function()
-{
-	this.gtiaOrCovoxPlayedThisFrame = false;
-	this.pokeys.startFrame();
-	let cycles = this.do6502Frame();
-	this.pokeys.endFrame(cycles);
-	return cycles;
-}
-
-/**
- * Loads music data ("module").
- * @param filename Filename, used to determine the format.
- * @param module Contents of the file.
- * @param moduleLen Length of the file.
- */
-ASAP.prototype.load = function(filename, module, moduleLen)
-{
-	this.moduleInfo.load(filename, module, moduleLen);
-	let playerRoutine = ASAP6502.getPlayerRoutine(this.moduleInfo);
-	if (playerRoutine != null) {
-		let player = ASAPInfo.getWord(playerRoutine, 2);
-		let playerLastByte = ASAPInfo.getWord(playerRoutine, 4);
-		let music = this.moduleInfo.getMusicAddress();
-		if (music <= playerLastByte)
-			throw "Module address conflicts with the player routine";
-		this.cpu.memory[19456] = 0;
-		if (this.moduleInfo.type == ASAPModuleType.FC)
-			Ci.copyArray(module, 0, this.cpu.memory, music, moduleLen);
-		else
-			Ci.copyArray(module, 6, this.cpu.memory, music, moduleLen - 6);
-		Ci.copyArray(playerRoutine, 6, this.cpu.memory, player, playerLastByte + 1 - player);
-		if (this.moduleInfo.player < 0)
-			this.moduleInfo.player = player;
-		return;
-	}
-	this.cpu.memory.fill(0);
-	let moduleIndex = this.moduleInfo.headerLen + 2;
-	while (moduleIndex + 5 <= moduleLen) {
-		let startAddr = ASAPInfo.getWord(module, moduleIndex);
-		let blockLen = ASAPInfo.getWord(module, moduleIndex + 2) + 1 - startAddr;
-		if (blockLen <= 0 || moduleIndex + blockLen > moduleLen)
-			throw "Invalid binary block";
-		moduleIndex += 4;
-		Ci.copyArray(module, moduleIndex, this.cpu.memory, startAddr, blockLen);
-		moduleIndex += blockLen;
-		if (moduleIndex == moduleLen)
+	doTick(pokey, pokeys, cycle, ch)
+	{
+		this.tickCycle += this.periodCycles;
+		let audc = this.audc;
+		if ((audc & 176) == 160)
+			this.#out ^= 1;
+		else if ((audc & 16) != 0 || pokey.init)
 			return;
-		if (moduleIndex + 7 <= moduleLen && module[moduleIndex] == 255 && module[moduleIndex + 1] == 255)
-			moduleIndex += 2;
-	}
-	throw "Invalid binary block";
-}
-
-/**
- * Returns information about the loaded module.
- */
-ASAP.prototype.getInfo = function()
-{
-	return this.moduleInfo;
-}
-
-ASAP.prototype.do6502Init = function(pc, a, x, y)
-{
-	this.cpu.pc = pc;
-	this.cpu.a = a & 255;
-	this.cpu.x = x & 255;
-	this.cpu.y = y & 255;
-	this.cpu.memory[53760] = 210;
-	this.cpu.memory[510] = 255;
-	this.cpu.memory[511] = 209;
-	this.cpu.s = 253;
-	for (let frame = 0; frame < 50; frame++) {
-		this.do6502Frame();
-		if (this.cpu.pc == 53760)
-			return;
-	}
-	throw "INIT routine didn't return";
-}
-
-/**
- * Mutes the selected POKEY channels.
- * @param mask An 8-bit mask which selects POKEY channels to be muted.
- */
-ASAP.prototype.mutePokeyChannels = function(mask)
-{
-	this.pokeys.basePokey.mute(mask);
-	this.pokeys.extraPokey.mute(mask >> 4);
-}
-
-/**
- * Prepares playback of the specified song of the loaded module.
- * @param song Zero-based song index.
- * @param duration Playback time in milliseconds, -1 means infinity.
- */
-ASAP.prototype.playSong = function(song, duration)
-{
-	if (song < 0 || song >= this.moduleInfo.getSongs())
-		throw "Song number out of range";
-	this.currentSong = song;
-	this.currentDuration = duration;
-	this.nextPlayerCycle = 8388608;
-	this.blocksPlayed = 0;
-	this.silenceCyclesCounter = this.silenceCycles;
-	this.cpu.reset();
-	this.nmist = NmiStatus.ON_V_BLANK;
-	this.consol = 8;
-	this.covox[0] = 128;
-	this.covox[1] = 128;
-	this.covox[2] = 128;
-	this.covox[3] = 128;
-	this.pokeys.initialize(this.moduleInfo.isNtsc(), this.moduleInfo.getChannels() > 1);
-	this.mutePokeyChannels(255);
-	let player = this.moduleInfo.player;
-	let music = this.moduleInfo.getMusicAddress();
-	switch (this.moduleInfo.type) {
-	case ASAPModuleType.SAP_B:
-		this.do6502Init(this.moduleInfo.getInitAddress(), song, 0, 0);
-		break;
-	case ASAPModuleType.SAP_C:
-	case ASAPModuleType.CMC:
-	case ASAPModuleType.CM3:
-	case ASAPModuleType.CMR:
-	case ASAPModuleType.CMS:
-		this.do6502Init(player + 3, 112, music, music >> 8);
-		this.do6502Init(player + 3, 0, song, 0);
-		break;
-	case ASAPModuleType.SAP_D:
-	case ASAPModuleType.SAP_S:
-		this.cpu.pc = this.moduleInfo.getInitAddress();
-		this.cpu.a = song;
-		this.cpu.x = 0;
-		this.cpu.y = 0;
-		this.cpu.s = 255;
-		break;
-	case ASAPModuleType.DLT:
-		this.do6502Init(player + 256, 0, 0, this.moduleInfo.songPos[song]);
-		break;
-	case ASAPModuleType.MPT:
-		this.do6502Init(player, 0, music >> 8, music);
-		this.do6502Init(player, 2, this.moduleInfo.songPos[song], 0);
-		break;
-	case ASAPModuleType.RMT:
-		this.do6502Init(player, this.moduleInfo.songPos[song], music, music >> 8);
-		break;
-	case ASAPModuleType.TMC:
-	case ASAPModuleType.TM2:
-		this.do6502Init(player, 112, music >> 8, music);
-		this.do6502Init(player, 0, song, 0);
-		this.tmcPerFrameCounter = 1;
-		break;
-	case ASAPModuleType.FC:
-		this.do6502Init(player, song, 0, 0);
-		break;
-	}
-	this.mutePokeyChannels(0);
-	this.nextPlayerCycle = 0;
-}
-
-/**
- * Returns current playback position in blocks.
- * A block is one sample or a pair of samples for stereo.
- */
-ASAP.prototype.getBlocksPlayed = function()
-{
-	return this.blocksPlayed;
-}
-
-/**
- * Returns current playback position in milliseconds.
- */
-ASAP.prototype.getPosition = function()
-{
-	return this.blocksPlayed * 10 / 441 | 0;
-}
-
-ASAP.millisecondsToBlocks = function(milliseconds)
-{
-	return milliseconds * 441 / 10 | 0;
-}
-
-/**
- * Changes the playback position.
- * @param block The requested absolute position in samples (always 44100 per second, even in stereo).
- */
-ASAP.prototype.seekSample = function(block)
-{
-	if (block < this.blocksPlayed)
-		this.playSong(this.currentSong, this.currentDuration);
-	while (this.blocksPlayed + this.pokeys.readySamplesEnd < block) {
-		this.blocksPlayed += this.pokeys.readySamplesEnd;
-		this.doFrame();
-	}
-	this.pokeys.readySamplesStart = block - this.blocksPlayed;
-	this.blocksPlayed = block;
-}
-
-/**
- * Changes the playback position.
- * @param position The requested absolute position in milliseconds.
- */
-ASAP.prototype.seek = function(position)
-{
-	this.seekSample(ASAP.millisecondsToBlocks(position));
-}
-
-ASAP.putLittleEndian = function(buffer, offset, value)
-{
-	buffer[offset] = value & 255;
-	buffer[offset + 1] = value >> 8 & 255;
-	buffer[offset + 2] = value >> 16 & 255;
-	buffer[offset + 3] = value >> 24 & 255;
-}
-
-ASAP.fourCC = function(s)
-{
-	return (s.charCodeAt(0) | s.charCodeAt(1) << 8 | s.charCodeAt(2) << 16 | s.charCodeAt(3) << 24) & 2147483647;
-}
-
-ASAP.putLittleEndians = function(buffer, offset, value1, value2)
-{
-	ASAP.putLittleEndian(buffer, offset, value1);
-	ASAP.putLittleEndian(buffer, offset + 4, value2);
-}
-
-ASAP.putWavMetadata = function(buffer, offset, fourCC, value)
-{
-	let len = value.length;
-	if (len > 0) {
-		ASAP.putLittleEndians(buffer, offset, fourCC, (len | 1) + 1);
-		offset += 8;
-		for (let i = 0; i < len; i++)
-			buffer[offset++] = value.charCodeAt(i);
-		buffer[offset++] = 0;
-		if ((len & 1) == 0)
-			buffer[offset++] = 0;
-	}
-	return offset;
-}
-
-/**
- * Fills leading bytes of the specified buffer with WAV file header.
- * Returns the number of changed bytes.
- * @param buffer The destination buffer.
- * @param format Format of samples.
- * @param metadata Include metadata (title, author, date).
- */
-ASAP.prototype.getWavHeader = function(buffer, format, metadata)
-{
-	let use16bit = format != ASAPSampleFormat.U8 ? 1 : 0;
-	let blockSize = this.moduleInfo.getChannels() << use16bit;
-	let bytesPerSecond = 44100 * blockSize;
-	let totalBlocks = ASAP.millisecondsToBlocks(this.currentDuration);
-	let nBytes = (totalBlocks - this.blocksPlayed) * blockSize;
-	ASAP.putLittleEndian(buffer, 8, 1163280727);
-	ASAP.putLittleEndians(buffer, 12, 544501094, 16);
-	buffer[20] = 1;
-	buffer[21] = 0;
-	buffer[22] = this.moduleInfo.getChannels();
-	buffer[23] = 0;
-	ASAP.putLittleEndians(buffer, 24, 44100, bytesPerSecond);
-	buffer[32] = blockSize;
-	buffer[33] = 0;
-	buffer[34] = 8 << use16bit;
-	buffer[35] = 0;
-	let i = 36;
-	if (metadata) {
-		let year = this.moduleInfo.getYear();
-		if (this.moduleInfo.getTitle().length > 0 || this.moduleInfo.getAuthor().length > 0 || year > 0) {
-			ASAP.putLittleEndian(buffer, 44, 1330007625);
-			i = ASAP.putWavMetadata(buffer, 48, 1296125513, this.moduleInfo.getTitle());
-			i = ASAP.putWavMetadata(buffer, i, 1414676809, this.moduleInfo.getAuthor());
-			if (year > 0) {
-				ASAP.putLittleEndians(buffer, i, 1146241865, 6);
-				for (let j = 3; j >= 0; j--) {
-					buffer[i + 8 + j] = 48 + year % 10;
-					year = year / 10 | 0;
-				}
-				buffer[i + 12] = 0;
-				buffer[i + 13] = 0;
-				i += 14;
-			}
-			ASAP.putLittleEndians(buffer, 36, 1414744396, i - 44);
-		}
-	}
-	ASAP.putLittleEndians(buffer, 0, 1179011410, i + nBytes);
-	ASAP.putLittleEndians(buffer, i, 1635017060, nBytes);
-	return i + 8;
-}
-
-ASAP.prototype.generateAt = function(buffer, bufferOffset, bufferLen, format)
-{
-	if (this.silenceCycles > 0 && this.silenceCyclesCounter <= 0)
-		return 0;
-	let blockShift = this.moduleInfo.getChannels() - (format == ASAPSampleFormat.U8 ? 1 : 0);
-	let bufferBlocks = bufferLen >> blockShift;
-	if (this.currentDuration > 0) {
-		let totalBlocks = ASAP.millisecondsToBlocks(this.currentDuration);
-		if (bufferBlocks > totalBlocks - this.blocksPlayed)
-			bufferBlocks = totalBlocks - this.blocksPlayed;
-	}
-	let block = 0;
-	for (;;) {
-		let blocks = this.pokeys.generate(buffer, bufferOffset + (block << blockShift), bufferBlocks - block, format);
-		this.blocksPlayed += blocks;
-		block += blocks;
-		if (block >= bufferBlocks)
-			break;
-		let cycles = this.doFrame();
-		if (this.silenceCycles > 0) {
-			if (this.pokeys.isSilent() && !this.gtiaOrCovoxPlayedThisFrame) {
-				this.silenceCyclesCounter -= cycles;
-				if (this.silenceCyclesCounter <= 0)
-					break;
-			}
-			else
-				this.silenceCyclesCounter = this.silenceCycles;
-		}
-	}
-	return block << blockShift;
-}
-
-/**
- * Fills the specified buffer with generated samples.
- * @param buffer The destination buffer.
- * @param bufferLen Number of bytes to fill.
- * @param format Format of samples.
- */
-ASAP.prototype.generate = function(buffer, bufferLen, format)
-{
-	return this.generateAt(buffer, 0, bufferLen, format);
-}
-
-/**
- * Returns POKEY channel volume - an integer between 0 and 15.
- * @param channel POKEY channel number (from 0 to 7).
- */
-ASAP.prototype.getPokeyChannelVolume = function(channel)
-{
-	let pokey = (channel & 4) == 0 ? this.pokeys.basePokey : this.pokeys.extraPokey;
-	return pokey.channels[channel & 3].audc & 15;
-}
-
-function ASAP6502()
-{
-}
-
-ASAP6502.getPlayerRoutine = function(info)
-{
-	switch (info.type) {
-	case ASAPModuleType.CMC:
-		return Ci.cmc_obx;
-	case ASAPModuleType.CM3:
-		return Ci.cm3_obx;
-	case ASAPModuleType.CMR:
-		return Ci.cmr_obx;
-	case ASAPModuleType.CMS:
-		return Ci.cms_obx;
-	case ASAPModuleType.DLT:
-		return Ci.dlt_obx;
-	case ASAPModuleType.MPT:
-		return Ci.mpt_obx;
-	case ASAPModuleType.RMT:
-		return info.getChannels() == 1 ? Ci.rmt4_obx : Ci.rmt8_obx;
-	case ASAPModuleType.TMC:
-		return Ci.tmc_obx;
-	case ASAPModuleType.TM2:
-		return Ci.tm2_obx;
-	case ASAPModuleType.FC:
-		return Ci.fc_obx;
-	default:
-		return null;
-	}
-}
-
-function DurationParser()
-{
-}
-
-DurationParser.prototype.parseDigit = function(max)
-{
-	if (this.position >= this.length)
-		throw "Invalid duration";
-	let digit = this.source.charCodeAt(this.position++) - 48;
-	if (digit < 0 || digit > max)
-		throw "Invalid duration";
-	return digit;
-}
-
-DurationParser.prototype.parse = function(s)
-{
-	this.source = s;
-	this.position = 0;
-	this.length = s.length;
-	let result = this.parseDigit(9);
-	let digit;
-	if (this.position < this.length) {
-		digit = s.charCodeAt(this.position) - 48;
-		if (digit >= 0 && digit <= 9) {
-			this.position++;
-			result = result * 10 + digit;
-		}
-		if (this.position < this.length && s.charCodeAt(this.position) == 58) {
-			this.position++;
-			digit = this.parseDigit(5);
-			result = result * 60 + digit * 10;
-			digit = this.parseDigit(9);
-			result += digit;
-		}
-	}
-	result *= 1000;
-	if (this.position >= this.length)
-		return result;
-	if (s.charCodeAt(this.position++) != 46)
-		throw "Invalid duration";
-	digit = this.parseDigit(9);
-	result += digit * 100;
-	if (this.position >= this.length)
-		return result;
-	digit = this.parseDigit(9);
-	result += digit * 10;
-	if (this.position >= this.length)
-		return result;
-	digit = this.parseDigit(9);
-	result += digit;
-	return result;
-}
-
-/**
- * Information about a music file.
- */
-function ASAPInfo()
-{
-	this.durations = new Int32Array(32);
-	this.loops = new Array(32);
-	this.songPos = new Uint8Array(32);
-}
-
-/**
- * ASAP version - major part.
- */
-ASAPInfo.VERSION_MAJOR = 5;
-
-/**
- * ASAP version - minor part.
- */
-ASAPInfo.VERSION_MINOR = 2;
-
-/**
- * ASAP version - micro part.
- */
-ASAPInfo.VERSION_MICRO = 0;
-
-/**
- * ASAP version as a string.
- */
-ASAPInfo.VERSION = "5.2.0";
-
-/**
- * Years ASAP was created in.
- */
-ASAPInfo.YEARS = "2005-2022";
-
-/**
- * Short credits for ASAP.
- */
-ASAPInfo.CREDITS = "Another Slight Atari Player (C) 2005-2022 Piotr Fusik\nCMC, MPT, TMC, TM2 players (C) 1994-2005 Marcin Lewandowski\nRMT player (C) 2002-2005 Radek Sterba\nDLT player (C) 2009 Marek Konopka\nCMS player (C) 1999 David Spilka\nFC player (C) 2011 Jerzy Kut\n";
-
-/**
- * Short license notice.
- * Display after the credits.
- */
-ASAPInfo.COPYRIGHT = "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.";
-
-/**
- * Maximum length of a supported input file.
- * You may assume that files longer than this are not supported by ASAP.
- */
-ASAPInfo.MAX_MODULE_LENGTH = 65000;
-
-/**
- * Maximum length of text metadata.
- */
-ASAPInfo.MAX_TEXT_LENGTH = 127;
-
-/**
- * Maximum number of songs in a file.
- */
-ASAPInfo.MAX_SONGS = 32;
-
-ASAPInfo.isValidChar = function(c)
-{
-	return c >= 32 && c <= 124 && c != 96 && c != 123;
-}
-
-ASAPInfo.checkValidChar = function(c)
-{
-	if (!ASAPInfo.isValidChar(c))
-		throw "Invalid character";
-}
-
-ASAPInfo.getWord = function(array, i)
-{
-	return array[i] + (array[i + 1] << 8);
-}
-
-ASAPInfo.prototype.parseModule = function(module, moduleLen)
-{
-	if ((module[0] != 255 || module[1] != 255) && (module[0] != 0 || module[1] != 0))
-		throw "Invalid two leading bytes of the module";
-	this.music = ASAPInfo.getWord(module, 2);
-	let musicLastByte = ASAPInfo.getWord(module, 4);
-	if (this.music <= 55295 && musicLastByte >= 53248)
-		throw "Module address conflicts with hardware registers";
-	let blockLen = musicLastByte + 1 - this.music;
-	if (6 + blockLen != moduleLen) {
-		if (this.type != ASAPModuleType.RMT || 11 + blockLen > moduleLen)
-			throw "Module length doesn't match headers";
-		let infoAddr = ASAPInfo.getWord(module, 6 + blockLen);
-		if (infoAddr != this.music + blockLen)
-			throw "Invalid address of RMT info";
-		let infoLen = ASAPInfo.getWord(module, 8 + blockLen) + 1 - infoAddr;
-		if (10 + blockLen + infoLen != moduleLen)
-			throw "Invalid RMT info block";
-	}
-}
-
-ASAPInfo.prototype.addSong = function(playerCalls)
-{
-	let scanlines = playerCalls * this.fastplay;
-	this.durations[this.songs++] = scanlines * 38000 / 591149 | 0;
-}
-
-ASAPInfo.prototype.parseCmcSong = function(module, pos)
-{
-	let tempo = module[25];
-	let playerCalls = 0;
-	let repStartPos = 0;
-	let repEndPos = 0;
-	let repTimes = 0;
-	const seen = new Uint8Array(85);
-	while (pos >= 0 && pos < 85) {
-		if (pos == repEndPos && repTimes > 0) {
-			for (let i = 0; i < 85; i++)
-				if (seen[i] == 1 || seen[i] == 3)
-					seen[i] = 0;
-			repTimes--;
-			pos = repStartPos;
-		}
-		if (seen[pos] != 0) {
-			if (seen[pos] != 1)
-				this.loops[this.songs] = true;
-			break;
-		}
-		seen[pos] = 1;
-		let p1 = module[518 + pos];
-		let p2 = module[603 + pos];
-		let p3 = module[688 + pos];
-		if (p1 == 254 || p2 == 254 || p3 == 254) {
-			pos++;
-			continue;
-		}
-		p1 |= this.type == ASAPModuleType.CMS ? 7 : 15;
-		switch (p1) {
-		case 135:
-		case 167:
-			pos++;
-			break;
-		case 143:
-			pos = -1;
-			break;
-		case 151:
-			if (p2 < 128) {
-				playerCalls += p2;
-				if (p3 < 128)
-					playerCalls += p3 * 50;
-			}
-			pos++;
-			break;
-		case 159:
-			pos = p2;
-			break;
-		case 175:
-			pos -= p2;
-			break;
-		case 191:
-			pos += p2;
-			break;
-		case 207:
-			if (p2 < 128) {
-				tempo = p2;
-				pos++;
-			}
-			else
-				pos = -1;
-			break;
-		case 223:
-			pos++;
-			repStartPos = pos;
-			repEndPos = pos + p2;
-			repTimes = p3 - 1;
-			break;
-		case 239:
-			this.loops[this.songs] = true;
-			pos = -1;
-			break;
-		default:
-			p2 = repTimes > 0 ? 3 : 2;
-			for (p1 = 0; p1 < 85; p1++)
-				if (seen[p1] == 1)
-					seen[p1] = p2;
-			playerCalls += tempo * (this.type == ASAPModuleType.CM3 ? 48 : 64);
-			pos++;
-			break;
-		}
-	}
-	this.addSong(playerCalls);
-}
-
-ASAPInfo.prototype.parseCmc = function(module, moduleLen, type)
-{
-	if (moduleLen < 774)
-		throw "Module too short";
-	this.type = type;
-	this.parseModule(module, moduleLen);
-	let lastPos = 84;
-	while (--lastPos >= 0) {
-		if (module[518 + lastPos] < 176 || module[603 + lastPos] < 64 || module[688 + lastPos] < 64)
-			break;
-		if (this.channels == 2) {
-			if (module[774 + lastPos] < 176 || module[859 + lastPos] < 64 || module[944 + lastPos] < 64)
-				break;
-		}
-	}
-	this.songs = 0;
-	this.parseCmcSong(module, 0);
-	for (let pos = 0; pos < lastPos && this.songs < 32; pos++)
-		if (module[518 + pos] == 143 || module[518 + pos] == 239)
-			this.parseCmcSong(module, pos + 1);
-}
-
-ASAPInfo.isDltTrackEmpty = function(module, pos)
-{
-	return module[8198 + pos] >= 67 && module[8454 + pos] >= 64 && module[8710 + pos] >= 64 && module[8966 + pos] >= 64;
-}
-
-ASAPInfo.isDltPatternEnd = function(module, pos, i)
-{
-	for (let ch = 0; ch < 4; ch++) {
-		let pattern = module[8198 + (ch << 8) + pos];
-		if (pattern < 64) {
-			let offset = 6 + (pattern << 7) + (i << 1);
-			if ((module[offset] & 128) == 0 && (module[offset + 1] & 128) != 0)
-				return true;
-		}
-	}
-	return false;
-}
-
-ASAPInfo.prototype.parseDltSong = function(module, seen, pos)
-{
-	while (pos < 128 && !seen[pos] && ASAPInfo.isDltTrackEmpty(module, pos))
-		seen[pos++] = true;
-	this.songPos[this.songs] = pos;
-	let playerCalls = 0;
-	let loop = false;
-	let tempo = 6;
-	while (pos < 128) {
-		if (seen[pos]) {
-			loop = true;
-			break;
-		}
-		seen[pos] = true;
-		let p1 = module[8198 + pos];
-		if (p1 == 64 || ASAPInfo.isDltTrackEmpty(module, pos))
-			break;
-		if (p1 == 65)
-			pos = module[8326 + pos];
-		else if (p1 == 66)
-			tempo = module[8326 + pos++];
 		else {
-			for (let i = 0; i < 64 && !ASAPInfo.isDltPatternEnd(module, pos, i); i++)
-				playerCalls += tempo;
-			pos++;
-		}
-	}
-	if (playerCalls > 0) {
-		this.loops[this.songs] = loop;
-		this.addSong(playerCalls);
-	}
-}
-
-ASAPInfo.prototype.parseDlt = function(module, moduleLen)
-{
-	if (moduleLen != 11270 && moduleLen != 11271)
-		throw "Invalid module length";
-	this.type = ASAPModuleType.DLT;
-	this.parseModule(module, moduleLen);
-	if (this.music != 8192)
-		throw "Unsupported module address";
-	const seen = new Array(128);
-	this.songs = 0;
-	for (let pos = 0; pos < 128 && this.songs < 32; pos++) {
-		if (!seen[pos])
-			this.parseDltSong(module, seen, pos);
-	}
-	if (this.songs == 0)
-		throw "No songs found";
-}
-
-ASAPInfo.prototype.parseMptSong = function(module, globalSeen, songLen, pos)
-{
-	let addrToOffset = ASAPInfo.getWord(module, 2) - 6;
-	let tempo = module[463];
-	let playerCalls = 0;
-	const seen = new Uint8Array(256);
-	const patternOffset = new Int32Array(4);
-	const blankRows = new Int32Array(4);
-	const blankRowsCounter = new Int32Array(4);
-	while (pos < songLen) {
-		if (seen[pos] != 0) {
-			if (seen[pos] != 1)
-				this.loops[this.songs] = true;
-			break;
-		}
-		seen[pos] = 1;
-		globalSeen[pos] = true;
-		let i = module[464 + pos * 2];
-		if (i == 255) {
-			pos = module[465 + pos * 2];
-			continue;
-		}
-		let ch;
-		for (ch = 3; ch >= 0; ch--) {
-			i = module[454 + ch] + (module[458 + ch] << 8) - addrToOffset;
-			i = module[i + pos * 2];
-			if (i >= 64)
-				break;
-			i <<= 1;
-			i = ASAPInfo.getWord(module, 70 + i);
-			patternOffset[ch] = i == 0 ? 0 : i - addrToOffset;
-			blankRowsCounter[ch] = 0;
-		}
-		if (ch >= 0)
-			break;
-		for (i = 0; i < songLen; i++)
-			if (seen[i] == 1)
-				seen[i] = 2;
-		for (let patternRows = module[462]; --patternRows >= 0;) {
-			for (ch = 3; ch >= 0; ch--) {
-				if (patternOffset[ch] == 0)
-					continue;
-				if (--blankRowsCounter[ch] >= 0)
-					continue;
-				for (;;) {
-					i = module[patternOffset[ch]++];
-					if (i < 64 || i == 254)
-						break;
-					if (i < 128)
-						continue;
-					if (i < 192) {
-						blankRows[ch] = i - 128;
-						continue;
-					}
-					if (i < 208)
-						continue;
-					if (i < 224) {
-						tempo = i - 207;
-						continue;
-					}
-					patternRows = 0;
-				}
-				blankRowsCounter[ch] = blankRows[ch];
-			}
-			playerCalls += tempo;
-		}
-		pos++;
-	}
-	if (playerCalls > 0)
-		this.addSong(playerCalls);
-}
-
-ASAPInfo.prototype.parseMpt = function(module, moduleLen)
-{
-	if (moduleLen < 464)
-		throw "Module too short";
-	this.type = ASAPModuleType.MPT;
-	this.parseModule(module, moduleLen);
-	let track0Addr = ASAPInfo.getWord(module, 2) + 458;
-	if (module[454] + (module[458] << 8) != track0Addr)
-		throw "Invalid address of the first track";
-	let songLen = (module[455] + (module[459] << 8) - track0Addr) >> 1;
-	if (songLen > 254)
-		throw "Song too long";
-	const globalSeen = new Array(256);
-	this.songs = 0;
-	for (let pos = 0; pos < songLen && this.songs < 32; pos++) {
-		if (!globalSeen[pos]) {
-			this.songPos[this.songs] = pos;
-			this.parseMptSong(module, globalSeen, songLen, pos);
-		}
-	}
-	if (this.songs == 0)
-		throw "No songs found";
-}
-
-ASAPInfo.getRmtInstrumentFrames = function(module, instrument, volume, volumeFrame, onExtraPokey)
-{
-	let addrToOffset = ASAPInfo.getWord(module, 2) - 6;
-	instrument = ASAPInfo.getWord(module, 14) - addrToOffset + (instrument << 1);
-	if (module[instrument + 1] == 0)
-		return 0;
-	instrument = ASAPInfo.getWord(module, instrument) - addrToOffset;
-	let perFrame = module[12];
-	let playerCall = volumeFrame * perFrame;
-	let playerCalls = playerCall;
-	let index = module[instrument] + 1 + playerCall * 3;
-	let indexEnd = module[instrument + 2] + 3;
-	let indexLoop = module[instrument + 3];
-	if (indexLoop >= indexEnd)
-		return 0;
-	let volumeSlideDepth = module[instrument + 6];
-	let volumeMin = module[instrument + 7];
-	if (index >= indexEnd)
-		index = (index - indexEnd) % (indexEnd - indexLoop) + indexLoop;
-	else {
-		do {
-			let vol = module[instrument + index];
-			if (onExtraPokey)
-				vol >>= 4;
-			if ((vol & 15) >= ASAPInfo.GET_RMT_INSTRUMENT_FRAMES_RMT_VOLUME_SILENT[volume])
-				playerCalls = playerCall + 1;
-			playerCall++;
-			index += 3;
-		}
-		while (index < indexEnd);
-	}
-	if (volumeSlideDepth == 0)
-		return playerCalls / perFrame | 0;
-	let volumeSlide = 128;
-	let silentLoop = false;
-	for (;;) {
-		if (index >= indexEnd) {
-			if (silentLoop)
-				break;
-			silentLoop = true;
-			index = indexLoop;
-		}
-		let vol = module[instrument + index];
-		if (onExtraPokey)
-			vol >>= 4;
-		if ((vol & 15) >= ASAPInfo.GET_RMT_INSTRUMENT_FRAMES_RMT_VOLUME_SILENT[volume]) {
-			playerCalls = playerCall + 1;
-			silentLoop = false;
-		}
-		playerCall++;
-		index += 3;
-		volumeSlide -= volumeSlideDepth;
-		if (volumeSlide < 0) {
-			volumeSlide += 256;
-			if (--volume <= volumeMin)
-				break;
-		}
-	}
-	return playerCalls / perFrame | 0;
-}
-
-ASAPInfo.prototype.parseRmtSong = function(module, globalSeen, songLen, posShift, pos)
-{
-	let addrToOffset = ASAPInfo.getWord(module, 2) - 6;
-	let tempo = module[11];
-	let frames = 0;
-	let songOffset = ASAPInfo.getWord(module, 20) - addrToOffset;
-	let patternLoOffset = ASAPInfo.getWord(module, 16) - addrToOffset;
-	let patternHiOffset = ASAPInfo.getWord(module, 18) - addrToOffset;
-	const seen = new Uint8Array(256);
-	const patternBegin = new Int32Array(8);
-	const patternOffset = new Int32Array(8);
-	const blankRows = new Int32Array(8);
-	const instrumentNo = new Int32Array(8);
-	const instrumentFrame = new Int32Array(8);
-	const volumeValue = new Int32Array(8);
-	const volumeFrame = new Int32Array(8);
-	while (pos < songLen) {
-		if (seen[pos] != 0) {
-			if (seen[pos] != 1)
-				this.loops[this.songs] = true;
-			break;
-		}
-		seen[pos] = 1;
-		globalSeen[pos] = true;
-		if (module[songOffset + (pos << posShift)] == 254) {
-			pos = module[songOffset + (pos << posShift) + 1];
-			continue;
-		}
-		for (let ch = 0; ch < 1 << posShift; ch++) {
-			let p = module[songOffset + (pos << posShift) + ch];
-			if (p == 255)
-				blankRows[ch] = 256;
+			let poly = cycle + pokey.polyIndex - ch;
+			if (audc < 128 && (1706902752 & 1 << poly % 31) == 0)
+				return;
+			if ((audc & 32) != 0)
+				this.#out ^= 1;
 			else {
-				patternOffset[ch] = patternBegin[ch] = module[patternLoOffset + p] + (module[patternHiOffset + p] << 8) - addrToOffset;
-				if (patternOffset[ch] < 0)
-					return;
-				blankRows[ch] = 0;
-			}
-		}
-		for (let i = 0; i < songLen; i++)
-			if (seen[i] == 1)
-				seen[i] = 2;
-		for (let patternRows = module[10]; --patternRows >= 0;) {
-			for (let ch = 0; ch < 1 << posShift; ch++) {
-				if (--blankRows[ch] > 0)
-					continue;
-				for (;;) {
-					let i = module[patternOffset[ch]++];
-					if ((i & 63) < 62) {
-						i += module[patternOffset[ch]++] << 8;
-						if ((i & 63) != 61) {
-							instrumentNo[ch] = i >> 10;
-							instrumentFrame[ch] = frames;
-						}
-						volumeValue[ch] = i >> 6 & 15;
-						volumeFrame[ch] = frames;
-						break;
-					}
-					if (i == 62) {
-						blankRows[ch] = module[patternOffset[ch]++];
-						break;
-					}
-					if ((i & 63) == 62) {
-						blankRows[ch] = i >> 6;
-						break;
-					}
-					if ((i & 191) == 63) {
-						tempo = module[patternOffset[ch]++];
-						continue;
-					}
-					if (i == 191) {
-						patternOffset[ch] = patternBegin[ch] + module[patternOffset[ch]];
-						continue;
-					}
-					patternRows = -1;
-					break;
-				}
-				if (patternRows < 0)
-					break;
-			}
-			if (patternRows >= 0)
-				frames += tempo;
-		}
-		pos++;
-	}
-	let instrumentFrames = 0;
-	for (let ch = 0; ch < 1 << posShift; ch++) {
-		let frame = instrumentFrame[ch];
-		frame += ASAPInfo.getRmtInstrumentFrames(module, instrumentNo[ch], volumeValue[ch], volumeFrame[ch] - frame, ch >= 4);
-		if (instrumentFrames < frame)
-			instrumentFrames = frame;
-	}
-	if (frames > instrumentFrames) {
-		if (frames - instrumentFrames > 100)
-			this.loops[this.songs] = false;
-		frames = instrumentFrames;
-	}
-	if (frames > 0)
-		this.addSong(frames);
-}
-
-ASAPInfo.validateRmt = function(module, moduleLen)
-{
-	if (moduleLen < 48)
-		return false;
-	if (module[6] != 82 || module[7] != 77 || module[8] != 84 || module[13] != 1)
-		return false;
-	return true;
-}
-
-ASAPInfo.prototype.parseRmt = function(module, moduleLen)
-{
-	if (!ASAPInfo.validateRmt(module, moduleLen))
-		throw "Invalid RMT file";
-	let posShift;
-	switch (module[9]) {
-	case 52:
-		posShift = 2;
-		break;
-	case 56:
-		this.channels = 2;
-		posShift = 3;
-		break;
-	default:
-		throw "Unsupported number of channels";
-	}
-	let perFrame = module[12];
-	if (perFrame < 1 || perFrame > 4)
-		throw "Unsupported player call rate";
-	this.type = ASAPModuleType.RMT;
-	this.parseModule(module, moduleLen);
-	let blockLen = ASAPInfo.getWord(module, 4) + 1 - this.music;
-	let songLen = ASAPInfo.getWord(module, 4) + 1 - ASAPInfo.getWord(module, 20);
-	if (posShift == 3 && (songLen & 4) != 0 && module[6 + blockLen - 4] == 254)
-		songLen += 4;
-	songLen >>= posShift;
-	if (songLen >= 256)
-		throw "Song too long";
-	const globalSeen = new Array(256);
-	this.songs = 0;
-	for (let pos = 0; pos < songLen && this.songs < 32; pos++) {
-		if (!globalSeen[pos]) {
-			this.songPos[this.songs] = pos;
-			this.parseRmtSong(module, globalSeen, songLen, posShift, pos);
-		}
-	}
-	this.fastplay = 312 / perFrame | 0;
-	this.player = 1536;
-	if (this.songs == 0)
-		throw "No songs found";
-	const title = new Uint8Array(127);
-	let titleLen;
-	for (titleLen = 0; titleLen < 127 && 10 + blockLen + titleLen < moduleLen; titleLen++) {
-		let c = module[10 + blockLen + titleLen];
-		if (c == 0)
-			break;
-		title[titleLen] = ASAPInfo.isValidChar(c) ? c : 32;
-	}
-	this.title = new TextDecoder().decode(title.subarray(0, titleLen));
-}
-
-ASAPInfo.prototype.parseTmcSong = function(module, pos)
-{
-	let addrToOffset = ASAPInfo.getWord(module, 2) - 6;
-	let tempo = module[36] + 1;
-	let frames = 0;
-	const patternOffset = new Int32Array(8);
-	const blankRows = new Int32Array(8);
-	while (module[437 + pos] < 128) {
-		for (let ch = 7; ch >= 0; ch--) {
-			let pat = module[437 + pos - 2 * ch];
-			patternOffset[ch] = module[166 + pat] + (module[294 + pat] << 8) - addrToOffset;
-			blankRows[ch] = 0;
-		}
-		for (let patternRows = 64; --patternRows >= 0;) {
-			for (let ch = 7; ch >= 0; ch--) {
-				if (--blankRows[ch] >= 0)
-					continue;
-				for (;;) {
-					let i = module[patternOffset[ch]++];
-					if (i < 64) {
-						patternOffset[ch]++;
-						break;
-					}
-					if (i == 64) {
-						i = module[patternOffset[ch]++];
-						if ((i & 127) == 0)
-							patternRows = 0;
-						else
-							tempo = (i & 127) + 1;
-						if (i >= 128)
-							patternOffset[ch]++;
-						break;
-					}
-					if (i < 128) {
-						i = module[patternOffset[ch]++] & 127;
-						if (i == 0)
-							patternRows = 0;
-						else
-							tempo = i + 1;
-						patternOffset[ch]++;
-						break;
-					}
-					if (i < 192)
-						continue;
-					blankRows[ch] = i - 191;
-					break;
-				}
-			}
-			frames += tempo;
-		}
-		pos += 16;
-	}
-	if (module[436 + pos] < 128)
-		this.loops[this.songs] = true;
-	this.addSong(frames);
-}
-
-ASAPInfo.parseTmcTitle = function(title, titleLen, module, moduleOffset)
-{
-	let lastOffset = moduleOffset + 29;
-	while (module[lastOffset] == 32) {
-		if (--lastOffset < moduleOffset)
-			return titleLen;
-	}
-	if (titleLen > 0) {
-		title[titleLen++] = 32;
-		title[titleLen++] = 124;
-		title[titleLen++] = 32;
-	}
-	while (moduleOffset <= lastOffset) {
-		let c = module[moduleOffset++] & 127;
-		switch (c) {
-		case 20:
-			c = 42;
-			break;
-		case 1:
-		case 3:
-		case 5:
-		case 12:
-		case 14:
-		case 15:
-		case 19:
-			c += 96;
-			break;
-		case 24:
-		case 26:
-			c = 122;
-			break;
-		default:
-			if (!ASAPInfo.isValidChar(c))
-				c = 32;
-			break;
-		}
-		title[titleLen++] = c;
-	}
-	return titleLen;
-}
-
-ASAPInfo.prototype.parseTmc = function(module, moduleLen)
-{
-	if (moduleLen < 464)
-		throw "Module too short";
-	this.type = ASAPModuleType.TMC;
-	this.parseModule(module, moduleLen);
-	this.channels = 2;
-	let i = 0;
-	while (module[102 + i] == 0) {
-		if (++i >= 64)
-			throw "No instruments";
-	}
-	let lastPos = (module[102 + i] << 8) + module[38 + i] - ASAPInfo.getWord(module, 2) - 432;
-	if (437 + lastPos >= moduleLen)
-		throw "Module too short";
-	do {
-		if (lastPos <= 0)
-			throw "No songs found";
-		lastPos -= 16;
-	}
-	while (module[437 + lastPos] >= 128);
-	this.songs = 0;
-	this.parseTmcSong(module, 0);
-	for (i = 0; i < lastPos && this.songs < 32; i += 16)
-		if (module[437 + i] >= 128)
-			this.parseTmcSong(module, i + 16);
-	i = module[37];
-	if (i < 1 || i > 4)
-		throw "Unsupported player call rate";
-	this.fastplay = 312 / i | 0;
-	const title = new Uint8Array(127);
-	let titleLen = ASAPInfo.parseTmcTitle(title, 0, module, 6);
-	this.title = new TextDecoder().decode(title.subarray(0, titleLen));
-}
-
-ASAPInfo.prototype.parseTm2Song = function(module, pos)
-{
-	let addrToOffset = ASAPInfo.getWord(module, 2) - 6;
-	let tempo = module[36] + 1;
-	let playerCalls = 0;
-	const patternOffset = new Int32Array(8);
-	const blankRows = new Int32Array(8);
-	for (;;) {
-		let patternRows = module[918 + pos];
-		if (patternRows == 0)
-			break;
-		if (patternRows >= 128) {
-			this.loops[this.songs] = true;
-			break;
-		}
-		for (let ch = 7; ch >= 0; ch--) {
-			let pat = module[917 + pos - 2 * ch];
-			patternOffset[ch] = module[262 + pat] + (module[518 + pat] << 8) - addrToOffset;
-			blankRows[ch] = 0;
-		}
-		while (--patternRows >= 0) {
-			for (let ch = 7; ch >= 0; ch--) {
-				if (--blankRows[ch] >= 0)
-					continue;
-				for (;;) {
-					let i = module[patternOffset[ch]++];
-					if (i == 0) {
-						patternOffset[ch]++;
-						break;
-					}
-					if (i < 64) {
-						if (module[patternOffset[ch]++] >= 128)
-							patternOffset[ch]++;
-						break;
-					}
-					if (i < 128) {
-						patternOffset[ch]++;
-						break;
-					}
-					if (i == 128) {
-						blankRows[ch] = module[patternOffset[ch]++];
-						break;
-					}
-					if (i < 192)
-						break;
-					if (i < 208) {
-						tempo = i - 191;
-						continue;
-					}
-					if (i < 224) {
-						patternOffset[ch]++;
-						break;
-					}
-					if (i < 240) {
-						patternOffset[ch] += 2;
-						break;
-					}
-					if (i < 255) {
-						blankRows[ch] = i - 240;
-						break;
-					}
-					blankRows[ch] = 64;
-					break;
-				}
-			}
-			playerCalls += tempo;
-		}
-		pos += 17;
-	}
-	this.addSong(playerCalls);
-}
-
-ASAPInfo.prototype.parseTm2 = function(module, moduleLen)
-{
-	if (moduleLen < 932)
-		throw "Module too short";
-	this.type = ASAPModuleType.TM2;
-	this.parseModule(module, moduleLen);
-	let i = module[37];
-	if (i < 1 || i > 4)
-		throw "Unsupported player call rate";
-	this.fastplay = 312 / i | 0;
-	this.player = 2048;
-	if (module[31] != 0)
-		this.channels = 2;
-	let lastPos = 65535;
-	for (i = 0; i < 128; i++) {
-		let instrAddr = module[134 + i] + (module[774 + i] << 8);
-		if (instrAddr != 0 && instrAddr < lastPos)
-			lastPos = instrAddr;
-	}
-	for (i = 0; i < 256; i++) {
-		let patternAddr = module[262 + i] + (module[518 + i] << 8);
-		if (patternAddr != 0 && patternAddr < lastPos)
-			lastPos = patternAddr;
-	}
-	lastPos -= ASAPInfo.getWord(module, 2) + 896;
-	if (902 + lastPos >= moduleLen)
-		throw "Module too short";
-	let c;
-	do {
-		if (lastPos <= 0)
-			throw "No songs found";
-		lastPos -= 17;
-		c = module[918 + lastPos];
-	}
-	while (c == 0 || c >= 128);
-	this.songs = 0;
-	this.parseTm2Song(module, 0);
-	for (i = 0; i < lastPos && this.songs < 32; i += 17) {
-		c = module[918 + i];
-		if (c == 0 || c >= 128)
-			this.parseTm2Song(module, i + 17);
-	}
-	const title = new Uint8Array(127);
-	let titleLen = ASAPInfo.parseTmcTitle(title, 0, module, 39);
-	titleLen = ASAPInfo.parseTmcTitle(title, titleLen, module, 71);
-	titleLen = ASAPInfo.parseTmcTitle(title, titleLen, module, 103);
-	this.title = new TextDecoder().decode(title.subarray(0, titleLen));
-}
-
-ASAPInfo.afterFF = function(module, moduleLen, currentOffset)
-{
-	while (currentOffset < moduleLen) {
-		if (module[currentOffset++] == 255)
-			return currentOffset;
-	}
-	throw "Module too short";
-}
-
-ASAPInfo.getFcTrackCommand = function(module, trackPos, n)
-{
-	return module[3 + (n << 8) + trackPos[n]];
-}
-
-ASAPInfo.isFcSongEnd = function(module, trackPos)
-{
-	let allLoop = true;
-	for (let n = 0; n < 3; n++) {
-		if (trackPos[n] >= 256)
-			return true;
-		switch (ASAPInfo.getFcTrackCommand(module, trackPos, n)) {
-		case 254:
-			return true;
-		case 255:
-			break;
-		default:
-			allLoop = false;
-			break;
-		}
-	}
-	return allLoop;
-}
-
-ASAPInfo.validateFc = function(module, moduleLen)
-{
-	if (moduleLen < 899)
-		return false;
-	if (module[0] != 38 || module[1] != 35)
-		return false;
-	return true;
-}
-
-ASAPInfo.prototype.parseFc = function(module, moduleLen)
-{
-	if (!ASAPInfo.validateFc(module, moduleLen))
-		throw "Invalid FC file";
-	this.type = ASAPModuleType.FC;
-	this.player = 1024;
-	this.music = 2560;
-	this.songs = 0;
-	this.headerLen = -1;
-	const patternOffsets = new Int32Array(64);
-	let currentOffset = 899;
-	for (let i = 0; i < 64; i++) {
-		patternOffsets[i] = currentOffset;
-		currentOffset = ASAPInfo.afterFF(module, moduleLen, currentOffset);
-	}
-	for (let i = 0; i < 32; i++)
-		currentOffset = ASAPInfo.afterFF(module, moduleLen, currentOffset);
-	for (let pos = 0; pos < 256 && this.songs < 32;) {
-		const trackPos = new Int32Array(3);
-		for (let n = 0; n < 3; n++)
-			trackPos[n] = pos;
-		const patternDelay = new Int32Array(3);
-		const noteDuration = new Int32Array(3);
-		const patternPos = new Int32Array(3);
-		let playerCalls = 0;
-		this.loops[this.songs] = true;
-		while (!ASAPInfo.isFcSongEnd(module, trackPos)) {
-			for (let n = 0; n < 3; n++) {
-				if (ASAPInfo.getFcTrackCommand(module, trackPos, n) == 255)
-					continue;
-				if (patternDelay[n]-- > 0)
-					continue;
-				while (trackPos[n] < 256) {
-					let trackCmd = ASAPInfo.getFcTrackCommand(module, trackPos, n);
-					if (trackCmd < 64) {
-						let patternCmd = module[patternOffsets[trackCmd] + patternPos[n]++];
-						if (patternCmd < 64) {
-							patternDelay[n] = noteDuration[n];
-							break;
-						}
-						else if (patternCmd < 96)
-							noteDuration[n] = patternCmd - 64;
-						else if (patternCmd == 255) {
-							patternDelay[n] = 0;
-							noteDuration[n] = 0;
-							patternPos[n] = 0;
-							trackPos[n]++;
-						}
-					}
-					else if (trackCmd == 64)
-						trackPos[n] += 2;
-					else if (trackCmd == 254) {
-						this.loops[this.songs] = false;
-						break;
-					}
-					else if (trackCmd == 255)
-						break;
-					else
-						trackPos[n]++;
-				}
-			}
-			if (ASAPInfo.isFcSongEnd(module, trackPos))
-				break;
-			playerCalls += module[2];
-		}
-		pos = -1;
-		for (let n = 0; n < 3; n++) {
-			let nxtrkpos = trackPos[n];
-			if (patternPos[n] > 0)
-				nxtrkpos++;
-			if (pos < nxtrkpos)
-				pos = nxtrkpos;
-		}
-		pos++;
-		if (pos <= 256)
-			this.addSong(playerCalls);
-	}
-}
-
-ASAPInfo.parseText = function(module, i, argEnd)
-{
-	if (i < 0 || argEnd - i < 2 || module[i] != 34 || module[argEnd - 1] != 34)
-		return "";
-	if (module[i + 1] == 60 && module[i + 2] == 63 && module[i + 3] == 62)
-		return "";
-	return new TextDecoder().decode(module.subarray(i + 1, i + 1 + argEnd - i - 2));
-}
-
-ASAPInfo.hasStringAt = function(module, moduleIndex, s)
-{
-	let n = s.length;
-	for (let i = 0; i < n; i++)
-		if (module[moduleIndex + i] != s.charCodeAt(i))
-			return false;
-	return true;
-}
-
-ASAPInfo.parseDec = function(module, i, argEnd, minVal, maxVal)
-{
-	if (i < 0)
-		throw "Missing number";
-	let r = 0;
-	while (i < argEnd) {
-		let c = module[i++];
-		if (c < 48 || c > 57)
-			throw "Invalid number";
-		r = r * 10 + c - 48;
-		if (r > maxVal)
-			throw "Number too big";
-	}
-	if (r < minVal)
-		throw "Number too small";
-	return r;
-}
-
-ASAPInfo.parseHex = function(module, i, argEnd)
-{
-	if (i < 0)
-		throw "Missing number";
-	let r = 0;
-	while (i < argEnd) {
-		let c = module[i++];
-		if (r > 4095)
-			throw "Number too big";
-		r <<= 4;
-		if (c >= 48 && c <= 57)
-			r += c - 48;
-		else if (c >= 65 && c <= 70)
-			r += c - 65 + 10;
-		else if (c >= 97 && c <= 102)
-			r += c - 97 + 10;
-		else
-			throw "Invalid number";
-	}
-	return r;
-}
-
-/**
- * Returns the number of milliseconds represented by the given string.
- * @param s Time in the <code>"mm:ss.xxx"</code> format.
- */
-ASAPInfo.parseDuration = function(s)
-{
-	const parser = new DurationParser();
-	return parser.parse(s);
-}
-
-ASAPInfo.validateSap = function(module, moduleLen)
-{
-	return moduleLen >= 30 && ASAPInfo.hasStringAt(module, 0, "SAP\r\n");
-}
-
-ASAPInfo.prototype.parseSap = function(module, moduleLen)
-{
-	if (!ASAPInfo.validateSap(module, moduleLen))
-		throw "Invalid SAP file";
-	this.fastplay = -1;
-	let type = 0;
-	let moduleIndex = 5;
-	let durationIndex = 0;
-	while (module[moduleIndex] != 255) {
-		let lineStart = moduleIndex;
-		while (module[moduleIndex] > 32) {
-			if (++moduleIndex >= moduleLen)
-				throw "Invalid SAP file";
-		}
-		let tagLen = moduleIndex - lineStart;
-		let argStart = -1;
-		let argEnd = -1;
-		for (;;) {
-			let c = module[moduleIndex];
-			if (c > 32) {
-				ASAPInfo.checkValidChar(c);
-				if (argStart < 0)
-					argStart = moduleIndex;
-				argEnd = -1;
-			}
-			else {
-				if (argEnd < 0)
-					argEnd = moduleIndex;
-				if (c == 10)
-					break;
-			}
-			if (++moduleIndex >= moduleLen)
-				throw "Invalid SAP file";
-		}
-		if (++moduleIndex + 6 >= moduleLen)
-			throw "Invalid SAP file";
-		switch (new TextDecoder().decode(module.subarray(lineStart, lineStart + tagLen))) {
-		case "AUTHOR":
-			this.author = ASAPInfo.parseText(module, argStart, argEnd);
-			break;
-		case "NAME":
-			this.title = ASAPInfo.parseText(module, argStart, argEnd);
-			break;
-		case "DATE":
-			this.date = ASAPInfo.parseText(module, argStart, argEnd);
-			break;
-		case "TIME":
-			if (durationIndex >= 32)
-				throw "Too many TIME tags";
-			if (argStart < 0)
-				throw "Missing TIME argument";
-			if (argEnd - argStart > 5 && ASAPInfo.hasStringAt(module, argEnd - 5, " LOOP")) {
-				this.loops[durationIndex] = true;
-				argEnd -= 5;
-			}
-			{
-				let arg = new TextDecoder().decode(module.subarray(argStart, argStart + argEnd - argStart));
-				this.durations[durationIndex++] = ASAPInfo.parseDuration(arg);
-			}
-			break;
-		case "SONGS":
-			this.songs = ASAPInfo.parseDec(module, argStart, argEnd, 1, 32);
-			break;
-		case "DEFSONG":
-			this.defaultSong = ASAPInfo.parseDec(module, argStart, argEnd, 0, 31);
-			break;
-		case "TYPE":
-			if (argStart < 0)
-				throw "Missing TYPE argument";
-			type = module[argStart];
-			break;
-		case "FASTPLAY":
-			this.fastplay = ASAPInfo.parseDec(module, argStart, argEnd, 1, 32767);
-			break;
-		case "MUSIC":
-			this.music = ASAPInfo.parseHex(module, argStart, argEnd);
-			break;
-		case "INIT":
-			this.init = ASAPInfo.parseHex(module, argStart, argEnd);
-			break;
-		case "PLAYER":
-			this.player = ASAPInfo.parseHex(module, argStart, argEnd);
-			break;
-		case "COVOX":
-			this.covoxAddr = ASAPInfo.parseHex(module, argStart, argEnd);
-			if (this.covoxAddr != 54784)
-				throw "COVOX should be D600";
-			this.channels = 2;
-			break;
-		case "STEREO":
-			this.channels = 2;
-			break;
-		case "NTSC":
-			this.ntsc = true;
-			break;
-		default:
-			break;
-		}
-	}
-	if (this.defaultSong >= this.songs)
-		throw "DEFSONG too big";
-	switch (type) {
-	case 66:
-		if (this.player < 0)
-			throw "Missing PLAYER tag";
-		if (this.init < 0)
-			throw "Missing INIT tag";
-		this.type = ASAPModuleType.SAP_B;
-		break;
-	case 67:
-		if (this.player < 0)
-			throw "Missing PLAYER tag";
-		if (this.music < 0)
-			throw "Missing MUSIC tag";
-		this.type = ASAPModuleType.SAP_C;
-		break;
-	case 68:
-		if (this.init < 0)
-			throw "Missing INIT tag";
-		this.type = ASAPModuleType.SAP_D;
-		break;
-	case 83:
-		if (this.init < 0)
-			throw "Missing INIT tag";
-		this.type = ASAPModuleType.SAP_S;
-		if (this.fastplay < 0)
-			this.fastplay = 78;
-		break;
-	default:
-		throw "Unsupported TYPE";
-	}
-	if (this.fastplay < 0)
-		this.fastplay = this.ntsc ? 262 : 312;
-	if (module[moduleIndex + 1] != 255)
-		throw "Invalid binary header";
-	this.headerLen = moduleIndex;
-}
-
-ASAPInfo.packExt = function(ext)
-{
-	return ext.length == 2 && ext.charCodeAt(0) <= 122 && ext.charCodeAt(1) <= 122 ? ext.charCodeAt(0) | ext.charCodeAt(1) << 8 | 2105376 : ext.length == 3 && ext.charCodeAt(0) <= 122 && ext.charCodeAt(1) <= 122 && ext.charCodeAt(2) <= 122 ? ext.charCodeAt(0) | ext.charCodeAt(1) << 8 | ext.charCodeAt(2) << 16 | 2105376 : 0;
-}
-
-ASAPInfo.getPackedExt = function(filename)
-{
-	let ext = 0;
-	for (let i = filename.length; --i > 0;) {
-		let c = filename.charCodeAt(i);
-		if (c <= 32 || c > 122)
-			return 0;
-		if (c == 46)
-			return ext | 2105376;
-		ext = (ext << 8) + c;
-	}
-	return 0;
-}
-
-ASAPInfo.isOurPackedExt = function(ext)
-{
-	switch (ext) {
-	case 7364979:
-	case 6516067:
-	case 3370339:
-	case 7499107:
-	case 7564643:
-	case 6516068:
-	case 7629924:
-	case 7630957:
-	case 6582381:
-	case 7630194:
-	case 6516084:
-	case 3698036:
-	case 3304820:
-	case 2122598:
-		return true;
-	default:
-		return false;
-	}
-}
-
-/**
- * Checks whether the filename represents a module type supported by ASAP.
- * Returns <code>true</code> if the filename is supported by ASAP.
- * @param filename Filename to check the extension of.
- */
-ASAPInfo.isOurFile = function(filename)
-{
-	return ASAPInfo.isOurPackedExt(ASAPInfo.getPackedExt(filename));
-}
-
-/**
- * Checks whether the filename extension represents a module type supported by ASAP.
- * Returns <code>true</code> if the filename extension is supported by ASAP.
- * @param ext Filename extension without the leading dot.
- */
-ASAPInfo.isOurExt = function(ext)
-{
-	return ASAPInfo.isOurPackedExt(ASAPInfo.packExt(ext));
-}
-
-ASAPInfo.guessPackedExt = function(module, moduleLen)
-{
-	if (ASAPInfo.validateSap(module, moduleLen))
-		return 7364979;
-	if (ASAPInfo.validateFc(module, moduleLen))
-		return 2122598;
-	if (ASAPInfo.validateRmt(module, moduleLen))
-		return 7630194;
-	throw "Unknown format";
-}
-
-/**
- * Loads file information.
- * @param filename Filename, used to determine the format.
- * @param module Contents of the file.
- * @param moduleLen Length of the file.
- */
-ASAPInfo.prototype.load = function(filename, module, moduleLen)
-{
-	let ext;
-	if (filename != null) {
-		let len = filename.length;
-		let basename = 0;
-		ext = -1;
-		for (let i = len; --i >= 0;) {
-			let c = filename.charCodeAt(i);
-			if (c == 47 || c == 92) {
-				basename = i + 1;
-				break;
-			}
-			if (c == 46)
-				ext = i;
-		}
-		if (ext < 0)
-			throw "Filename has no extension";
-		ext -= basename;
-		if (ext > 127)
-			ext = 127;
-		this.filename = filename.substring(basename, basename + ext);
-		ext = ASAPInfo.getPackedExt(filename);
-	}
-	else {
-		this.filename = "";
-		ext = ASAPInfo.guessPackedExt(module, moduleLen);
-	}
-	this.author = "";
-	this.title = "";
-	this.date = "";
-	this.channels = 1;
-	this.songs = 1;
-	this.defaultSong = 0;
-	for (let i = 0; i < 32; i++) {
-		this.durations[i] = -1;
-		this.loops[i] = false;
-	}
-	this.ntsc = false;
-	this.fastplay = 312;
-	this.music = -1;
-	this.init = -1;
-	this.player = -1;
-	this.covoxAddr = -1;
-	this.headerLen = 0;
-	switch (ext) {
-	case 7364979:
-		this.parseSap(module, moduleLen);
-		return;
-	case 6516067:
-		this.parseCmc(module, moduleLen, ASAPModuleType.CMC);
-		return;
-	case 3370339:
-		this.parseCmc(module, moduleLen, ASAPModuleType.CM3);
-		return;
-	case 7499107:
-		this.parseCmc(module, moduleLen, ASAPModuleType.CMR);
-		return;
-	case 7564643:
-		this.channels = 2;
-		this.parseCmc(module, moduleLen, ASAPModuleType.CMS);
-		return;
-	case 6516068:
-		this.fastplay = 156;
-		this.parseCmc(module, moduleLen, ASAPModuleType.CMC);
-		return;
-	case 7629924:
-		this.parseDlt(module, moduleLen);
-		return;
-	case 7630957:
-		this.parseMpt(module, moduleLen);
-		return;
-	case 6582381:
-		this.fastplay = 156;
-		this.parseMpt(module, moduleLen);
-		return;
-	case 7630194:
-		this.parseRmt(module, moduleLen);
-		return;
-	case 6516084:
-	case 3698036:
-		this.parseTmc(module, moduleLen);
-		return;
-	case 3304820:
-		this.parseTm2(module, moduleLen);
-		return;
-	case 2122598:
-		this.parseFc(module, moduleLen);
-		return;
-	default:
-		throw "Unknown filename extension";
-	}
-}
-
-ASAPInfo.checkValidText = function(s)
-{
-	let n = s.length;
-	if (n > 127)
-		throw "Text too long";
-	for (let i = 0; i < n; i++)
-		ASAPInfo.checkValidChar(s.charCodeAt(i));
-}
-
-/**
- * Returns author's name.
- * A nickname may be included in parentheses after the real name.
- * Multiple authors are separated with <code>" &amp; "</code>.
- * An empty string means the author is unknown.
- */
-ASAPInfo.prototype.getAuthor = function()
-{
-	return this.author;
-}
-
-/**
- * Sets author's name.
- * A nickname may be included in parentheses after the real name.
- * Multiple authors are separated with <code>" &amp; "</code>.
- * An empty string means the author is unknown.
- * @param value New author's name for the current music.
- */
-ASAPInfo.prototype.setAuthor = function(value)
-{
-	ASAPInfo.checkValidText(value);
-	this.author = value;
-}
-
-/**
- * Returns music title.
- * An empty string means the title is unknown.
- */
-ASAPInfo.prototype.getTitle = function()
-{
-	return this.title;
-}
-
-/**
- * Sets music title.
- * An empty string means the title is unknown.
- * @param value New title for the current music.
- */
-ASAPInfo.prototype.setTitle = function(value)
-{
-	ASAPInfo.checkValidText(value);
-	this.title = value;
-}
-
-/**
- * Returns music title or filename.
- * If title is unknown returns filename without the path or extension.
- */
-ASAPInfo.prototype.getTitleOrFilename = function()
-{
-	return this.title.length > 0 ? this.title : this.filename;
-}
-
-/**
- * Returns music creation date.
- * 
- * <p>Some of the possible formats are:
- * <ul>
- * <li>YYYY</li>
- * <li>MM/YYYY</li>
- * <li>DD/MM/YYYY</li>
- * <li>YYYY-YYYY</li>
- * </ul>
- * <p>An empty string means the date is unknown.
- */
-ASAPInfo.prototype.getDate = function()
-{
-	return this.date;
-}
-
-/**
- * Sets music creation date.
- * 
- * <p>Some of the possible formats are:
- * <ul>
- * <li>YYYY</li>
- * <li>MM/YYYY</li>
- * <li>DD/MM/YYYY</li>
- * <li>YYYY-YYYY</li>
- * </ul>
- * <p>An empty string means the date is unknown.
- * @param value New music creation date.
- */
-ASAPInfo.prototype.setDate = function(value)
-{
-	ASAPInfo.checkValidText(value);
-	this.date = value;
-}
-
-ASAPInfo.prototype.checkDate = function()
-{
-	let n = this.date.length;
-	switch (n) {
-	case 4:
-	case 7:
-	case 10:
-		break;
-	default:
-		return -1;
-	}
-	for (let i = 0; i < n; i++) {
-		let c = this.date.charCodeAt(i);
-		if (i == n - 5 || i == n - 8) {
-			if (c != 47)
-				return -1;
-		}
-		else if (c < 48 || c > 57)
-			return -1;
-	}
-	return n;
-}
-
-ASAPInfo.prototype.getTwoDateDigits = function(i)
-{
-	return (this.date.charCodeAt(i) - 48) * 10 + this.date.charCodeAt(i + 1) - 48;
-}
-
-/**
- * Returns music creation year.
- * -1 means the year is unknown.
- */
-ASAPInfo.prototype.getYear = function()
-{
-	let n = this.checkDate();
-	if (n < 0)
-		return -1;
-	return this.getTwoDateDigits(n - 4) * 100 + this.getTwoDateDigits(n - 2);
-}
-
-/**
- * Returns music creation month (1-12).
- * -1 means the month is unknown.
- */
-ASAPInfo.prototype.getMonth = function()
-{
-	let n = this.checkDate();
-	if (n < 7)
-		return -1;
-	return this.getTwoDateDigits(n - 7);
-}
-
-/**
- * Returns day of month of the music creation date.
- * -1 means the day is unknown.
- */
-ASAPInfo.prototype.getDayOfMonth = function()
-{
-	let n = this.checkDate();
-	if (n != 10)
-		return -1;
-	return this.getTwoDateDigits(0);
-}
-
-/**
- * Returns 1 for mono or 2 for stereo.
- */
-ASAPInfo.prototype.getChannels = function()
-{
-	return this.channels;
-}
-
-/**
- * Returns number of songs in the file.
- */
-ASAPInfo.prototype.getSongs = function()
-{
-	return this.songs;
-}
-
-/**
- * Returns 0-based index of the "main" song.
- * The specified song should be played by default.
- */
-ASAPInfo.prototype.getDefaultSong = function()
-{
-	return this.defaultSong;
-}
-
-/**
- * Sets the 0-based index of the "main" song.
- * @param song New default song.
- */
-ASAPInfo.prototype.setDefaultSong = function(song)
-{
-	if (song < 0 || song >= this.songs)
-		throw "Song out of range";
-	this.defaultSong = song;
-}
-
-/**
- * Returns length of the specified song.
- * The length is specified in milliseconds. -1 means the length is indeterminate.
- * @param song Song to get length of, 0-based.
- */
-ASAPInfo.prototype.getDuration = function(song)
-{
-	return this.durations[song];
-}
-
-/**
- * Sets length of the specified song.
- * The length is specified in milliseconds. -1 means the length is indeterminate.
- * @param song Song to set length of, 0-based.
- * @param duration New length in milliseconds.
- */
-ASAPInfo.prototype.setDuration = function(song, duration)
-{
-	if (song < 0 || song >= this.songs)
-		throw "Song out of range";
-	this.durations[song] = duration;
-}
-
-/**
- * Returns information whether the specified song loops.
- * 
- * <p>Returns:
- * <ul>
- * <li><code>true</code> if the song loops</li>
- * <li><code>false</code> if the song stops</li>
- * </ul>
- * @param song Song to check for looping, 0-based.
- */
-ASAPInfo.prototype.getLoop = function(song)
-{
-	return this.loops[song];
-}
-
-/**
- * Sets information whether the specified song loops.
- * 
- * <p>Use:
- * <ul>
- * <li><code>true</code> if the song loops</li>
- * <li><code>false</code> if the song stops</li>
- * </ul>
- * @param song Song to set as looping, 0-based.
- * @param loop <code>true</code> if the song loops.
- */
-ASAPInfo.prototype.setLoop = function(song, loop)
-{
-	if (song < 0 || song >= this.songs)
-		throw "Song out of range";
-	this.loops[song] = loop;
-}
-
-/**
- * Returns <code>true</code> for NTSC song and <code>false</code> for PAL song.
- */
-ASAPInfo.prototype.isNtsc = function()
-{
-	return this.ntsc;
-}
-
-/**
- * Returns the letter argument for the TYPE SAP tag.
- * Returns zero for non-SAP files.
- */
-ASAPInfo.prototype.getTypeLetter = function()
-{
-	switch (this.type) {
-	case ASAPModuleType.SAP_B:
-		return 66;
-	case ASAPModuleType.SAP_C:
-		return 67;
-	case ASAPModuleType.SAP_D:
-		return 68;
-	case ASAPModuleType.SAP_S:
-		return 83;
-	default:
-		return 0;
-	}
-}
-
-/**
- * Returns player routine rate in Atari scanlines.
- */
-ASAPInfo.prototype.getPlayerRateScanlines = function()
-{
-	return this.fastplay;
-}
-
-/**
- * Returns approximate player routine rate in Hz.
- */
-ASAPInfo.prototype.getPlayerRateHz = function()
-{
-	let scanlineClock = this.ntsc ? 15699 : 15556;
-	return (scanlineClock + (this.fastplay >> 1)) / this.fastplay | 0;
-}
-
-/**
- * Returns the address of the module.
- * Returns -1 if unknown.
- */
-ASAPInfo.prototype.getMusicAddress = function()
-{
-	return this.music;
-}
-
-/**
- * Causes music to be relocated.
- * Use only with <code>ASAPWriter.Write</code>.
- * @param address New music address.
- */
-ASAPInfo.prototype.setMusicAddress = function(address)
-{
-	if (address < 0 || address >= 65535)
-		throw "Invalid music address";
-	this.music = address;
-}
-
-/**
- * Returns the address of the player initialization routine.
- * Returns -1 if no initialization routine.
- */
-ASAPInfo.prototype.getInitAddress = function()
-{
-	return this.init;
-}
-
-/**
- * Returns the address of the player routine.
- */
-ASAPInfo.prototype.getPlayerAddress = function()
-{
-	return this.player;
-}
-
-/**
- * Returns the address of the COVOX chip.
- * Returns -1 if no COVOX enabled.
- */
-ASAPInfo.prototype.getCovoxAddress = function()
-{
-	return this.covoxAddr;
-}
-
-/**
- * Returns the length of the SAP header in bytes.
- */
-ASAPInfo.prototype.getSapHeaderLength = function()
-{
-	return this.headerLen;
-}
-
-/**
- * Returns the offset of instrument names for RMT module.
- * Returns -1 if not an RMT module or RMT module without instrument names.
- * @param module Content of the RMT file.
- * @param moduleLen Length of the RMT file.
- */
-ASAPInfo.prototype.getInstrumentNamesOffset = function(module, moduleLen)
-{
-	if (this.type != ASAPModuleType.RMT)
-		return -1;
-	for (let offset = ASAPInfo.getWord(module, 4) - ASAPInfo.getWord(module, 2) + 12; offset < moduleLen; offset++) {
-		if (module[offset - 1] == 0)
-			return offset;
-	}
-	return -1;
-}
-
-/**
- * Returns human-readable description of the filename extension.
- * @param ext Filename extension without the leading dot.
- */
-ASAPInfo.getExtDescription = function(ext)
-{
-	switch (ASAPInfo.packExt(ext)) {
-	case 7364979:
-		return "Slight Atari Player";
-	case 6516067:
-		return "Chaos Music Composer";
-	case 3370339:
-		return "CMC \"3/4\"";
-	case 7499107:
-		return "CMC \"Rzog\"";
-	case 7564643:
-		return "Stereo Double CMC";
-	case 6516068:
-		return "CMC DoublePlay";
-	case 7629924:
-		return "Delta Music Composer";
-	case 7630957:
-		return "Music ProTracker";
-	case 6582381:
-		return "MPT DoublePlay";
-	case 7630194:
-		return "Raster Music Tracker";
-	case 6516084:
-	case 3698036:
-		return "Theta Music Composer 1.x";
-	case 3304820:
-		return "Theta Music Composer 2.x";
-	case 2122598:
-		return "Future Composer";
-	case 7890296:
-		return "Atari 8-bit executable";
-	default:
-		throw "Unknown extension";
-	}
-}
-
-ASAPInfo.prototype.getRmtSapOffset = function(module, moduleLen)
-{
-	if (this.player != 13315)
-		return -1;
-	let offset = this.headerLen + ASAPInfo.getWord(module, this.headerLen + 4) - ASAPInfo.getWord(module, this.headerLen + 2) + 7;
-	if (offset + 6 >= moduleLen || module[offset + 4] != 82 || module[offset + 5] != 77 || module[offset + 6] != 84)
-		return -1;
-	return offset;
-}
-
-ASAPInfo.prototype.getOriginalModuleType = function(module, moduleLen)
-{
-	switch (this.type) {
-	case ASAPModuleType.SAP_B:
-		if ((this.init == 1019 || this.init == 1017) && this.player == 1283)
-			return ASAPModuleType.DLT;
-		if (((this.init == 1267 || this.init == 1263) && this.player == 1283) || (this.init == 62707 && this.player == 62723))
-			return ASAPModuleType.MPT;
-		if (this.init == 3200 || this.getRmtSapOffset(module, moduleLen) > 0)
-			return ASAPModuleType.RMT;
-		if (this.init == 1269 || this.init == 62709 || this.init == 1266 || ((this.init == 1255 || this.init == 62695 || this.init == 1252) && this.fastplay == 156) || ((this.init == 1253 || this.init == 62693 || this.init == 1250) && (this.fastplay == 104 || this.fastplay == 78)))
-			return ASAPModuleType.TMC;
-		if ((this.init == 4224 && this.player == 1283) || (this.init == 4992 && this.player == 2051))
-			return ASAPModuleType.TM2;
-		if (this.init == 1024 && this.player == 1027)
-			return ASAPModuleType.FC;
-		return this.type;
-	case ASAPModuleType.SAP_C:
-		if ((this.player == 1280 || this.player == 62720) && moduleLen >= 1024) {
-			if (this.channels > 1)
-				return ASAPModuleType.CMS;
-			if (module[moduleLen - 170] == 30)
-				return ASAPModuleType.CMR;
-			if (module[moduleLen - 909] == 48)
-				return ASAPModuleType.CM3;
-			return ASAPModuleType.CMC;
-		}
-		return this.type;
-	default:
-		return this.type;
-	}
-}
-
-/**
- * Returns the extension of the original module format.
- * For native modules it simply returns their extension.
- * For the SAP format it attempts to detect the original module format.
- * @param module Contents of the file.
- * @param moduleLen Length of the file.
- */
-ASAPInfo.prototype.getOriginalModuleExt = function(module, moduleLen)
-{
-	switch (this.getOriginalModuleType(module, moduleLen)) {
-	case ASAPModuleType.CMC:
-		return this.fastplay == 156 ? "dmc" : "cmc";
-	case ASAPModuleType.CM3:
-		return "cm3";
-	case ASAPModuleType.CMR:
-		return "cmr";
-	case ASAPModuleType.CMS:
-		return "cms";
-	case ASAPModuleType.DLT:
-		return "dlt";
-	case ASAPModuleType.MPT:
-		return this.fastplay == 156 ? "mpd" : "mpt";
-	case ASAPModuleType.RMT:
-		return "rmt";
-	case ASAPModuleType.TMC:
-		return "tmc";
-	case ASAPModuleType.TM2:
-		return "tm2";
-	case ASAPModuleType.FC:
-		return "fc";
-	default:
-		return null;
-	}
-}
-
-ASAPInfo.GET_RMT_INSTRUMENT_FRAMES_RMT_VOLUME_SILENT = new Uint8Array([ 16, 8, 4, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1 ]);
-
-function ASAPNativeModuleWriter()
-{
-}
-
-ASAPNativeModuleWriter.prototype.getByte = function(offset)
-{
-	return this.sourceModule[this.sourceOffset + offset];
-}
-
-ASAPNativeModuleWriter.prototype.getWord = function(offset)
-{
-	return ASAPInfo.getWord(this.sourceModule, this.sourceOffset + offset);
-}
-
-ASAPNativeModuleWriter.prototype.copy = function(endOffset)
-{
-	this.writer.writeBytes(this.sourceModule, this.sourceOffset + this.writer.outputOffset, this.sourceOffset + endOffset);
-}
-
-ASAPNativeModuleWriter.prototype.relocateBytes = function(lowOffset, highOffset, count, shift)
-{
-	lowOffset += this.sourceOffset;
-	highOffset += this.sourceOffset;
-	for (let i = 0; i < count; i++) {
-		let address = this.sourceModule[lowOffset + i] + (this.sourceModule[highOffset + i] << 8);
-		if (address != 0 && address != 65535)
-			address += this.addressDiff;
-		this.writer.writeByte(address >> shift & 255);
-	}
-}
-
-ASAPNativeModuleWriter.prototype.relocateLowHigh = function(count)
-{
-	let lowOffset = this.writer.outputOffset;
-	this.relocateBytes(lowOffset, lowOffset + count, count, 0);
-	this.relocateBytes(lowOffset, lowOffset + count, count, 8);
-}
-
-ASAPNativeModuleWriter.prototype.relocateWords = function(count)
-{
-	while (--count >= 0) {
-		let address = this.getWord(this.writer.outputOffset);
-		if (address != 0 && address != 65535)
-			address += this.addressDiff;
-		this.writer.writeWord(address);
-	}
-}
-
-ASAPNativeModuleWriter.prototype.write = function(info, type, moduleLen)
-{
-	let startAddr = this.getWord(2);
-	this.addressDiff = info.getMusicAddress() < 0 ? 0 : info.getMusicAddress() - startAddr;
-	if (this.getWord(4) + this.addressDiff > 65535)
-		throw "Address set too high";
-	switch (type) {
-	case ASAPModuleType.CMC:
-	case ASAPModuleType.CM3:
-	case ASAPModuleType.CMR:
-	case ASAPModuleType.CMS:
-		this.relocateWords(3);
-		this.copy(26);
-		this.relocateLowHigh(64);
-		break;
-	case ASAPModuleType.DLT:
-		this.relocateWords(3);
-		break;
-	case ASAPModuleType.MPT:
-		this.relocateWords(99);
-		this.copy(454);
-		this.relocateLowHigh(4);
-		break;
-	case ASAPModuleType.RMT:
-		this.writer.writeWord(65535);
-		this.relocateWords(2);
-		this.copy(14);
-		let patternLowAddress = this.getWord(16);
-		this.relocateWords((patternLowAddress - startAddr - 8) >> 1);
-		this.relocateLowHigh(this.getWord(18) - patternLowAddress);
-		let songOffset = 6 + this.getWord(20) - startAddr;
-		this.copy(songOffset);
-		let songEnd = 7 + this.getWord(4) - startAddr;
-		while (songOffset + 3 < songEnd) {
-			let nextSongOffset = songOffset + this.getByte(9) - 48;
-			if (this.getByte(songOffset) == 254) {
-				this.copy(songOffset + 2);
-				this.relocateWords(1);
-			}
-			if (nextSongOffset > songEnd)
-				nextSongOffset = songEnd;
-			this.copy(nextSongOffset);
-			songOffset = nextSongOffset;
-		}
-		this.copy(songEnd);
-		if (moduleLen >= songEnd + 5)
-			this.relocateWords(2);
-		break;
-	case ASAPModuleType.TMC:
-		this.relocateWords(3);
-		this.copy(38);
-		this.relocateLowHigh(64);
-		this.relocateLowHigh(128);
-		break;
-	case ASAPModuleType.TM2:
-		this.relocateWords(3);
-		this.copy(134);
-		this.relocateBytes(134, 774, 128, 0);
-		this.relocateLowHigh(256);
-		this.relocateBytes(134, 774, 128, 8);
-		break;
-	default:
-		throw "Impossible conversion";
-	}
-	this.copy(moduleLen);
-}
-
-/**
- * Static methods for writing modules in different formats.
- */
-function ASAPWriter()
-{
-}
-
-/**
- * Maximum number of extensions returned by <code>GetSaveExts</code>.
- */
-ASAPWriter.MAX_SAVE_EXTS = 3;
-
-/**
- * Enumerates possible file types the given module can be written as.
- * Returns the number of extensions written to <code>exts</code>.
- * @param exts Receives filename extensions without the leading dot.
- * @param info File information.
- * @param module Contents of the file.
- * @param moduleLen Length of the file.
- */
-ASAPWriter.getSaveExts = function(exts, info, module, moduleLen)
-{
-	let i = 0;
-	switch (info.type) {
-	case ASAPModuleType.SAP_B:
-	case ASAPModuleType.SAP_C:
-		exts[i++] = "sap";
-		let ext = info.getOriginalModuleExt(module, moduleLen);
-		if (ext != null)
-			exts[i++] = ext;
-		exts[i++] = "xex";
-		break;
-	case ASAPModuleType.SAP_D:
-		exts[i++] = "sap";
-		if (info.getPlayerRateScanlines() == 312)
-			exts[i++] = "xex";
-		break;
-	case ASAPModuleType.SAP_S:
-		exts[i++] = "sap";
-		break;
-	default:
-		exts[i++] = info.getOriginalModuleExt(module, moduleLen);
-		exts[i++] = "sap";
-		exts[i++] = "xex";
-		break;
-	}
-	return i;
-}
-
-ASAPWriter.twoDigitsToString = function(result, offset, value)
-{
-	result[offset] = 48 + (value / 10 | 0);
-	result[offset + 1] = 48 + value % 10;
-}
-
-ASAPWriter.secondsToString = function(result, offset, value)
-{
-	if (value < 0 || value >= 6000000)
-		return false;
-	value = value / 1000 | 0;
-	ASAPWriter.twoDigitsToString(result, offset, value / 60 | 0);
-	result[offset + 2] = 58;
-	ASAPWriter.twoDigitsToString(result, offset + 3, value % 60);
-	return true;
-}
-
-/**
- * Maximum length of text representation of a duration.
- * Corresponds to the longest format which is <code>"mm:ss.xxx"</code>.
- */
-ASAPWriter.MAX_DURATION_LENGTH = 9;
-
-/**
- * Writes text representation of the given duration.
- * Returns the number of bytes written to <code>result</code>.
- * @param result The output buffer.
- * @param value Number of milliseconds.
- */
-ASAPWriter.durationToString = function(result, value)
-{
-	if (!ASAPWriter.secondsToString(result, 0, value))
-		return 0;
-	value %= 1000;
-	if (value == 0)
-		return 5;
-	result[5] = 46;
-	ASAPWriter.twoDigitsToString(result, 6, value / 10 | 0);
-	value %= 10;
-	if (value == 0)
-		return 8;
-	result[8] = 48 + value;
-	return 9;
-}
-
-/**
- * Sets the destination array for <code>Write</code>.
- * @param output The destination array.
- * @param startIndex The array offset to start writing at.
- * @param endIndex The array offset to finish writing before.
- */
-ASAPWriter.prototype.setOutput = function(output, startIndex, endIndex)
-{
-	this.output = output;
-	this.outputOffset = startIndex;
-	this.outputEnd = endIndex;
-}
-
-ASAPWriter.prototype.writeByte = function(value)
-{
-	if (this.outputOffset >= this.outputEnd)
-		throw "Output full";
-	this.output[this.outputOffset++] = value;
-}
-
-ASAPWriter.prototype.writeWord = function(value)
-{
-	this.writeByte(value & 255);
-	this.writeByte(value >> 8);
-}
-
-ASAPWriter.prototype.writeBytes = function(array, startIndex, endIndex)
-{
-	let length = endIndex - startIndex;
-	if (this.outputOffset + length > this.outputEnd)
-		throw "Output full";
-	Ci.copyArray(array, startIndex, this.output, this.outputOffset, length);
-	this.outputOffset += length;
-}
-
-ASAPWriter.prototype.writeString = function(s)
-{
-	let n = s.length;
-	for (let i = 0; i < n; i++)
-		this.writeByte(s.charCodeAt(i));
-}
-
-ASAPWriter.prototype.writeDec = function(value)
-{
-	if (value >= 10) {
-		this.writeDec(value / 10 | 0);
-		value %= 10;
-	}
-	this.writeByte(48 + value);
-}
-
-ASAPWriter.prototype.writeTextSapTag = function(tag, value)
-{
-	this.writeString(tag);
-	this.writeByte(34);
-	if (value.length == 0)
-		value = "<?>";
-	this.writeString(value);
-	this.writeByte(34);
-	this.writeByte(13);
-	this.writeByte(10);
-}
-
-ASAPWriter.prototype.writeDecSapTag = function(tag, value)
-{
-	this.writeString(tag);
-	this.writeDec(value);
-	this.writeByte(13);
-	this.writeByte(10);
-}
-
-ASAPWriter.prototype.writeHexSapTag = function(tag, value)
-{
-	if (value < 0)
-		return;
-	this.writeString(tag);
-	for (let i = 12; i >= 0; i -= 4) {
-		let digit = value >> i & 15;
-		this.writeByte(digit + (digit < 10 ? 48 : 55));
-	}
-	this.writeByte(13);
-	this.writeByte(10);
-}
-
-ASAPWriter.prototype.writeSapHeader = function(info, type, init, player)
-{
-	this.writeString("SAP\r\n");
-	this.writeTextSapTag("AUTHOR ", info.getAuthor());
-	this.writeTextSapTag("NAME ", info.getTitle());
-	this.writeTextSapTag("DATE ", info.getDate());
-	if (info.getSongs() > 1) {
-		this.writeDecSapTag("SONGS ", info.getSongs());
-		if (info.getDefaultSong() > 0)
-			this.writeDecSapTag("DEFSONG ", info.getDefaultSong());
-	}
-	if (info.getChannels() > 1)
-		this.writeString("STEREO\r\n");
-	if (info.isNtsc())
-		this.writeString("NTSC\r\n");
-	this.writeString("TYPE ");
-	this.writeByte(type);
-	this.writeByte(13);
-	this.writeByte(10);
-	if (info.getPlayerRateScanlines() != 312 || info.isNtsc())
-		this.writeDecSapTag("FASTPLAY ", info.getPlayerRateScanlines());
-	if (type == 67)
-		this.writeHexSapTag("MUSIC ", info.getMusicAddress());
-	this.writeHexSapTag("INIT ", init);
-	this.writeHexSapTag("PLAYER ", player);
-	this.writeHexSapTag("COVOX ", info.getCovoxAddress());
-	for (let song = 0; song < info.getSongs(); song++) {
-		if (info.getDuration(song) < 0)
-			break;
-		this.writeString("TIME ");
-		const s = new Uint8Array(9);
-		this.writeBytes(s, 0, ASAPWriter.durationToString(s, info.getDuration(song)));
-		if (info.getLoop(song))
-			this.writeString(" LOOP");
-		this.writeByte(13);
-		this.writeByte(10);
-	}
-}
-
-ASAPWriter.prototype.writeExecutableHeader = function(initAndPlayer, info, type, init, player)
-{
-	if (initAndPlayer == null)
-		this.writeSapHeader(info, type, init, player);
-	else {
-		initAndPlayer[0] = init;
-		initAndPlayer[1] = player;
-	}
-}
-
-ASAPWriter.prototype.writePlaTaxLda0 = function()
-{
-	this.writeByte(104);
-	this.writeByte(170);
-	this.writeByte(169);
-	this.writeByte(0);
-}
-
-ASAPWriter.prototype.writeCmcInit = function(initAndPlayer, info)
-{
-	if (initAndPlayer == null)
-		return;
-	this.writeWord(4064);
-	this.writeWord(4080);
-	this.writeByte(72);
-	let music = info.getMusicAddress();
-	this.writeByte(162);
-	this.writeByte(music & 255);
-	this.writeByte(160);
-	this.writeByte(music >> 8);
-	this.writeByte(169);
-	this.writeByte(112);
-	this.writeByte(32);
-	this.writeWord(initAndPlayer[1] + 3);
-	this.writePlaTaxLda0();
-	this.writeByte(76);
-	this.writeWord(initAndPlayer[1] + 3);
-	initAndPlayer[0] = 4064;
-	initAndPlayer[1] += 6;
-}
-
-ASAPWriter.prototype.writeExecutableFromSap = function(initAndPlayer, info, type, module, moduleLen)
-{
-	this.writeExecutableHeader(initAndPlayer, info, type, info.getInitAddress(), info.player);
-	this.writeBytes(module, info.headerLen, moduleLen);
-}
-
-ASAPWriter.prototype.writeExecutableHeaderForSongPos = function(initAndPlayer, info, player, codeForOneSong, codeForManySongs, playerOffset)
-{
-	if (info.getSongs() != 1) {
-		this.writeExecutableHeader(initAndPlayer, info, 66, player - codeForManySongs, player + playerOffset);
-		return player - codeForManySongs - info.getSongs();
-	}
-	this.writeExecutableHeader(initAndPlayer, info, 66, player - codeForOneSong, player + playerOffset);
-	return player - codeForOneSong;
-}
-
-ASAPWriter.prototype.writeExecutable = function(initAndPlayer, info, module, moduleLen)
-{
-	let playerRoutine = ASAP6502.getPlayerRoutine(info);
-	let player = -1;
-	let playerLastByte = -1;
-	let music = info.getMusicAddress();
-	if (playerRoutine != null) {
-		player = ASAPInfo.getWord(playerRoutine, 2);
-		playerLastByte = ASAPInfo.getWord(playerRoutine, 4);
-		if (music <= playerLastByte)
-			throw "Module address conflicts with the player routine";
-	}
-	let startAddr;
-	switch (info.type) {
-	case ASAPModuleType.SAP_B:
-		this.writeExecutableFromSap(initAndPlayer, info, 66, module, moduleLen);
-		break;
-	case ASAPModuleType.SAP_C:
-		this.writeExecutableFromSap(initAndPlayer, info, 67, module, moduleLen);
-		this.writeCmcInit(initAndPlayer, info);
-		break;
-	case ASAPModuleType.SAP_D:
-		this.writeExecutableFromSap(initAndPlayer, info, 68, module, moduleLen);
-		break;
-	case ASAPModuleType.SAP_S:
-		this.writeExecutableFromSap(initAndPlayer, info, 83, module, moduleLen);
-		break;
-	case ASAPModuleType.CMC:
-	case ASAPModuleType.CM3:
-	case ASAPModuleType.CMR:
-	case ASAPModuleType.CMS:
-		this.writeExecutableHeader(initAndPlayer, info, 67, -1, player);
-		this.writeWord(65535);
-		this.writeBytes(module, 2, moduleLen);
-		this.writeBytes(playerRoutine, 2, playerLastByte - player + 7);
-		this.writeCmcInit(initAndPlayer, info);
-		break;
-	case ASAPModuleType.DLT:
-		startAddr = this.writeExecutableHeaderForSongPos(initAndPlayer, info, player, 5, 7, 259);
-		if (moduleLen == 11270) {
-			this.writeBytes(module, 0, 4);
-			this.writeWord(19456);
-			this.writeBytes(module, 6, moduleLen);
-			this.writeByte(0);
-		}
-		else
-			this.writeBytes(module, 0, moduleLen);
-		this.writeWord(startAddr);
-		this.writeWord(playerLastByte);
-		if (info.getSongs() != 1) {
-			this.writeBytes(info.songPos, 0, info.getSongs());
-			this.writeByte(170);
-			this.writeByte(188);
-			this.writeWord(startAddr);
-		}
-		else {
-			this.writeByte(160);
-			this.writeByte(0);
-		}
-		this.writeByte(76);
-		this.writeWord(player + 256);
-		this.writeBytes(playerRoutine, 6, playerLastByte - player + 7);
-		break;
-	case ASAPModuleType.MPT:
-		startAddr = this.writeExecutableHeaderForSongPos(initAndPlayer, info, player, 13, 17, 3);
-		this.writeBytes(module, 0, moduleLen);
-		this.writeWord(startAddr);
-		this.writeWord(playerLastByte);
-		if (info.getSongs() != 1) {
-			this.writeBytes(info.songPos, 0, info.getSongs());
-			this.writeByte(72);
-		}
-		this.writeByte(160);
-		this.writeByte(music & 255);
-		this.writeByte(162);
-		this.writeByte(music >> 8);
-		this.writeByte(169);
-		this.writeByte(0);
-		this.writeByte(32);
-		this.writeWord(player);
-		if (info.getSongs() != 1) {
-			this.writeByte(104);
-			this.writeByte(168);
-			this.writeByte(190);
-			this.writeWord(startAddr);
-		}
-		else {
-			this.writeByte(162);
-			this.writeByte(0);
-		}
-		this.writeByte(169);
-		this.writeByte(2);
-		this.writeBytes(playerRoutine, 6, playerLastByte - player + 7);
-		break;
-	case ASAPModuleType.RMT:
-		this.writeExecutableHeader(initAndPlayer, info, 66, 3200, 1539);
-		this.writeBytes(module, 0, ASAPInfo.getWord(module, 4) - music + 7);
-		this.writeWord(3200);
-		if (info.getSongs() != 1) {
-			this.writeWord(3210 + info.getSongs());
-			this.writeByte(168);
-			this.writeByte(185);
-			this.writeWord(3211);
-		}
-		else {
-			this.writeWord(3208);
-			this.writeByte(169);
-			this.writeByte(0);
-		}
-		this.writeByte(162);
-		this.writeByte(music & 255);
-		this.writeByte(160);
-		this.writeByte(music >> 8);
-		this.writeByte(76);
-		this.writeWord(1536);
-		if (info.getSongs() != 1)
-			this.writeBytes(info.songPos, 0, info.getSongs());
-		this.writeBytes(playerRoutine, 2, playerLastByte - player + 7);
-		break;
-	case ASAPModuleType.TMC:
-		let perFrame = module[37];
-		let player2 = player + ASAPWriter.WRITE_EXECUTABLE_TMC_PLAYER_OFFSET[perFrame - 1];
-		startAddr = player2 + ASAPWriter.WRITE_EXECUTABLE_TMC_INIT_OFFSET[perFrame - 1];
-		if (info.getSongs() != 1)
-			startAddr -= 3;
-		this.writeExecutableHeader(initAndPlayer, info, 66, startAddr, player2);
-		this.writeBytes(module, 0, moduleLen);
-		this.writeWord(startAddr);
-		this.writeWord(playerLastByte);
-		if (info.getSongs() != 1)
-			this.writeByte(72);
-		this.writeByte(160);
-		this.writeByte(music & 255);
-		this.writeByte(162);
-		this.writeByte(music >> 8);
-		this.writeByte(169);
-		this.writeByte(112);
-		this.writeByte(32);
-		this.writeWord(player);
-		if (info.getSongs() != 1)
-			this.writePlaTaxLda0();
-		else {
-			this.writeByte(169);
-			this.writeByte(96);
-		}
-		switch (perFrame) {
-		case 2:
-			this.writeByte(6);
-			this.writeByte(0);
-			this.writeByte(76);
-			this.writeWord(player);
-			this.writeByte(165);
-			this.writeByte(0);
-			this.writeByte(230);
-			this.writeByte(0);
-			this.writeByte(74);
-			this.writeByte(144);
-			this.writeByte(5);
-			this.writeByte(176);
-			this.writeByte(6);
-			break;
-		case 3:
-		case 4:
-			this.writeByte(160);
-			this.writeByte(1);
-			this.writeByte(132);
-			this.writeByte(0);
-			this.writeByte(208);
-			this.writeByte(10);
-			this.writeByte(198);
-			this.writeByte(0);
-			this.writeByte(208);
-			this.writeByte(12);
-			this.writeByte(160);
-			this.writeByte(perFrame);
-			this.writeByte(132);
-			this.writeByte(0);
-			this.writeByte(208);
-			this.writeByte(3);
-			break;
-		default:
-			break;
-		}
-		this.writeBytes(playerRoutine, 6, playerLastByte - player + 7);
-		break;
-	case ASAPModuleType.TM2:
-		this.writeExecutableHeader(initAndPlayer, info, 66, 4992, 2051);
-		this.writeBytes(module, 0, moduleLen);
-		this.writeWord(4992);
-		if (info.getSongs() != 1) {
-			this.writeWord(5008);
-			this.writeByte(72);
-		}
-		else
-			this.writeWord(5006);
-		this.writeByte(160);
-		this.writeByte(music & 255);
-		this.writeByte(162);
-		this.writeByte(music >> 8);
-		this.writeByte(169);
-		this.writeByte(112);
-		this.writeByte(32);
-		this.writeWord(2048);
-		if (info.getSongs() != 1)
-			this.writePlaTaxLda0();
-		else {
-			this.writeByte(169);
-			this.writeByte(0);
-			this.writeByte(170);
-		}
-		this.writeByte(76);
-		this.writeWord(2048);
-		this.writeBytes(playerRoutine, 2, playerLastByte - player + 7);
-		break;
-	case ASAPModuleType.FC:
-		this.writeExecutableHeader(initAndPlayer, info, 66, player, player + 3);
-		this.writeWord(65535);
-		this.writeWord(music);
-		this.writeWord(music + moduleLen - 1);
-		this.writeBytes(module, 0, moduleLen);
-		this.writeBytes(playerRoutine, 2, playerLastByte - player + 7);
-		break;
-	}
-}
-
-ASAPWriter.padXexInfo = function(dest, offset, endColumn)
-{
-	while (offset % 32 != endColumn)
-		dest[offset++] = 32;
-	return offset;
-}
-
-ASAPWriter.formatXexInfoText = function(dest, destLen, endColumn, src, author)
-{
-	let srcLen = src.length;
-	for (let srcOffset = 0; srcOffset < srcLen;) {
-		let c = src.charCodeAt(srcOffset++);
-		if (c == 32) {
-			if (author && srcOffset < srcLen && src.charCodeAt(srcOffset) == 38) {
-				let authorLen;
-				for (authorLen = 1; srcOffset + authorLen < srcLen; authorLen++) {
-					if (src.charCodeAt(srcOffset + authorLen) == 32 && srcOffset + authorLen + 1 < srcLen && src.charCodeAt(srcOffset + authorLen + 1) == 38)
-						break;
-				}
-				if (authorLen <= 32 && destLen % 32 + 1 + authorLen > 32) {
-					destLen = ASAPWriter.padXexInfo(dest, destLen, 1);
-					continue;
-				}
-			}
-			let wordLen;
-			for (wordLen = 0; srcOffset + wordLen < srcLen && src.charCodeAt(srcOffset + wordLen) != 32; wordLen++) {
-			}
-			if (wordLen <= 32 && destLen % 32 + 1 + wordLen > 32) {
-				destLen = ASAPWriter.padXexInfo(dest, destLen, 0);
-				continue;
-			}
-		}
-		dest[destLen++] = c;
-	}
-	return ASAPWriter.padXexInfo(dest, destLen, endColumn);
-}
-
-ASAPWriter.prototype.writeXexInfoTextDl = function(address, len, verticalScrollAt)
-{
-	this.writeByte(verticalScrollAt == 0 ? 98 : 66);
-	this.writeWord(address);
-	for (let i = 32; i < len; i += 32)
-		this.writeByte(i == verticalScrollAt ? 34 : 2);
-}
-
-ASAPWriter.prototype.writeXexInfo = function(info)
-{
-	const title = new Uint8Array(256);
-	let titleLen = ASAPWriter.formatXexInfoText(title, 0, 0, info.getTitle().length == 0 ? "(untitled)" : info.getTitle(), false);
-	const author = new Uint8Array(256);
-	let authorLen;
-	if (info.getAuthor().length > 0) {
-		author[0] = 98;
-		author[1] = 121;
-		author[2] = 32;
-		authorLen = ASAPWriter.formatXexInfoText(author, 3, 0, info.getAuthor(), true);
-	}
-	else
-		authorLen = 0;
-	const other = new Uint8Array(256);
-	let otherLen = ASAPWriter.formatXexInfoText(other, 0, 19, info.getDate(), false);
-	otherLen = ASAPWriter.formatXexInfoText(other, otherLen, 27, info.getChannels() > 1 ? " STEREO" : "   MONO", false);
-	let duration = info.getDuration(info.getDefaultSong());
-	if (duration > 0 && ASAPWriter.secondsToString(other, otherLen, duration + 999))
-		otherLen += 5;
-	else
-		otherLen = ASAPWriter.padXexInfo(other, otherLen, 0);
-	let totalCharacters = titleLen + authorLen + otherLen;
-	let totalLines = totalCharacters / 32 | 0;
-	let otherAddress = 64592 - otherLen;
-	let titleAddress = otherAddress - authorLen - 8 - titleLen;
-	this.writeWord(titleAddress);
-	this.writeBytes(Ci.xexinfo_obx, 4, 6);
-	this.writeBytes(title, 0, titleLen);
-	for (let i = 0; i < 8; i++)
-		this.writeByte(85);
-	this.writeBytes(author, 0, authorLen);
-	this.writeBytes(other, 0, otherLen);
-	for (let i = totalLines; i < 26; i++)
-		this.writeByte(112);
-	this.writeByte(48);
-	this.writeXexInfoTextDl(titleAddress, titleLen, titleLen - 32);
-	this.writeByte(8);
-	this.writeByte(0);
-	for (let i = 0; i < authorLen; i += 32)
-		this.writeByte(2);
-	this.writeByte(16);
-	for (let i = 0; i < otherLen; i += 32)
-		this.writeByte(2);
-	this.writeBytes(Ci.xexinfo_obx, 6, 178);
-}
-
-ASAPWriter.prototype.writeNative = function(info, module, moduleLen)
-{
-	const nativeWriter = new ASAPNativeModuleWriter();
-	nativeWriter.writer = this;
-	nativeWriter.sourceModule = module;
-	let type = info.type;
-	switch (type) {
-	case ASAPModuleType.SAP_B:
-	case ASAPModuleType.SAP_C:
-		let offset = info.getRmtSapOffset(module, moduleLen);
-		if (offset > 0) {
-			nativeWriter.sourceOffset = offset - 2;
-			nativeWriter.write(info, ASAPModuleType.RMT, moduleLen - offset + 2);
-			return;
-		}
-		nativeWriter.sourceOffset = info.headerLen;
-		let blockLen = nativeWriter.getWord(4) - nativeWriter.getWord(2) + 7;
-		if (blockLen < 7 || info.headerLen + blockLen >= moduleLen)
-			throw "Cannot extract module from SAP";
-		type = info.getOriginalModuleType(module, moduleLen);
-		if (type == ASAPModuleType.FC)
-			this.writeBytes(module, info.headerLen + 6, info.headerLen + blockLen);
-		else
-			nativeWriter.write(info, type, blockLen);
-		break;
-	case ASAPModuleType.FC:
-		this.writeBytes(module, 0, moduleLen);
-		return;
-	default:
-		nativeWriter.sourceOffset = 0;
-		nativeWriter.write(info, type, moduleLen);
-		break;
-	}
-}
-
-/**
- * Writes the given module in a possibly different file format.
- * @param targetFilename Output filename, used to determine the format.
- * @param info File information got from the source file with data updated for the output file.
- * @param module Contents of the source file.
- * @param moduleLen Length of the source file.
- * @param tag Display information (xex output only).
- */
-ASAPWriter.prototype.write = function(targetFilename, info, module, moduleLen, tag)
-{
-	let destExt = ASAPInfo.getPackedExt(targetFilename);
-	switch (destExt) {
-	case 7364979:
-		this.writeExecutable(null, info, module, moduleLen);
-		return this.outputOffset;
-	case 7890296:
-		{
-			const initAndPlayer = new Int32Array(2);
-			this.writeExecutable(initAndPlayer, info, module, moduleLen);
-			switch (info.type) {
-			case ASAPModuleType.SAP_D:
-				if (info.getPlayerRateScanlines() != 312)
-					throw "Impossible conversion";
-				this.writeBytes(Ci.xexd_obx, 2, 117);
-				this.writeWord(initAndPlayer[0]);
-				if (initAndPlayer[1] < 0) {
-					this.writeByte(96);
-					this.writeByte(96);
-					this.writeByte(96);
-				}
-				else {
-					this.writeByte(76);
-					this.writeWord(initAndPlayer[1]);
-				}
-				this.writeByte(info.getDefaultSong());
-				break;
-			case ASAPModuleType.SAP_S:
-				throw "Impossible conversion";
-			default:
-				this.writeBytes(Ci.xexb_obx, 2, 183);
-				this.writeWord(initAndPlayer[0]);
-				this.writeByte(76);
-				this.writeWord(initAndPlayer[1]);
-				this.writeByte(info.getDefaultSong());
-				let fastplay = info.getPlayerRateScanlines();
-				this.writeByte(fastplay & 1);
-				this.writeByte((fastplay >> 1) % 156);
-				this.writeByte((fastplay >> 1) % 131);
-				this.writeByte(fastplay / 312 | 0);
-				this.writeByte(fastplay / 262 | 0);
-				break;
-			}
-			if (tag)
-				this.writeXexInfo(info);
-			this.writeWord(736);
-			this.writeWord(737);
-			this.writeWord(tag ? 256 : 292);
-			const flashPack = new FlashPack();
-			flashPack.compress(this);
-			return this.outputOffset;
-		}
-	default:
-		let possibleExt = info.getOriginalModuleExt(module, moduleLen);
-		if (possibleExt != null) {
-			let packedPossibleExt = ASAPInfo.packExt(possibleExt);
-			if (destExt == packedPossibleExt || (destExt == 3698036 && packedPossibleExt == 6516084)) {
-				this.writeNative(info, module, moduleLen);
-				return this.outputOffset;
-			}
-		}
-		throw "Impossible conversion";
-	}
-}
-
-ASAPWriter.WRITE_EXECUTABLE_TMC_PLAYER_OFFSET = new Int32Array([ 3, -9, -10, -10 ]);
-
-ASAPWriter.WRITE_EXECUTABLE_TMC_INIT_OFFSET = new Int32Array([ -14, -16, -17, -17 ]);
-
-function Cpu6502()
-{
-	this.memory = new Uint8Array(65536);
-}
-
-Cpu6502.prototype.reset = function()
-{
-	this.cycle = 0;
-	this.nz = 0;
-	this.c = 0;
-	this.vdi = 0;
-}
-
-Cpu6502.prototype.peek = function(addr)
-{
-	if ((addr & 63744) == 53248)
-		return this.asap.peekHardware(addr);
-	else
-		return this.memory[addr];
-}
-
-Cpu6502.prototype.poke = function(addr, data)
-{
-	if ((addr & 63744) == 53248)
-		this.asap.pokeHardware(addr, data);
-	else
-		this.memory[addr] = data;
-}
-
-Cpu6502.prototype.peekReadModifyWrite = function(addr)
-{
-	if (addr >> 8 == 210) {
-		this.cycle--;
-		let data = this.asap.peekHardware(addr);
-		this.asap.pokeHardware(addr, data);
-		this.cycle++;
-		return data;
-	}
-	return this.memory[addr];
-}
-
-Cpu6502.prototype.pull = function()
-{
-	let s = (this.s + 1) & 255;
-	this.s = s;
-	return this.memory[256 + s];
-}
-
-Cpu6502.prototype.pullFlags = function()
-{
-	let data = this.pull();
-	this.nz = ((data & 128) << 1) + (~data & 2);
-	this.c = data & 1;
-	this.vdi = data & 76;
-}
-
-Cpu6502.prototype.push = function(data)
-{
-	let s = this.s;
-	this.memory[256 + s] = data;
-	this.s = (s - 1) & 255;
-}
-
-Cpu6502.prototype.pushPc = function()
-{
-	this.push(this.pc >> 8);
-	this.push(this.pc & 255);
-}
-
-Cpu6502.prototype.pushFlags = function(b)
-{
-	let nz = this.nz;
-	b += ((nz | nz >> 1) & 128) + this.vdi + this.c;
-	if ((nz & 255) == 0)
-		b += 2;
-	this.push(b);
-}
-
-Cpu6502.prototype.addWithCarry = function(data)
-{
-	let a = this.a;
-	let vdi = this.vdi;
-	let tmp = a + data + this.c;
-	this.nz = tmp & 255;
-	if ((vdi & 8) == 0) {
-		this.vdi = (vdi & 12) + ((~(data ^ a) & (a ^ tmp)) >> 1 & 64);
-		this.c = tmp >> 8;
-		this.a = this.nz;
-	}
-	else {
-		let al = (a & 15) + (data & 15) + this.c;
-		if (al >= 10) {
-			tmp += al < 26 ? 6 : -10;
-			if (this.nz != 0)
-				this.nz = (tmp & 128) + 1;
-		}
-		this.vdi = (vdi & 12) + ((~(data ^ a) & (a ^ tmp)) >> 1 & 64);
-		if (tmp >= 160) {
-			this.c = 1;
-			this.a = (tmp - 160) & 255;
-		}
-		else {
-			this.c = 0;
-			this.a = tmp;
-		}
-	}
-}
-
-Cpu6502.prototype.subtractWithCarry = function(data)
-{
-	let a = this.a;
-	let vdi = this.vdi;
-	let borrow = this.c - 1;
-	let tmp = a - data + borrow;
-	let al = (a & 15) - (data & 15) + borrow;
-	this.vdi = (vdi & 12) + (((data ^ a) & (a ^ tmp)) >> 1 & 64);
-	this.c = tmp >= 0 ? 1 : 0;
-	this.nz = this.a = tmp & 255;
-	if ((vdi & 8) != 0) {
-		if (al < 0)
-			this.a += al < -10 ? 10 : -6;
-		if (this.c == 0)
-			this.a = (this.a - 96) & 255;
-	}
-}
-
-Cpu6502.prototype.arithmeticShiftLeft = function(addr)
-{
-	let data = this.peekReadModifyWrite(addr);
-	this.c = data >> 7;
-	data = data << 1 & 255;
-	this.poke(addr, data);
-	return data;
-}
-
-Cpu6502.prototype.rotateLeft = function(addr)
-{
-	let data = (this.peekReadModifyWrite(addr) << 1) + this.c;
-	this.c = data >> 8;
-	data &= 255;
-	this.poke(addr, data);
-	return data;
-}
-
-Cpu6502.prototype.logicalShiftRight = function(addr)
-{
-	let data = this.peekReadModifyWrite(addr);
-	this.c = data & 1;
-	data >>= 1;
-	this.poke(addr, data);
-	return data;
-}
-
-Cpu6502.prototype.rotateRight = function(addr)
-{
-	let data = (this.c << 8) + this.peekReadModifyWrite(addr);
-	this.c = data & 1;
-	data >>= 1;
-	this.poke(addr, data);
-	return data;
-}
-
-Cpu6502.prototype.decrement = function(addr)
-{
-	let data = (this.peekReadModifyWrite(addr) - 1) & 255;
-	this.poke(addr, data);
-	return data;
-}
-
-Cpu6502.prototype.increment = function(addr)
-{
-	let data = (this.peekReadModifyWrite(addr) + 1) & 255;
-	this.poke(addr, data);
-	return data;
-}
-
-Cpu6502.prototype.executeIrq = function(b)
-{
-	this.pushPc();
-	this.pushFlags(b);
-	this.vdi |= 4;
-	this.pc = this.memory[65534] + (this.memory[65535] << 8);
-}
-
-Cpu6502.prototype.checkIrq = function()
-{
-	if ((this.vdi & 4) == 0 && this.asap.isIrq()) {
-		this.cycle += 7;
-		this.executeIrq(32);
-	}
-}
-
-Cpu6502.prototype.shx = function(addr, data)
-{
-	addr += this.memory[this.pc++];
-	let hi = this.memory[this.pc++];
-	data &= hi + 1;
-	if (addr >= 256)
-		hi = data - 1;
-	addr += hi << 8;
-	this.poke(addr, data);
-}
-
-/**
- * Runs 6502 emulation for the specified number of Atari scanlines.
- * Each scanline is 114 cycles of which 9 is taken by ANTIC for memory refresh.
- */
-Cpu6502.prototype.doFrame = function(cycleLimit)
-{
-	while (this.cycle < cycleLimit) {
-		if (this.cycle >= this.asap.nextEventCycle) {
-			this.asap.handleEvent();
-			this.checkIrq();
-		}
-		let data = this.memory[this.pc++];
-		this.cycle += Cpu6502.DO_FRAME_OPCODE_CYCLES[data];
-		let addr = 0;
-		switch (data) {
-		case 0:
-			this.pc++;
-			this.executeIrq(48);
-			continue;
-		case 1:
-		case 3:
-		case 33:
-		case 35:
-		case 65:
-		case 67:
-		case 97:
-		case 99:
-		case 129:
-		case 131:
-		case 161:
-		case 163:
-		case 193:
-		case 195:
-		case 225:
-		case 227:
-			addr = (this.memory[this.pc++] + this.x) & 255;
-			addr = this.memory[addr] + (this.memory[(addr + 1) & 255] << 8);
-			break;
-		case 2:
-		case 18:
-		case 34:
-		case 50:
-		case 66:
-		case 82:
-		case 98:
-		case 114:
-		case 146:
-		case 178:
-		case 210:
-		case 242:
-			this.pc--;
-			this.cycle = this.asap.nextEventCycle;
-			continue;
-		case 4:
-		case 68:
-		case 100:
-		case 20:
-		case 52:
-		case 84:
-		case 116:
-		case 212:
-		case 244:
-		case 128:
-		case 130:
-		case 137:
-		case 194:
-		case 226:
-			this.pc++;
-			continue;
-		case 5:
-		case 6:
-		case 7:
-		case 36:
-		case 37:
-		case 38:
-		case 39:
-		case 69:
-		case 70:
-		case 71:
-		case 101:
-		case 102:
-		case 103:
-		case 132:
-		case 133:
-		case 134:
-		case 135:
-		case 164:
-		case 165:
-		case 166:
-		case 167:
-		case 196:
-		case 197:
-		case 198:
-		case 199:
-		case 228:
-		case 229:
-		case 230:
-		case 231:
-			addr = this.memory[this.pc++];
-			break;
-		case 8:
-			this.pushFlags(48);
-			continue;
-		case 9:
-		case 41:
-		case 73:
-		case 105:
-		case 160:
-		case 162:
-		case 169:
-		case 192:
-		case 201:
-		case 224:
-		case 233:
-		case 235:
-			addr = this.pc++;
-			break;
-		case 10:
-			this.c = this.a >> 7;
-			this.nz = this.a = this.a << 1 & 255;
-			continue;
-		case 11:
-		case 43:
-			this.nz = this.a &= this.memory[this.pc++];
-			this.c = this.nz >> 7;
-			continue;
-		case 12:
-			this.pc += 2;
-			continue;
-		case 13:
-		case 14:
-		case 15:
-		case 44:
-		case 45:
-		case 46:
-		case 47:
-		case 77:
-		case 78:
-		case 79:
-		case 108:
-		case 109:
-		case 110:
-		case 111:
-		case 140:
-		case 141:
-		case 142:
-		case 143:
-		case 172:
-		case 173:
-		case 174:
-		case 175:
-		case 204:
-		case 205:
-		case 206:
-		case 207:
-		case 236:
-		case 237:
-		case 238:
-		case 239:
-			addr = this.memory[this.pc++];
-			addr += this.memory[this.pc++] << 8;
-			break;
-		case 16:
-			if (this.nz < 128)
-				break;
-			this.pc++;
-			continue;
-		case 17:
-		case 49:
-		case 81:
-		case 113:
-		case 177:
-		case 179:
-		case 209:
-		case 241:
-			let zp = this.memory[this.pc++];
-			addr = this.memory[zp] + this.y;
-			if (addr >= 256)
-				this.cycle++;
-			addr = (addr + (this.memory[(zp + 1) & 255] << 8)) & 65535;
-			break;
-		case 19:
-		case 51:
-		case 83:
-		case 115:
-		case 145:
-		case 211:
-		case 243:
-			addr = this.memory[this.pc++];
-			addr = (this.memory[addr] + (this.memory[(addr + 1) & 255] << 8) + this.y) & 65535;
-			break;
-		case 21:
-		case 22:
-		case 23:
-		case 53:
-		case 54:
-		case 55:
-		case 85:
-		case 86:
-		case 87:
-		case 117:
-		case 118:
-		case 119:
-		case 148:
-		case 149:
-		case 180:
-		case 181:
-		case 213:
-		case 214:
-		case 215:
-		case 245:
-		case 246:
-		case 247:
-			addr = (this.memory[this.pc++] + this.x) & 255;
-			break;
-		case 24:
-			this.c = 0;
-			continue;
-		case 25:
-		case 57:
-		case 89:
-		case 121:
-		case 185:
-		case 187:
-		case 190:
-		case 191:
-		case 217:
-		case 249:
-			addr = this.memory[this.pc++] + this.y;
-			if (addr >= 256)
-				this.cycle++;
-			addr = (addr + (this.memory[this.pc++] << 8)) & 65535;
-			break;
-		case 27:
-		case 59:
-		case 91:
-		case 123:
-		case 153:
-		case 219:
-		case 251:
-			addr = this.memory[this.pc++] + this.y;
-			addr = (addr + (this.memory[this.pc++] << 8)) & 65535;
-			break;
-		case 28:
-		case 60:
-		case 92:
-		case 124:
-		case 220:
-		case 252:
-			if (this.memory[this.pc] + this.x >= 256)
-				this.cycle++;
-			this.pc += 2;
-			continue;
-		case 29:
-		case 61:
-		case 93:
-		case 125:
-		case 188:
-		case 189:
-		case 221:
-		case 253:
-			addr = this.memory[this.pc++] + this.x;
-			if (addr >= 256)
-				this.cycle++;
-			addr = (addr + (this.memory[this.pc++] << 8)) & 65535;
-			break;
-		case 30:
-		case 31:
-		case 62:
-		case 63:
-		case 94:
-		case 95:
-		case 126:
-		case 127:
-		case 157:
-		case 222:
-		case 223:
-		case 254:
-		case 255:
-			addr = this.memory[this.pc++] + this.x;
-			addr = (addr + (this.memory[this.pc++] << 8)) & 65535;
-			break;
-		case 32:
-			addr = this.memory[this.pc++];
-			this.pushPc();
-			this.pc = addr + (this.memory[this.pc] << 8);
-			continue;
-		case 40:
-			this.pullFlags();
-			this.checkIrq();
-			continue;
-		case 42:
-			this.a = (this.a << 1) + this.c;
-			this.c = this.a >> 8;
-			this.nz = this.a &= 255;
-			continue;
-		case 48:
-			if (this.nz >= 128)
-				break;
-			this.pc++;
-			continue;
-		case 56:
-			this.c = 1;
-			continue;
-		case 64:
-			this.pullFlags();
-			this.pc = this.pull();
-			this.pc += this.pull() << 8;
-			this.checkIrq();
-			continue;
-		case 72:
-			this.push(this.a);
-			continue;
-		case 74:
-			this.c = this.a & 1;
-			this.nz = this.a >>= 1;
-			continue;
-		case 75:
-			this.a &= this.memory[this.pc++];
-			this.c = this.a & 1;
-			this.nz = this.a >>= 1;
-			continue;
-		case 76:
-			addr = this.memory[this.pc++];
-			this.pc = addr + (this.memory[this.pc] << 8);
-			continue;
-		case 80:
-			if ((this.vdi & 64) == 0)
-				break;
-			this.pc++;
-			continue;
-		case 88:
-			this.vdi &= 72;
-			this.checkIrq();
-			continue;
-		case 96:
-			this.pc = this.pull();
-			this.pc += (this.pull() << 8) + 1;
-			continue;
-		case 104:
-			this.nz = this.a = this.pull();
-			continue;
-		case 106:
-			this.nz = (this.c << 7) + (this.a >> 1);
-			this.c = this.a & 1;
-			this.a = this.nz;
-			continue;
-		case 107:
-			data = this.a & this.memory[this.pc++];
-			this.nz = this.a = (data >> 1) + (this.c << 7);
-			this.vdi = (this.vdi & 12) + ((this.a ^ data) & 64);
-			if ((this.vdi & 8) == 0)
-				this.c = data >> 7;
-			else {
-				if ((data & 15) >= 5)
-					this.a = (this.a & 240) + ((this.a + 6) & 15);
-				if (data >= 80) {
-					this.a = (this.a + 96) & 255;
-					this.c = 1;
+				let newOut;
+				if ((audc & 64) != 0)
+					newOut = 21360 >> poly % 15;
+				else if (pokey.audctl < 128) {
+					poly %= 131071;
+					newOut = pokeys.poly17Lookup[poly >> 3] >> (poly & 7);
 				}
 				else
-					this.c = 0;
+					newOut = pokeys.poly9Lookup[poly % 511];
+				newOut &= 1;
+				if (this.#out == newOut)
+					return;
+				this.#out = newOut;
 			}
-			continue;
-		case 112:
-			if ((this.vdi & 64) != 0)
-				break;
-			this.pc++;
-			continue;
-		case 120:
-			this.vdi |= 4;
-			continue;
-		case 136:
-			this.nz = this.y = (this.y - 1) & 255;
-			continue;
-		case 138:
-			this.nz = this.a = this.x;
-			continue;
-		case 139:
-			data = this.memory[this.pc++];
-			this.a &= (data | 239) & this.x;
-			this.nz = this.a & data;
-			continue;
-		case 144:
-			if (this.c == 0)
-				break;
-			this.pc++;
-			continue;
-		case 147:
-			{
-				addr = this.memory[this.pc++];
-				let hi = this.memory[(addr + 1) & 255];
-				addr = this.memory[addr];
-				data = (hi + 1) & this.a & this.x;
-				addr += this.y;
-				if (addr >= 256)
-					hi = data - 1;
-				addr += hi << 8;
-				this.poke(addr, data);
-			}
-			continue;
-		case 150:
-		case 151:
-		case 182:
-		case 183:
-			addr = (this.memory[this.pc++] + this.y) & 255;
-			break;
-		case 152:
-			this.nz = this.a = this.y;
-			continue;
-		case 154:
-			this.s = this.x;
-			continue;
-		case 155:
-			this.s = this.a & this.x;
-			this.shx(this.y, this.s);
-			continue;
-		case 156:
-			this.shx(this.x, this.y);
-			continue;
-		case 158:
-			this.shx(this.y, this.x);
-			continue;
-		case 159:
-			this.shx(this.y, this.a & this.x);
-			continue;
-		case 168:
-			this.nz = this.y = this.a;
-			continue;
-		case 170:
-			this.nz = this.x = this.a;
-			continue;
-		case 171:
-			this.nz = this.x = this.a &= this.memory[this.pc++];
-			continue;
-		case 176:
-			if (this.c != 0)
-				break;
-			this.pc++;
-			continue;
-		case 184:
-			this.vdi &= 12;
-			continue;
-		case 186:
-			this.nz = this.x = this.s;
-			continue;
-		case 200:
-			this.nz = this.y = (this.y + 1) & 255;
-			continue;
-		case 202:
-			this.nz = this.x = (this.x - 1) & 255;
-			continue;
-		case 203:
-			this.nz = this.memory[this.pc++];
-			this.x &= this.a;
-			this.c = this.x >= this.nz ? 1 : 0;
-			this.nz = this.x = (this.x - this.nz) & 255;
-			continue;
-		case 208:
-			if ((this.nz & 255) != 0)
-				break;
-			this.pc++;
-			continue;
-		case 216:
-			this.vdi &= 68;
-			continue;
-		case 232:
-			this.nz = this.x = (this.x + 1) & 255;
-			continue;
-		case 234:
-		case 26:
-		case 58:
-		case 90:
-		case 122:
-		case 218:
-		case 250:
-			continue;
-		case 240:
-			if ((this.nz & 255) == 0)
-				break;
-			this.pc++;
-			continue;
-		case 248:
-			this.vdi |= 8;
-			continue;
-		default:
-			console.assert(false);
 		}
-		switch (data) {
-		case 1:
-		case 5:
-		case 9:
-		case 13:
-		case 17:
-		case 21:
-		case 25:
-		case 29:
-			this.nz = this.a |= this.peek(addr);
-			break;
-		case 3:
-		case 7:
-		case 15:
-		case 19:
-		case 23:
-		case 27:
-		case 31:
-			this.nz = this.a |= this.arithmeticShiftLeft(addr);
-			break;
-		case 6:
-		case 14:
-		case 22:
-		case 30:
-			this.nz = this.arithmeticShiftLeft(addr);
-			break;
-		case 16:
-		case 48:
-		case 80:
-		case 112:
-		case 144:
-		case 176:
-		case 208:
-		case 240:
-			addr = (this.memory[this.pc] ^ 128) - 128;
-			this.pc++;
-			addr += this.pc;
-			this.cycle += (addr ^ this.pc) >> 8 != 0 ? 2 : 1;
-			this.pc = addr;
-			break;
-		case 33:
-		case 37:
-		case 41:
-		case 45:
-		case 49:
-		case 53:
-		case 57:
-		case 61:
-			this.nz = this.a &= this.peek(addr);
-			break;
-		case 35:
-		case 39:
-		case 47:
-		case 51:
-		case 55:
-		case 59:
-		case 63:
-			this.nz = this.a &= this.rotateLeft(addr);
-			break;
-		case 36:
-		case 44:
-			this.nz = this.peek(addr);
-			this.vdi = (this.vdi & 12) + (this.nz & 64);
-			this.nz = ((this.nz & 128) << 1) + (this.nz & this.a);
-			break;
-		case 38:
-		case 46:
-		case 54:
-		case 62:
-			this.nz = this.rotateLeft(addr);
-			break;
-		case 65:
-		case 69:
-		case 73:
-		case 77:
-		case 81:
-		case 85:
-		case 89:
-		case 93:
-			this.nz = this.a ^= this.peek(addr);
-			break;
-		case 67:
-		case 71:
-		case 79:
-		case 83:
-		case 87:
-		case 91:
-		case 95:
-			this.nz = this.a ^= this.logicalShiftRight(addr);
-			break;
-		case 70:
-		case 78:
-		case 86:
-		case 94:
-			this.nz = this.logicalShiftRight(addr);
-			break;
-		case 97:
-		case 101:
-		case 105:
-		case 109:
-		case 113:
-		case 117:
-		case 121:
-		case 125:
-			this.addWithCarry(this.peek(addr));
-			break;
-		case 99:
-		case 103:
-		case 111:
-		case 115:
-		case 119:
-		case 123:
-		case 127:
-			this.addWithCarry(this.rotateRight(addr));
-			break;
-		case 102:
-		case 110:
-		case 118:
-		case 126:
-			this.nz = this.rotateRight(addr);
-			break;
-		case 108:
-			this.pc = this.memory[addr];
-			if ((++addr & 255) == 0)
-				addr -= 255;
-			this.pc += this.memory[addr] << 8;
-			break;
-		case 129:
-		case 133:
-		case 141:
-		case 145:
-		case 149:
-		case 153:
-		case 157:
-			this.poke(addr, this.a);
-			break;
-		case 131:
-		case 135:
-		case 143:
-		case 151:
-			this.poke(addr, this.a & this.x);
-			break;
-		case 132:
-		case 140:
-		case 148:
-			this.poke(addr, this.y);
-			break;
-		case 134:
-		case 142:
-		case 150:
-			this.poke(addr, this.x);
-			break;
-		case 160:
-		case 164:
-		case 172:
-		case 180:
-		case 188:
-			this.nz = this.y = this.peek(addr);
-			break;
-		case 161:
-		case 165:
-		case 169:
-		case 173:
-		case 177:
-		case 181:
-		case 185:
-		case 189:
-			this.nz = this.a = this.peek(addr);
-			break;
-		case 162:
-		case 166:
-		case 174:
-		case 182:
-		case 190:
-			this.nz = this.x = this.peek(addr);
-			break;
-		case 163:
-		case 167:
-		case 175:
-		case 179:
-		case 183:
-		case 191:
-			this.nz = this.x = this.a = this.peek(addr);
-			break;
-		case 187:
-			this.nz = this.x = this.a = this.s &= this.peek(addr);
-			break;
-		case 192:
-		case 196:
-		case 204:
-			this.nz = this.peek(addr);
-			this.c = this.y >= this.nz ? 1 : 0;
-			this.nz = (this.y - this.nz) & 255;
-			break;
-		case 193:
-		case 197:
-		case 201:
-		case 205:
-		case 209:
-		case 213:
-		case 217:
-		case 221:
-			this.nz = this.peek(addr);
-			this.c = this.a >= this.nz ? 1 : 0;
-			this.nz = (this.a - this.nz) & 255;
-			break;
-		case 195:
-		case 199:
-		case 207:
-		case 211:
-		case 215:
-		case 219:
-		case 223:
-			data = this.decrement(addr);
-			this.c = this.a >= data ? 1 : 0;
-			this.nz = (this.a - data) & 255;
-			break;
-		case 198:
-		case 206:
-		case 214:
-		case 222:
-			this.nz = this.decrement(addr);
-			break;
-		case 224:
-		case 228:
-		case 236:
-			this.nz = this.peek(addr);
-			this.c = this.x >= this.nz ? 1 : 0;
-			this.nz = (this.x - this.nz) & 255;
-			break;
-		case 225:
-		case 229:
-		case 233:
-		case 235:
-		case 237:
-		case 241:
-		case 245:
-		case 249:
-		case 253:
-			this.subtractWithCarry(this.peek(addr));
-			break;
-		case 227:
-		case 231:
-		case 239:
-		case 243:
-		case 247:
-		case 251:
-		case 255:
-			this.subtractWithCarry(this.increment(addr));
-			break;
-		case 230:
-		case 238:
-		case 246:
-		case 254:
-			this.nz = this.increment(addr);
-			break;
-		default:
-			console.assert(false);
+		this.slope(pokey, pokeys, cycle);
+	}
+
+	doStimer(cycle)
+	{
+		if (this.tickCycle != 8388608)
+			this.tickCycle = cycle + this.periodCycles;
+	}
+
+	setMute(enable, mask, cycle)
+	{
+		if (enable) {
+			this.mute |= mask;
+			this.tickCycle = 8388608;
 		}
-	}
-}
-
-Cpu6502.DO_FRAME_OPCODE_CYCLES = new Uint8Array([ 7, 6, 2, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6,
-	2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
-	6, 6, 2, 8, 3, 3, 5, 5, 4, 2, 2, 2, 4, 4, 6, 6,
-	2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
-	6, 6, 2, 8, 3, 3, 5, 5, 3, 2, 2, 2, 3, 4, 6, 6,
-	2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
-	6, 6, 2, 8, 3, 3, 5, 5, 4, 2, 2, 2, 5, 4, 6, 6,
-	2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
-	2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4,
-	2, 6, 2, 6, 4, 4, 4, 4, 2, 5, 2, 5, 5, 5, 5, 5,
-	2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4,
-	2, 5, 2, 5, 4, 4, 4, 4, 2, 4, 2, 4, 4, 4, 4, 4,
-	2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6,
-	2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
-	2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6,
-	2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7 ]);
-
-function FlashPackItem()
-{
-}
-
-FlashPackItem.prototype.writeValueTo = function(buffer, index)
-{
-	switch (this.type) {
-	case FlashPackItemType.LITERAL:
-		buffer[index] = this.value;
-		return 1;
-	case FlashPackItemType.COPY_TWO_BYTES:
-		buffer[index] = (128 - this.value) << 1;
-		return 1;
-	case FlashPackItemType.COPY_THREE_BYTES:
-		buffer[index] = ((128 - this.value) << 1) + 1;
-		return 1;
-	case FlashPackItemType.COPY_MANY_BYTES:
-		buffer[index] = 1;
-		buffer[index + 1] = this.value;
-		return 2;
-	case FlashPackItemType.SET_ADDRESS:
-		let value = this.value - 128;
-		buffer[index] = 0;
-		buffer[index + 1] = value & 255;
-		buffer[index + 2] = value >> 8;
-		return 3;
-	default:
-		buffer[index] = 1;
-		buffer[index + 1] = 0;
-		return 2;
-	}
-}
-
-function FlashPack()
-{
-	this.memory = new Int16Array(65536);
-	this.compressed = new Uint8Array(65536);
-	this.items = new Array(64);
-	for (let _i0 = 0; _i0 < 64; _i0++) {
-		this.items[_i0] = new FlashPackItem();
-	}
-}
-
-FlashPack.prototype.findHole = function()
-{
-	let end = 48159;
-	for (;;) {
-		while (this.memory[end] >= 0)
-			if (--end < 9216)
-				throw "Too much data to compress";
-		let start = end;
-		while (this.memory[--start] < 0)
-			if (end - start >= 1023)
-				return end;
-		end = start;
-	}
-}
-
-FlashPack.prototype.getInnerFlags = function(index)
-{
-	let flags = 1;
-	do {
-		flags <<= 1;
-		if (index < this.itemsCount) {
-			if (this.items[index++].type != FlashPackItemType.LITERAL)
-				flags++;
-		}
-	}
-	while (flags < 256);
-	return flags & 255;
-}
-
-FlashPack.prototype.putItems = function()
-{
-	let outerFlags = 0;
-	for (let i = 0; i < this.itemsCount; i += 8) {
-		if (this.getInnerFlags(i) != 0)
-			outerFlags |= 128 >> (i >> 3);
-	}
-	this.compressed[this.compressedLength++] = outerFlags;
-	for (let i = 0; i < this.itemsCount; i++) {
-		if ((i & 7) == 0) {
-			let flags = this.getInnerFlags(i);
-			if (flags != 0)
-				this.compressed[this.compressedLength++] = flags;
-		}
-		this.compressedLength += this.items[i].writeValueTo(this.compressed, this.compressedLength);
-	}
-}
-
-FlashPack.prototype.putItem = function(type, value)
-{
-	if (this.itemsCount >= 64) {
-		this.putItems();
-		this.itemsCount = 0;
-	}
-	this.items[this.itemsCount].type = type;
-	this.items[this.itemsCount].value = value;
-	this.itemsCount++;
-}
-
-FlashPack.prototype.isLiteralPreferred = function()
-{
-	return (this.itemsCount & 7) == 7 && this.getInnerFlags(this.itemsCount - 7) == 0;
-}
-
-FlashPack.prototype.compressMemoryArea = function(startAddress, endAddress)
-{
-	let lastDistance = -1;
-	for (let address = startAddress; address <= endAddress;) {
-		while (this.memory[address] < 0)
-			if (++address > endAddress)
-				return;
-		this.putItem(FlashPackItemType.SET_ADDRESS, address);
-		while (address <= endAddress && this.memory[address] >= 0) {
-			let bestMatch = 0;
-			let bestDistance = -1;
-			for (let backAddress = address - 1; backAddress >= startAddress && address - backAddress < 128; backAddress--) {
-				let match;
-				for (match = 0; address + match <= endAddress; match++) {
-					let data = this.memory[address + match];
-					if (data < 0 || data != this.memory[backAddress + match])
-						break;
-				}
-				if (bestMatch < match) {
-					bestMatch = match;
-					bestDistance = address - backAddress;
-				}
-				else if (bestMatch == match && address - backAddress == lastDistance)
-					bestDistance = lastDistance;
-			}
-			switch (bestMatch) {
-			case 0:
-			case 1:
-				this.putItem(FlashPackItemType.LITERAL, this.memory[address++]);
-				continue;
-			case 2:
-				this.putItem(FlashPackItemType.COPY_TWO_BYTES, bestDistance);
-				break;
-			case 3:
-				this.putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
-				break;
-			case 4:
-				if (bestDistance == lastDistance)
-					this.putItem(FlashPackItemType.COPY_MANY_BYTES, 4);
-				else if (this.isLiteralPreferred()) {
-					this.putItem(FlashPackItemType.LITERAL, this.memory[address]);
-					this.putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
-				}
-				else {
-					this.putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
-					this.putItem(FlashPackItemType.LITERAL, this.memory[address + 3]);
-				}
-				break;
-			case 5:
-				if (bestDistance == lastDistance)
-					this.putItem(FlashPackItemType.COPY_MANY_BYTES, 5);
-				else {
-					this.putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
-					this.putItem(FlashPackItemType.COPY_TWO_BYTES, bestDistance);
-				}
-				break;
-			case 6:
-				if (bestDistance == lastDistance)
-					this.putItem(FlashPackItemType.COPY_MANY_BYTES, 6);
-				else {
-					this.putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
-					this.putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
-				}
-				break;
-			default:
-				let length = bestMatch;
-				if (bestDistance != lastDistance) {
-					if (this.isLiteralPreferred() && length % 255 == 4) {
-						this.putItem(FlashPackItemType.LITERAL, this.memory[address]);
-						length--;
-					}
-					this.putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
-					length -= 3;
-				}
-				else if (this.isLiteralPreferred() && length % 255 == 1) {
-					this.putItem(FlashPackItemType.LITERAL, this.memory[address]);
-					length--;
-				}
-				for (; length > 255; length -= 255)
-					this.putItem(FlashPackItemType.COPY_MANY_BYTES, 255);
-				switch (length) {
-				case 0:
-					break;
-				case 1:
-					this.putItem(FlashPackItemType.LITERAL, this.memory[address + bestMatch - 1]);
-					break;
-				case 2:
-					this.putItem(FlashPackItemType.COPY_TWO_BYTES, bestDistance);
-					break;
-				case 3:
-					this.putItem(FlashPackItemType.COPY_THREE_BYTES, bestDistance);
-					break;
-				default:
-					this.putItem(FlashPackItemType.COPY_MANY_BYTES, length);
-					break;
-				}
-				break;
-			}
-			address += bestMatch;
-			lastDistance = bestDistance;
-		}
-	}
-}
-
-FlashPack.prototype.putPoke = function(address, value)
-{
-	this.putItem(FlashPackItemType.SET_ADDRESS, address);
-	this.putItem(FlashPackItemType.LITERAL, value);
-}
-
-FlashPack.prototype.compress = function(w)
-{
-	for (let i = 0; i < 65536; i++)
-		this.memory[i] = -1;
-	for (let i = 0; i + 5 <= w.outputOffset;) {
-		let startAddress = w.output[i] + (w.output[i + 1] << 8);
-		if (startAddress == 65535) {
-			i += 2;
-			startAddress = w.output[i] + (w.output[i + 1] << 8);
-		}
-		let endAddress = w.output[i + 2] + (w.output[i + 3] << 8);
-		if (startAddress > endAddress)
-			throw "Start address greater than end address";
-		i += 4;
-		if (i + endAddress - startAddress >= w.outputOffset)
-			throw "Truncated block";
-		while (startAddress <= endAddress)
-			this.memory[startAddress++] = w.output[i++];
-	}
-	if (this.memory[736] < 0 || this.memory[737] < 0)
-		throw "Missing run address";
-	if (this.memory[252] >= 0 || this.memory[253] >= 0 || this.memory[254] >= 0 || this.memory[255] >= 0)
-		throw "Conflict with decompressor variables";
-	let runAddress = this.memory[736] + (this.memory[737] << 8);
-	this.memory[736] = this.memory[737] = -1;
-	let depackerEndAddress = this.findHole();
-	this.compressedLength = 0;
-	this.itemsCount = 0;
-	this.putPoke(54286, 0);
-	this.putPoke(53774, 0);
-	this.putPoke(54272, 0);
-	this.putPoke(54017, 254);
-	this.putPoke(580, 255);
-	this.compressMemoryArea(depackerEndAddress, 65535);
-	this.compressMemoryArea(0, depackerEndAddress);
-	this.putItem(FlashPackItemType.END_OF_STREAM, 0);
-	this.putItems();
-	let depackerStartAddress = depackerEndAddress - 87;
-	let compressedStartAddress = depackerStartAddress - this.compressedLength;
-	if (compressedStartAddress < 8192)
-		throw "Too much compressed data";
-	w.outputOffset = 0;
-	w.writeWord(65535);
-	w.writeWord(54017);
-	w.writeWord(54017);
-	w.writeByte(255);
-	w.writeWord(compressedStartAddress);
-	w.writeWord(depackerEndAddress);
-	w.writeBytes(this.compressed, 0, this.compressedLength);
-	w.writeByte(173);
-	w.writeWord(compressedStartAddress);
-	w.writeByte(238);
-	w.writeWord(depackerStartAddress + 1);
-	w.writeByte(208);
-	w.writeByte(3);
-	w.writeByte(238);
-	w.writeWord(depackerStartAddress + 2);
-	w.writeByte(96);
-	w.writeByte(76);
-	w.writeWord(runAddress);
-	w.writeByte(133);
-	w.writeByte(254);
-	w.writeByte(138);
-	w.writeByte(42);
-	w.writeByte(170);
-	w.writeByte(240);
-	w.writeByte(246);
-	w.writeByte(177);
-	w.writeByte(254);
-	w.writeByte(153);
-	w.writeByte(128);
-	w.writeByte(128);
-	w.writeByte(200);
-	w.writeByte(208);
-	w.writeByte(9);
-	w.writeByte(152);
-	w.writeByte(56);
-	w.writeByte(101);
-	w.writeByte(255);
-	w.writeByte(133);
-	w.writeByte(255);
-	w.writeByte(141);
-	w.writeWord(depackerStartAddress + 26);
-	w.writeByte(202);
-	w.writeByte(208);
-	w.writeByte(236);
-	w.writeByte(6);
-	w.writeByte(253);
-	w.writeByte(208);
-	w.writeByte(21);
-	w.writeByte(6);
-	w.writeByte(252);
-	w.writeByte(208);
-	w.writeByte(7);
-	w.writeByte(56);
-	w.writeByte(32);
-	w.writeWord(depackerStartAddress);
-	w.writeByte(42);
-	w.writeByte(133);
-	w.writeByte(252);
-	w.writeByte(169);
-	w.writeByte(1);
-	w.writeByte(144);
-	w.writeByte(4);
-	w.writeByte(32);
-	w.writeWord(depackerStartAddress);
-	w.writeByte(42);
-	w.writeByte(133);
-	w.writeByte(253);
-	w.writeByte(32);
-	w.writeWord(depackerStartAddress);
-	w.writeByte(162);
-	w.writeByte(1);
-	w.writeByte(144);
-	w.writeByte(206);
-	w.writeByte(74);
-	w.writeByte(208);
-	w.writeByte(194);
-	w.writeByte(32);
-	w.writeWord(depackerStartAddress);
-	w.writeByte(176);
-	w.writeByte(193);
-	w.writeByte(168);
-	w.writeByte(32);
-	w.writeWord(depackerStartAddress);
-	w.writeByte(144);
-	w.writeByte(202);
-	w.writeWord(736);
-	w.writeWord(737);
-	w.writeWord(depackerStartAddress + 50);
-}
-
-function PokeyChannel()
-{
-}
-
-PokeyChannel.prototype.initialize = function()
-{
-	this.audf = 0;
-	this.audc = 0;
-	this.periodCycles = 28;
-	this.tickCycle = 8388608;
-	this.timerCycle = 8388608;
-	this.mute = 1;
-	this.out = 0;
-	this.delta = 0;
-}
-
-PokeyChannel.prototype.slope = function(pokey, pokeys, cycle)
-{
-	this.delta = -this.delta;
-	pokey.addDelta(pokeys, cycle, this.delta);
-}
-
-PokeyChannel.prototype.doTick = function(pokey, pokeys, cycle, ch)
-{
-	this.tickCycle += this.periodCycles;
-	let audc = this.audc;
-	if ((audc & 176) == 160)
-		this.out ^= 1;
-	else if ((audc & 16) != 0 || pokey.init)
-		return;
-	else {
-		let poly = cycle + pokey.polyIndex - ch;
-		if (audc < 128 && (1706902752 & 1 << poly % 31) == 0)
-			return;
-		if ((audc & 32) != 0)
-			this.out ^= 1;
 		else {
-			let newOut;
-			if ((audc & 64) != 0)
-				newOut = 21360 >> poly % 15;
-			else if (pokey.audctl < 128) {
-				poly %= 131071;
-				newOut = pokeys.poly17Lookup[poly >> 3] >> (poly & 7);
-			}
-			else
-				newOut = pokeys.poly9Lookup[poly % 511];
-			newOut &= 1;
-			if (this.out == newOut)
-				return;
-			this.out = newOut;
+			this.mute &= ~mask;
+			if (this.mute == 0 && this.tickCycle == 8388608)
+				this.tickCycle = cycle;
 		}
 	}
-	this.slope(pokey, pokeys, cycle);
-}
 
-PokeyChannel.prototype.doStimer = function(cycle)
-{
-	if (this.tickCycle != 8388608)
-		this.tickCycle = cycle + this.periodCycles;
-}
-
-PokeyChannel.prototype.setMute = function(enable, mask, cycle)
-{
-	if (enable) {
-		this.mute |= mask;
-		this.tickCycle = 8388608;
-	}
-	else {
-		this.mute &= ~mask;
-		if (this.mute == 0 && this.tickCycle == 8388608)
-			this.tickCycle = cycle;
-	}
-}
-
-PokeyChannel.prototype.muteUltrasound = function(cycle)
-{
-	this.setMute(this.periodCycles <= 112 && (this.audc & 176) == 160, 1, cycle);
-}
-
-PokeyChannel.prototype.setAudc = function(pokey, pokeys, data, cycle)
-{
-	if (this.audc == data)
-		return;
-	pokey.generateUntilCycle(pokeys, cycle);
-	this.audc = data;
-	if ((data & 16) != 0) {
-		data = (data & 15) << 20;
-		if ((this.mute & 4) == 0)
-			pokey.addDelta(pokeys, cycle, this.delta > 0 ? data - this.delta : data);
-		this.delta = data;
-	}
-	else {
-		data = (data & 15) << 20;
-		this.muteUltrasound(cycle);
-		if (this.delta > 0) {
-			if ((this.mute & 4) == 0)
-				pokey.addDelta(pokeys, cycle, data - this.delta);
+	setAudc(pokey, pokeys, data, cycle)
+	{
+		if (this.audc == data)
+			return;
+		pokey.generateUntilCycle(pokeys, cycle);
+		this.audc = data;
+		if ((data & 16) != 0) {
+			data &= 15;
+			if ((this.mute & 2) == 0)
+				pokey.addDelta(pokeys, cycle, this.delta > 0 ? data - this.delta : data);
 			this.delta = data;
 		}
-		else
-			this.delta = -data;
-	}
-}
-
-PokeyChannel.prototype.endFrame = function(cycle)
-{
-	if (this.timerCycle != 8388608)
-		this.timerCycle -= cycle;
-}
-
-function Pokey()
-{
-	this.channels = new Array(4);
-	for (let _i0 = 0; _i0 < 4; _i0++) {
-		this.channels[_i0] = new PokeyChannel();
-	}
-	this.deltaBuffer = new Int32Array(888);
-}
-
-Pokey.prototype.startFrame = function()
-{
-	this.deltaBuffer.fill(0);
-}
-
-Pokey.prototype.initialize = function()
-{
-	for (let i = 0; i < 4; i++)
-		this.channels[i].initialize();
-	this.audctl = 0;
-	this.skctl = 3;
-	this.irqst = 255;
-	this.init = false;
-	this.divCycles = 28;
-	this.reloadCycles1 = 28;
-	this.reloadCycles3 = 28;
-	this.polyIndex = 60948015;
-	this.iirAcc = 0;
-	this.startFrame();
-}
-
-Pokey.prototype.addDelta = function(pokeys, cycle, delta)
-{
-	let i = cycle * pokeys.sampleFactor + pokeys.sampleOffset;
-	let delta2 = (delta >> 16) * (i >> 4 & 65535);
-	i >>= 20;
-	this.deltaBuffer[i] += delta - delta2;
-	this.deltaBuffer[i + 1] += delta2;
-}
-
-/**
- * Fills <code>DeltaBuffer</code> up to <code>cycleLimit</code> basing on current Audf/Audc/Audctl values.
- */
-Pokey.prototype.generateUntilCycle = function(pokeys, cycleLimit)
-{
-	for (;;) {
-		let cycle = cycleLimit;
-		for (let i = 0; i < 4; i++) {
-			let tickCycle = this.channels[i].tickCycle;
-			if (cycle > tickCycle)
-				cycle = tickCycle;
-		}
-		if (cycle == cycleLimit)
-			break;
-		if (cycle == this.channels[2].tickCycle) {
-			if ((this.audctl & 4) != 0 && this.channels[0].delta > 0 && this.channels[0].mute == 0)
-				this.channels[0].slope(this, pokeys, cycle);
-			this.channels[2].doTick(this, pokeys, cycle, 2);
-		}
-		if (cycle == this.channels[3].tickCycle) {
-			if ((this.audctl & 8) != 0)
-				this.channels[2].tickCycle = cycle + this.reloadCycles3;
-			if ((this.audctl & 2) != 0 && this.channels[1].delta > 0 && this.channels[1].mute == 0)
-				this.channels[1].slope(this, pokeys, cycle);
-			this.channels[3].doTick(this, pokeys, cycle, 3);
-		}
-		if (cycle == this.channels[0].tickCycle) {
-			if ((this.skctl & 136) == 8)
-				this.channels[1].tickCycle = cycle + this.channels[1].periodCycles;
-			this.channels[0].doTick(this, pokeys, cycle, 0);
-		}
-		if (cycle == this.channels[1].tickCycle) {
-			if ((this.audctl & 16) != 0)
-				this.channels[0].tickCycle = cycle + this.reloadCycles1;
-			else if ((this.skctl & 8) != 0)
-				this.channels[0].tickCycle = cycle + this.channels[0].periodCycles;
-			this.channels[1].doTick(this, pokeys, cycle, 1);
-		}
-	}
-}
-
-Pokey.prototype.endFrame = function(pokeys, cycle)
-{
-	this.generateUntilCycle(pokeys, cycle);
-	this.polyIndex += cycle;
-	let m = (this.audctl & 128) != 0 ? 237615 : 60948015;
-	if (this.polyIndex >= 2 * m)
-		this.polyIndex -= m;
-	for (let i = 0; i < 4; i++) {
-		let tickCycle = this.channels[i].tickCycle;
-		if (tickCycle != 8388608)
-			this.channels[i].tickCycle = tickCycle - cycle;
-	}
-}
-
-Pokey.prototype.isSilent = function()
-{
-	for (let i = 0; i < 4; i++)
-		if ((this.channels[i].audc & 15) != 0)
-			return false;
-	return true;
-}
-
-Pokey.prototype.mute = function(mask)
-{
-	for (let i = 0; i < 4; i++)
-		this.channels[i].setMute((mask & 1 << i) != 0, 4, 0);
-}
-
-Pokey.prototype.initMute = function(cycle)
-{
-	let init = this.init;
-	let audctl = this.audctl;
-	this.channels[0].setMute(init && (audctl & 64) == 0, 2, cycle);
-	this.channels[1].setMute(init && (audctl & 80) != 80, 2, cycle);
-	this.channels[2].setMute(init && (audctl & 32) == 0, 2, cycle);
-	this.channels[3].setMute(init && (audctl & 40) != 40, 2, cycle);
-}
-
-Pokey.prototype.poke = function(pokeys, addr, data, cycle)
-{
-	let nextEventCycle = 8388608;
-	switch (addr & 15) {
-	case 0:
-		if (data == this.channels[0].audf)
-			break;
-		this.generateUntilCycle(pokeys, cycle);
-		this.channels[0].audf = data;
-		switch (this.audctl & 80) {
-		case 0:
-			this.channels[0].periodCycles = this.divCycles * (data + 1);
-			break;
-		case 16:
-			this.channels[1].periodCycles = this.divCycles * (data + (this.channels[1].audf << 8) + 1);
-			this.reloadCycles1 = this.divCycles * (data + 1);
-			this.channels[1].muteUltrasound(cycle);
-			break;
-		case 64:
-			this.channels[0].periodCycles = data + 4;
-			break;
-		case 80:
-			this.channels[1].periodCycles = data + (this.channels[1].audf << 8) + 7;
-			this.reloadCycles1 = data + 4;
-			this.channels[1].muteUltrasound(cycle);
-			break;
-		default:
-			console.assert(false);
-		}
-		this.channels[0].muteUltrasound(cycle);
-		break;
-	case 1:
-		this.channels[0].setAudc(this, pokeys, data, cycle);
-		break;
-	case 2:
-		if (data == this.channels[1].audf)
-			break;
-		this.generateUntilCycle(pokeys, cycle);
-		this.channels[1].audf = data;
-		switch (this.audctl & 80) {
-		case 0:
-		case 64:
-			this.channels[1].periodCycles = this.divCycles * (data + 1);
-			break;
-		case 16:
-			this.channels[1].periodCycles = this.divCycles * (this.channels[0].audf + (data << 8) + 1);
-			break;
-		case 80:
-			this.channels[1].periodCycles = this.channels[0].audf + (data << 8) + 7;
-			break;
-		default:
-			console.assert(false);
-		}
-		this.channels[1].muteUltrasound(cycle);
-		break;
-	case 3:
-		this.channels[1].setAudc(this, pokeys, data, cycle);
-		break;
-	case 4:
-		if (data == this.channels[2].audf)
-			break;
-		this.generateUntilCycle(pokeys, cycle);
-		this.channels[2].audf = data;
-		switch (this.audctl & 40) {
-		case 0:
-			this.channels[2].periodCycles = this.divCycles * (data + 1);
-			break;
-		case 8:
-			this.channels[3].periodCycles = this.divCycles * (data + (this.channels[3].audf << 8) + 1);
-			this.reloadCycles3 = this.divCycles * (data + 1);
-			this.channels[3].muteUltrasound(cycle);
-			break;
-		case 32:
-			this.channels[2].periodCycles = data + 4;
-			break;
-		case 40:
-			this.channels[3].periodCycles = data + (this.channels[3].audf << 8) + 7;
-			this.reloadCycles3 = data + 4;
-			this.channels[3].muteUltrasound(cycle);
-			break;
-		default:
-			console.assert(false);
-		}
-		this.channels[2].muteUltrasound(cycle);
-		break;
-	case 5:
-		this.channels[2].setAudc(this, pokeys, data, cycle);
-		break;
-	case 6:
-		if (data == this.channels[3].audf)
-			break;
-		this.generateUntilCycle(pokeys, cycle);
-		this.channels[3].audf = data;
-		switch (this.audctl & 40) {
-		case 0:
-		case 32:
-			this.channels[3].periodCycles = this.divCycles * (data + 1);
-			break;
-		case 8:
-			this.channels[3].periodCycles = this.divCycles * (this.channels[2].audf + (data << 8) + 1);
-			break;
-		case 40:
-			this.channels[3].periodCycles = this.channels[2].audf + (data << 8) + 7;
-			break;
-		default:
-			console.assert(false);
-		}
-		this.channels[3].muteUltrasound(cycle);
-		break;
-	case 7:
-		this.channels[3].setAudc(this, pokeys, data, cycle);
-		break;
-	case 8:
-		if (data == this.audctl)
-			break;
-		this.generateUntilCycle(pokeys, cycle);
-		this.audctl = data;
-		this.divCycles = (data & 1) != 0 ? 114 : 28;
-		switch (data & 80) {
-		case 0:
-			this.channels[0].periodCycles = this.divCycles * (this.channels[0].audf + 1);
-			this.channels[1].periodCycles = this.divCycles * (this.channels[1].audf + 1);
-			break;
-		case 16:
-			this.channels[0].periodCycles = this.divCycles << 8;
-			this.channels[1].periodCycles = this.divCycles * (this.channels[0].audf + (this.channels[1].audf << 8) + 1);
-			this.reloadCycles1 = this.divCycles * (this.channels[0].audf + 1);
-			break;
-		case 64:
-			this.channels[0].periodCycles = this.channels[0].audf + 4;
-			this.channels[1].periodCycles = this.divCycles * (this.channels[1].audf + 1);
-			break;
-		case 80:
-			this.channels[0].periodCycles = 256;
-			this.channels[1].periodCycles = this.channels[0].audf + (this.channels[1].audf << 8) + 7;
-			this.reloadCycles1 = this.channels[0].audf + 4;
-			break;
-		default:
-			console.assert(false);
-		}
-		this.channels[0].muteUltrasound(cycle);
-		this.channels[1].muteUltrasound(cycle);
-		switch (data & 40) {
-		case 0:
-			this.channels[2].periodCycles = this.divCycles * (this.channels[2].audf + 1);
-			this.channels[3].periodCycles = this.divCycles * (this.channels[3].audf + 1);
-			break;
-		case 8:
-			this.channels[2].periodCycles = this.divCycles << 8;
-			this.channels[3].periodCycles = this.divCycles * (this.channels[2].audf + (this.channels[3].audf << 8) + 1);
-			this.reloadCycles3 = this.divCycles * (this.channels[2].audf + 1);
-			break;
-		case 32:
-			this.channels[2].periodCycles = this.channels[2].audf + 4;
-			this.channels[3].periodCycles = this.divCycles * (this.channels[3].audf + 1);
-			break;
-		case 40:
-			this.channels[2].periodCycles = 256;
-			this.channels[3].periodCycles = this.channels[2].audf + (this.channels[3].audf << 8) + 7;
-			this.reloadCycles3 = this.channels[2].audf + 4;
-			break;
-		default:
-			console.assert(false);
-		}
-		this.channels[2].muteUltrasound(cycle);
-		this.channels[3].muteUltrasound(cycle);
-		this.initMute(cycle);
-		break;
-	case 9:
-		for (let i = 0; i < 4; i++)
-			this.channels[i].doStimer(cycle);
-		break;
-	case 14:
-		this.irqst |= data ^ 255;
-		for (let i = 3;; i >>= 1) {
-			if ((data & this.irqst & (i + 1)) != 0) {
-				if (this.channels[i].timerCycle == 8388608) {
-					let t = this.channels[i].tickCycle;
-					while (t < cycle)
-						t += this.channels[i].periodCycles;
-					this.channels[i].timerCycle = t;
-					if (nextEventCycle > t)
-						nextEventCycle = t;
-				}
+		else {
+			data &= 15;
+			if (this.delta > 0) {
+				if ((this.mute & 2) == 0)
+					pokey.addDelta(pokeys, cycle, data - this.delta);
+				this.delta = data;
 			}
 			else
+				this.delta = -data;
+		}
+	}
+
+	endFrame(cycle)
+	{
+		if (this.timerCycle != 8388608)
+			this.timerCycle -= cycle;
+	}
+}
+
+class Pokey
+{
+	constructor()
+	{
+		for (let _i0 = 0; _i0 < 4; _i0++) {
+			this.channels[_i0] = new PokeyChannel();
+		}
+	}
+	channels = new Array(4);
+	audctl;
+	#skctl;
+	irqst;
+	init;
+	#divCycles;
+	#reloadCycles1;
+	#reloadCycles3;
+	polyIndex;
+	#deltaBufferLength;
+	#deltaBuffer;
+	#sumDACInputs;
+	#sumDACOutputs;
+
+	static #COMPRESSED_SUMS = new Int16Array([ 0, 35, 73, 111, 149, 189, 228, 266, 304, 342, 379, 415, 450, 484, 516, 546,
+		575, 602, 628, 652, 674, 695, 715, 733, 750, 766, 782, 796, 809, 822, 834, 846,
+		856, 867, 876, 886, 894, 903, 911, 918, 926, 933, 939, 946, 952, 958, 963, 969,
+		974, 979, 984, 988, 993, 997, 1001, 1005, 1009, 1013, 1016, 1019, 1023 ]);
+
+	static INTERPOLATION_SHIFT = 10;
+
+	static UNIT_DELTA_LENGTH = 32;
+
+	static DELTA_RESOLUTION = 14;
+	#iirRate;
+	#iirAcc;
+	#trailing;
+
+	startFrame()
+	{
+		this.#deltaBuffer.set(this.#deltaBuffer.subarray(this.#trailing, this.#trailing + this.#deltaBufferLength - this.#trailing));
+		this.#deltaBuffer.fill(0, this.#deltaBufferLength - this.#trailing, this.#deltaBufferLength - this.#trailing + this.#trailing);
+	}
+
+	initialize(sampleRate = 44100)
+	{
+		let sr = BigInt(sampleRate);
+		this.#deltaBufferLength = Number(sr * 312n * 114n / 1773447n + 32n + 2n);
+		this.#deltaBuffer = new Int32Array(this.#deltaBufferLength);
+		this.#trailing = this.#deltaBufferLength;
+		for (const c of this.channels)
+			c.initialize();
+		this.audctl = 0;
+		this.#skctl = 3;
+		this.irqst = 255;
+		this.init = false;
+		this.#divCycles = 28;
+		this.#reloadCycles1 = 28;
+		this.#reloadCycles3 = 28;
+		this.polyIndex = 60948015;
+		this.#iirAcc = 0;
+		this.#iirRate = 264600 / sampleRate | 0;
+		this.#sumDACInputs = 0;
+		this.startFrame();
+	}
+
+	addDelta(pokeys, cycle, delta)
+	{
+		this.#sumDACInputs += delta;
+		let newOutput = Pokey.#COMPRESSED_SUMS[this.#sumDACInputs] << 16;
+		this.addExternalDelta(pokeys, cycle, newOutput - this.#sumDACOutputs);
+		this.#sumDACOutputs = newOutput;
+	}
+
+	addExternalDelta(pokeys, cycle, delta)
+	{
+		if (delta == 0)
+			return;
+		let i = cycle * pokeys.sampleFactor + pokeys.sampleOffset;
+		let fraction = i >> 8 & 1023;
+		i >>= 18;
+		delta >>= 14;
+		for (let j = 0; j < 32; j++)
+			this.#deltaBuffer[i + j] += delta * pokeys.sincLookup[fraction][j];
+	}
+
+	/**
+	 * Fills <code>DeltaBuffer</code> up to <code>cycleLimit</code> basing on current Audf/Audc/Audctl values.
+	 */
+	generateUntilCycle(pokeys, cycleLimit)
+	{
+		for (;;) {
+			let cycle = cycleLimit;
+			for (const c of this.channels) {
+				let tickCycle = c.tickCycle;
+				if (cycle > tickCycle)
+					cycle = tickCycle;
+			}
+			if (cycle == cycleLimit)
+				break;
+			if (cycle == this.channels[2].tickCycle) {
+				if ((this.audctl & 4) != 0 && this.channels[0].delta > 0 && this.channels[0].mute == 0)
+					this.channels[0].slope(this, pokeys, cycle);
+				this.channels[2].doTick(this, pokeys, cycle, 2);
+			}
+			if (cycle == this.channels[3].tickCycle) {
+				if ((this.audctl & 8) != 0)
+					this.channels[2].tickCycle = cycle + this.#reloadCycles3;
+				if ((this.audctl & 2) != 0 && this.channels[1].delta > 0 && this.channels[1].mute == 0)
+					this.channels[1].slope(this, pokeys, cycle);
+				this.channels[3].doTick(this, pokeys, cycle, 3);
+			}
+			if (cycle == this.channels[0].tickCycle) {
+				if ((this.#skctl & 136) == 8)
+					this.channels[1].tickCycle = cycle + this.channels[1].periodCycles;
+				this.channels[0].doTick(this, pokeys, cycle, 0);
+			}
+			if (cycle == this.channels[1].tickCycle) {
+				if ((this.audctl & 16) != 0)
+					this.channels[0].tickCycle = cycle + this.#reloadCycles1;
+				else if ((this.#skctl & 8) != 0)
+					this.channels[0].tickCycle = cycle + this.channels[0].periodCycles;
+				this.channels[1].doTick(this, pokeys, cycle, 1);
+			}
+		}
+	}
+
+	endFrame(pokeys, cycle)
+	{
+		this.generateUntilCycle(pokeys, cycle);
+		this.polyIndex += cycle;
+		let m = (this.audctl & 128) != 0 ? 237615 : 60948015;
+		if (this.polyIndex >= 2 * m)
+			this.polyIndex -= m;
+		for (const c of this.channels) {
+			let tickCycle = c.tickCycle;
+			if (tickCycle != 8388608)
+				c.tickCycle = tickCycle - cycle;
+		}
+	}
+
+	isSilent()
+	{
+		for (const c of this.channels)
+			if ((c.audc & 15) != 0)
+				return false;
+		return true;
+	}
+
+	mute(mask)
+	{
+		for (let i = 0; i < 4; i++)
+			this.channels[i].setMute((mask & 1 << i) != 0, 2, 0);
+	}
+
+	#initMute(cycle)
+	{
+		let init = this.init;
+		let audctl = this.audctl;
+		this.channels[0].setMute(init && (audctl & 64) == 0, 1, cycle);
+		this.channels[1].setMute(init && (audctl & 80) != 80, 1, cycle);
+		this.channels[2].setMute(init && (audctl & 32) == 0, 1, cycle);
+		this.channels[3].setMute(init && (audctl & 40) != 40, 1, cycle);
+	}
+
+	poke(pokeys, addr, data, cycle)
+	{
+		let nextEventCycle = 8388608;
+		switch (addr & 15) {
+		case 0:
+			if (data == this.channels[0].audf)
+				break;
+			this.generateUntilCycle(pokeys, cycle);
+			this.channels[0].audf = data;
+			switch (this.audctl & 80) {
+			case 0:
+				this.channels[0].periodCycles = this.#divCycles * (data + 1);
+				break;
+			case 16:
+				this.channels[1].periodCycles = this.#divCycles * (data + (this.channels[1].audf << 8) + 1);
+				this.#reloadCycles1 = this.#divCycles * (data + 1);
+				break;
+			case 64:
+				this.channels[0].periodCycles = data + 4;
+				break;
+			case 80:
+				this.channels[1].periodCycles = data + (this.channels[1].audf << 8) + 7;
+				this.#reloadCycles1 = data + 4;
+				break;
+			default:
+				throw new Error();
+			}
+			break;
+		case 1:
+			this.channels[0].setAudc(this, pokeys, data, cycle);
+			break;
+		case 2:
+			if (data == this.channels[1].audf)
+				break;
+			this.generateUntilCycle(pokeys, cycle);
+			this.channels[1].audf = data;
+			switch (this.audctl & 80) {
+			case 0:
+			case 64:
+				this.channels[1].periodCycles = this.#divCycles * (data + 1);
+				break;
+			case 16:
+				this.channels[1].periodCycles = this.#divCycles * (this.channels[0].audf + (data << 8) + 1);
+				break;
+			case 80:
+				this.channels[1].periodCycles = this.channels[0].audf + (data << 8) + 7;
+				break;
+			default:
+				throw new Error();
+			}
+			break;
+		case 3:
+			this.channels[1].setAudc(this, pokeys, data, cycle);
+			break;
+		case 4:
+			if (data == this.channels[2].audf)
+				break;
+			this.generateUntilCycle(pokeys, cycle);
+			this.channels[2].audf = data;
+			switch (this.audctl & 40) {
+			case 0:
+				this.channels[2].periodCycles = this.#divCycles * (data + 1);
+				break;
+			case 8:
+				this.channels[3].periodCycles = this.#divCycles * (data + (this.channels[3].audf << 8) + 1);
+				this.#reloadCycles3 = this.#divCycles * (data + 1);
+				break;
+			case 32:
+				this.channels[2].periodCycles = data + 4;
+				break;
+			case 40:
+				this.channels[3].periodCycles = data + (this.channels[3].audf << 8) + 7;
+				this.#reloadCycles3 = data + 4;
+				break;
+			default:
+				throw new Error();
+			}
+			break;
+		case 5:
+			this.channels[2].setAudc(this, pokeys, data, cycle);
+			break;
+		case 6:
+			if (data == this.channels[3].audf)
+				break;
+			this.generateUntilCycle(pokeys, cycle);
+			this.channels[3].audf = data;
+			switch (this.audctl & 40) {
+			case 0:
+			case 32:
+				this.channels[3].periodCycles = this.#divCycles * (data + 1);
+				break;
+			case 8:
+				this.channels[3].periodCycles = this.#divCycles * (this.channels[2].audf + (data << 8) + 1);
+				break;
+			case 40:
+				this.channels[3].periodCycles = this.channels[2].audf + (data << 8) + 7;
+				break;
+			default:
+				throw new Error();
+			}
+			break;
+		case 7:
+			this.channels[3].setAudc(this, pokeys, data, cycle);
+			break;
+		case 8:
+			if (data == this.audctl)
+				break;
+			this.generateUntilCycle(pokeys, cycle);
+			this.audctl = data;
+			this.#divCycles = (data & 1) != 0 ? 114 : 28;
+			switch (data & 80) {
+			case 0:
+				this.channels[0].periodCycles = this.#divCycles * (this.channels[0].audf + 1);
+				this.channels[1].periodCycles = this.#divCycles * (this.channels[1].audf + 1);
+				break;
+			case 16:
+				this.channels[0].periodCycles = this.#divCycles << 8;
+				this.channels[1].periodCycles = this.#divCycles * (this.channels[0].audf + (this.channels[1].audf << 8) + 1);
+				this.#reloadCycles1 = this.#divCycles * (this.channels[0].audf + 1);
+				break;
+			case 64:
+				this.channels[0].periodCycles = this.channels[0].audf + 4;
+				this.channels[1].periodCycles = this.#divCycles * (this.channels[1].audf + 1);
+				break;
+			case 80:
+				this.channels[0].periodCycles = 256;
+				this.channels[1].periodCycles = this.channels[0].audf + (this.channels[1].audf << 8) + 7;
+				this.#reloadCycles1 = this.channels[0].audf + 4;
+				break;
+			default:
+				throw new Error();
+			}
+			switch (data & 40) {
+			case 0:
+				this.channels[2].periodCycles = this.#divCycles * (this.channels[2].audf + 1);
+				this.channels[3].periodCycles = this.#divCycles * (this.channels[3].audf + 1);
+				break;
+			case 8:
+				this.channels[2].periodCycles = this.#divCycles << 8;
+				this.channels[3].periodCycles = this.#divCycles * (this.channels[2].audf + (this.channels[3].audf << 8) + 1);
+				this.#reloadCycles3 = this.#divCycles * (this.channels[2].audf + 1);
+				break;
+			case 32:
+				this.channels[2].periodCycles = this.channels[2].audf + 4;
+				this.channels[3].periodCycles = this.#divCycles * (this.channels[3].audf + 1);
+				break;
+			case 40:
+				this.channels[2].periodCycles = 256;
+				this.channels[3].periodCycles = this.channels[2].audf + (this.channels[3].audf << 8) + 7;
+				this.#reloadCycles3 = this.channels[2].audf + 4;
+				break;
+			default:
+				throw new Error();
+			}
+			this.#initMute(cycle);
+			break;
+		case 9:
+			for (const c of this.channels)
+				c.doStimer(cycle);
+			break;
+		case 14:
+			this.irqst |= data ^ 255;
+			for (let i = 3;; i >>= 1) {
+				if ((data & this.irqst & (i + 1)) != 0) {
+					if (this.channels[i].timerCycle == 8388608) {
+						let t = this.channels[i].tickCycle;
+						while (t < cycle)
+							t += this.channels[i].periodCycles;
+						this.channels[i].timerCycle = t;
+						if (nextEventCycle > t)
+							nextEventCycle = t;
+					}
+				}
+				else
+					this.channels[i].timerCycle = 8388608;
+				if (i == 0)
+					break;
+			}
+			break;
+		case 15:
+			if (data == this.#skctl)
+				break;
+			this.generateUntilCycle(pokeys, cycle);
+			this.#skctl = data;
+			let init = (data & 3) == 0;
+			if (this.init && !init)
+				this.polyIndex = ((this.audctl & 128) != 0 ? 237614 : 60948014) - cycle;
+			this.init = init;
+			this.#initMute(cycle);
+			this.channels[2].setMute((data & 16) != 0, 4, cycle);
+			this.channels[3].setMute((data & 16) != 0, 4, cycle);
+			break;
+		default:
+			break;
+		}
+		return nextEventCycle;
+	}
+
+	checkIrq(cycle, nextEventCycle)
+	{
+		for (let i = 3;; i >>= 1) {
+			let timerCycle = this.channels[i].timerCycle;
+			if (cycle >= timerCycle) {
+				this.irqst &= ~(i + 1);
 				this.channels[i].timerCycle = 8388608;
+			}
+			else if (nextEventCycle > timerCycle)
+				nextEventCycle = timerCycle;
 			if (i == 0)
 				break;
 		}
-		break;
-	case 15:
-		if (data == this.skctl)
-			break;
-		this.generateUntilCycle(pokeys, cycle);
-		this.skctl = data;
-		let init = (data & 3) == 0;
-		if (this.init && !init)
-			this.polyIndex = ((this.audctl & 128) != 0 ? 237614 : 60948014) - cycle;
-		this.init = init;
-		this.initMute(cycle);
-		this.channels[2].setMute((data & 16) != 0, 8, cycle);
-		this.channels[3].setMute((data & 16) != 0, 8, cycle);
-		break;
-	default:
-		break;
+		return nextEventCycle;
 	}
-	return nextEventCycle;
-}
 
-Pokey.prototype.checkIrq = function(cycle, nextEventCycle)
-{
-	for (let i = 3;; i >>= 1) {
-		let timerCycle = this.channels[i].timerCycle;
-		if (cycle >= timerCycle) {
-			this.irqst &= ~(i + 1);
-			this.channels[i].timerCycle = 8388608;
-		}
-		else if (nextEventCycle > timerCycle)
-			nextEventCycle = timerCycle;
-		if (i == 0)
-			break;
-	}
-	return nextEventCycle;
-}
-
-Pokey.prototype.storeSample = function(buffer, bufferOffset, i, format)
-{
-	this.iirAcc += this.deltaBuffer[i] - (this.iirAcc * 3 >> 10);
-	let sample = this.iirAcc >> 11;
-	if (sample < -32767)
-		sample = -32767;
-	else if (sample > 32767)
-		sample = 32767;
-	switch (format) {
-	case ASAPSampleFormat.U8:
-		buffer[bufferOffset++] = (sample >> 8) + 128;
-		break;
-	case ASAPSampleFormat.S16_L_E:
-		buffer[bufferOffset++] = sample & 255;
-		buffer[bufferOffset++] = sample >> 8 & 255;
-		break;
-	case ASAPSampleFormat.S16_B_E:
-		buffer[bufferOffset++] = sample >> 8 & 255;
-		buffer[bufferOffset++] = sample & 255;
-		break;
-	}
-	return bufferOffset;
-}
-
-Pokey.prototype.accumulateTrailing = function(i)
-{
-	this.iirAcc += this.deltaBuffer[i] + this.deltaBuffer[i + 1];
-}
-
-function PokeyPair()
-{
-	this.poly9Lookup = new Uint8Array(511);
-	this.poly17Lookup = new Uint8Array(16385);
-	this.basePokey = new Pokey();
-	this.extraPokey = new Pokey();
-	let reg = 511;
-	for (let i = 0; i < 511; i++) {
-		reg = (((reg >> 5 ^ reg) & 1) << 8) + (reg >> 1);
-		this.poly9Lookup[i] = reg & 255;
-	}
-	reg = 131071;
-	for (let i = 0; i < 16385; i++) {
-		reg = (((reg >> 5 ^ reg) & 255) << 9) + (reg >> 8);
-		this.poly17Lookup[i] = reg >> 1 & 255;
-	}
-}
-
-PokeyPair.getSampleFactor = function(clock)
-{
-	return (1445068800 + (clock >> 6)) / (clock >> 5) | 0;
-}
-
-PokeyPair.prototype.initialize = function(ntsc, stereo)
-{
-	this.extraPokeyMask = stereo ? 16 : 0;
-	this.basePokey.initialize();
-	this.extraPokey.initialize();
-	this.sampleFactor = ntsc ? 25837 : 26075;
-	this.sampleOffset = 0;
-	this.readySamplesStart = 0;
-	this.readySamplesEnd = 0;
-}
-
-PokeyPair.prototype.poke = function(addr, data, cycle)
-{
-	let pokey = (addr & this.extraPokeyMask) != 0 ? this.extraPokey : this.basePokey;
-	return pokey.poke(this, addr, data, cycle);
-}
-
-PokeyPair.prototype.peek = function(addr, cycle)
-{
-	let pokey = (addr & this.extraPokeyMask) != 0 ? this.extraPokey : this.basePokey;
-	switch (addr & 15) {
-	case 10:
-		if (pokey.init)
-			return 255;
-		let i = cycle + pokey.polyIndex;
-		if ((pokey.audctl & 128) != 0)
-			return this.poly9Lookup[i % 511];
-		i %= 131071;
-		let j = i >> 3;
-		i &= 7;
-		return ((this.poly17Lookup[j] >> i) + (this.poly17Lookup[j + 1] << (8 - i))) & 255;
-	case 14:
-		return pokey.irqst;
-	default:
-		return 255;
-	}
-}
-
-PokeyPair.prototype.startFrame = function()
-{
-	this.basePokey.startFrame();
-	if (this.extraPokeyMask != 0)
-		this.extraPokey.startFrame();
-}
-
-PokeyPair.prototype.endFrame = function(cycle)
-{
-	this.basePokey.endFrame(this, cycle);
-	if (this.extraPokeyMask != 0)
-		this.extraPokey.endFrame(this, cycle);
-	this.sampleOffset += cycle * this.sampleFactor;
-	this.readySamplesStart = 0;
-	this.readySamplesEnd = this.sampleOffset >> 20;
-	this.sampleOffset &= 1048575;
-	return this.readySamplesEnd;
-}
-
-/**
- * Fills buffer with samples from <code>DeltaBuffer</code>.
- */
-PokeyPair.prototype.generate = function(buffer, bufferOffset, blocks, format)
-{
-	let i = this.readySamplesStart;
-	let samplesEnd = this.readySamplesEnd;
-	if (blocks < samplesEnd - i)
-		samplesEnd = i + blocks;
-	else
-		blocks = samplesEnd - i;
-	if (blocks > 0) {
-		for (; i < samplesEnd; i++) {
-			bufferOffset = this.basePokey.storeSample(buffer, bufferOffset, i, format);
-			if (this.extraPokeyMask != 0)
-				bufferOffset = this.extraPokey.storeSample(buffer, bufferOffset, i, format);
-		}
-		if (i == this.readySamplesEnd) {
-			this.basePokey.accumulateTrailing(i);
-			this.extraPokey.accumulateTrailing(i);
-		}
-		this.readySamplesStart = i;
-	}
-	return blocks;
-}
-
-PokeyPair.prototype.isSilent = function()
-{
-	return this.basePokey.isSilent() && this.extraPokey.isSilent();
-}
-
-const Ci = {
-	copyArray : function(sa, soffset, da, doffset, length)
+	storeSample(buffer, bufferOffset, i, format)
 	{
-		if (typeof(sa.subarray) == "function" && typeof(da.set) == "function")
-			da.set(sa.subarray(soffset, soffset + length), doffset);
+		this.#iirAcc += this.#deltaBuffer[i] - (this.#iirRate * this.#iirAcc >> 11);
+		let sample = this.#iirAcc >> 11;
+		if (sample < -32767)
+			sample = -32767;
+		else if (sample > 32767)
+			sample = 32767;
+		switch (format) {
+		case ASAPSampleFormat.U8:
+			buffer[bufferOffset++] = (sample >> 8) + 128;
+			break;
+		case ASAPSampleFormat.S16_L_E:
+			buffer[bufferOffset++] = sample & 255;
+			buffer[bufferOffset++] = sample >> 8 & 255;
+			break;
+		case ASAPSampleFormat.S16_B_E:
+			buffer[bufferOffset++] = sample >> 8 & 255;
+			buffer[bufferOffset++] = sample & 255;
+			break;
+		}
+		return bufferOffset;
+	}
+
+	accumulateTrailing(i)
+	{
+		this.#trailing = i;
+	}
+}
+
+class PokeyPair
+{
+	constructor()
+	{
+		for (let _i0 = 0; _i0 < 1024; _i0++) {
+			this.sincLookup[_i0] = new Int16Array(32);
+		}
+		let reg = 511;
+		for (let i = 0; i < 511; i++) {
+			reg = (((reg >> 5 ^ reg) & 1) << 8) + (reg >> 1);
+			this.poly9Lookup[i] = reg & 255;
+		}
+		reg = 131071;
+		for (let i = 0; i < 16385; i++) {
+			reg = (((reg >> 5 ^ reg) & 255) << 9) + (reg >> 8);
+			this.poly17Lookup[i] = reg >> 1 & 255;
+		}
+		for (let i = 0; i < 1024; i++) {
+			let sincSum = 0;
+			let leftSum = 0;
+			let norm = 0;
+			const sinc = new Float64Array(31);
+			for (let j = -32; j < 32; j++) {
+				if (j == -16)
+					leftSum = sincSum;
+				else if (j == 15)
+					norm = sincSum;
+				let x = 3.141592653589793 / 1024 * ((j << 10) - i);
+				let s = x == 0 ? 1 : Math.sin(x) / x;
+				if (j >= -16 && j < 15)
+					sinc[16 + j] = s;
+				sincSum += s;
+			}
+			norm = 16384 / (norm + (1 - sincSum) * 0.5);
+			this.sincLookup[i][0] = Math.round((leftSum + (1 - sincSum) * 0.5) * norm);
+			for (let j = 1; j < 32; j++)
+				this.sincLookup[i][j] = Math.round(sinc[j - 1] * norm);
+		}
+	}
+	poly9Lookup = new Uint8Array(511);
+	poly17Lookup = new Uint8Array(16385);
+	#extraPokeyMask;
+	basePokey = new Pokey();
+	extraPokey = new Pokey();
+	sampleRate;
+	sincLookup = new Array(1024);
+	sampleFactor;
+	sampleOffset;
+	readySamplesStart;
+	readySamplesEnd;
+
+	#getSampleFactor(clock)
+	{
+		return ((this.sampleRate << 13) + (clock >> 6)) / (clock >> 5) | 0;
+	}
+
+	initialize(ntsc, stereo, sampleRate = 44100)
+	{
+		this.#extraPokeyMask = stereo ? 16 : 0;
+		this.sampleRate = sampleRate;
+		this.basePokey.initialize(sampleRate);
+		this.extraPokey.initialize(sampleRate);
+		this.sampleFactor = ntsc ? this.#getSampleFactor(1789772) : this.#getSampleFactor(1773447);
+		this.sampleOffset = 0;
+		this.readySamplesStart = 0;
+		this.readySamplesEnd = 0;
+	}
+
+	poke(addr, data, cycle)
+	{
+		let pokey = (addr & this.#extraPokeyMask) != 0 ? this.extraPokey : this.basePokey;
+		return pokey.poke(this, addr, data, cycle);
+	}
+
+	peek(addr, cycle)
+	{
+		let pokey = (addr & this.#extraPokeyMask) != 0 ? this.extraPokey : this.basePokey;
+		switch (addr & 15) {
+		case 10:
+			if (pokey.init)
+				return 255;
+			let i = cycle + pokey.polyIndex;
+			if ((pokey.audctl & 128) != 0)
+				return this.poly9Lookup[i % 511];
+			i %= 131071;
+			let j = i >> 3;
+			i &= 7;
+			return ((this.poly17Lookup[j] >> i) + (this.poly17Lookup[j + 1] << (8 - i))) & 255;
+		case 14:
+			return pokey.irqst;
+		default:
+			return 255;
+		}
+	}
+
+	startFrame()
+	{
+		this.basePokey.startFrame();
+		if (this.#extraPokeyMask != 0)
+			this.extraPokey.startFrame();
+	}
+
+	endFrame(cycle)
+	{
+		this.basePokey.endFrame(this, cycle);
+		if (this.#extraPokeyMask != 0)
+			this.extraPokey.endFrame(this, cycle);
+		this.sampleOffset += cycle * this.sampleFactor;
+		this.readySamplesStart = 0;
+		this.readySamplesEnd = this.sampleOffset >> 18;
+		this.sampleOffset &= 262143;
+		return this.readySamplesEnd;
+	}
+
+	/**
+	 * Fills buffer with samples from <code>DeltaBuffer</code>.
+	 */
+	generate(buffer, bufferOffset, blocks, format)
+	{
+		let i = this.readySamplesStart;
+		let samplesEnd = this.readySamplesEnd;
+		if (blocks < samplesEnd - i)
+			samplesEnd = i + blocks;
 		else
-			for (let i = 0; i < length; i++)
-				da[doffset + i] = sa[soffset + i];
-	},
-	cm3_obx : new Uint8Array([
+			blocks = samplesEnd - i;
+		if (blocks > 0) {
+			for (; i < samplesEnd; i++) {
+				bufferOffset = this.basePokey.storeSample(buffer, bufferOffset, i, format);
+				if (this.#extraPokeyMask != 0)
+					bufferOffset = this.extraPokey.storeSample(buffer, bufferOffset, i, format);
+			}
+			if (i == this.readySamplesEnd) {
+				this.basePokey.accumulateTrailing(i);
+				this.extraPokey.accumulateTrailing(i);
+			}
+			this.readySamplesStart = i;
+		}
+		return blocks;
+	}
+
+	isSilent()
+	{
+		return this.basePokey.isSilent() && this.extraPokey.isSilent();
+	}
+}
+
+class Fu
+{
+	static cm3_obx = new Uint8Array([
 		255, 255, 0, 5, 223, 12, 76, 18, 11, 76, 120, 5, 76, 203, 7, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 160, 227, 237, 227, 160, 240, 236, 225,
 		249, 229, 242, 160, 246, 160, 178, 174, 177, 160, 0, 0, 0, 0, 0, 0,
@@ -5418,8 +5583,8 @@ const Ci = {
 		120, 0, 112, 0, 106, 0, 100, 0, 94, 0, 87, 0, 82, 0, 50, 0,
 		10, 0, 0, 1, 2, 131, 0, 1, 2, 3, 1, 0, 2, 131, 1, 0,
 		2, 3, 1, 2, 128, 3, 128, 64, 32, 16, 8, 4, 2, 1, 3, 3,
-		3, 3, 7, 11, 15, 19 ]),
-	cmc_obx : new Uint8Array([
+		3, 3, 7, 11, 15, 19 ]);
+	static cmc_obx = new Uint8Array([
 		255, 255, 0, 5, 220, 12, 76, 15, 11, 76, 120, 5, 76, 203, 7, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 160, 227, 237, 227, 160, 240, 236, 225,
 		249, 229, 242, 160, 246, 160, 178, 174, 177, 160, 0, 0, 0, 0, 0, 0,
@@ -5546,8 +5711,8 @@ const Ci = {
 		0, 106, 0, 100, 0, 94, 0, 87, 0, 82, 0, 50, 0, 10, 0, 0,
 		1, 2, 131, 0, 1, 2, 3, 1, 0, 2, 131, 1, 0, 2, 3, 1,
 		2, 128, 3, 128, 64, 32, 16, 8, 4, 2, 1, 3, 3, 3, 3, 7,
-		11, 15, 19 ]),
-	cmr_obx : new Uint8Array([
+		11, 15, 19 ]);
+	static cmr_obx = new Uint8Array([
 		255, 255, 0, 5, 220, 12, 76, 15, 11, 76, 120, 5, 76, 203, 7, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 160, 227, 237, 227, 160, 240, 236, 225,
 		249, 229, 242, 160, 246, 160, 178, 174, 177, 160, 0, 0, 0, 0, 0, 0,
@@ -5674,8 +5839,8 @@ const Ci = {
 		0, 106, 0, 100, 0, 94, 0, 87, 0, 82, 0, 50, 0, 10, 0, 0,
 		1, 2, 131, 0, 1, 2, 3, 1, 0, 2, 131, 1, 0, 2, 3, 1,
 		2, 128, 3, 128, 64, 32, 16, 8, 4, 2, 1, 3, 3, 3, 3, 7,
-		11, 15, 19 ]),
-	cms_obx : new Uint8Array([
+		11, 15, 19 ]);
+	static cms_obx = new Uint8Array([
 		255, 255, 0, 5, 190, 15, 234, 234, 234, 76, 21, 8, 76, 96, 15, 35,
 		5, 169, 5, 173, 5, 184, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 128, 128, 128, 128, 128, 128, 0, 0, 0, 0, 0, 0, 255,
@@ -5848,8 +6013,8 @@ const Ci = {
 		170, 5, 10, 10, 10, 10, 141, 172, 5, 162, 2, 134, 200, 173, 171, 5,
 		29, 35, 5, 170, 189, 233, 6, 166, 200, 157, 35, 5, 173, 172, 5, 29,
 		38, 5, 170, 189, 233, 6, 166, 200, 157, 38, 5, 202, 16, 221, 96, 168,
-		185, 13, 8, 168, 96 ]),
-	dlt_obx : new Uint8Array([
+		185, 13, 8, 168, 96 ]);
+	static dlt_obx = new Uint8Array([
 		255, 255, 0, 4, 70, 12, 255, 241, 228, 215, 203, 192, 181, 170, 161, 152,
 		143, 135, 127, 121, 114, 107, 101, 95, 90, 85, 80, 75, 71, 67, 63, 60,
 		56, 53, 50, 47, 44, 42, 39, 37, 35, 33, 31, 29, 28, 26, 24, 23,
@@ -5982,8 +6147,8 @@ const Ci = {
 		177, 238, 41, 127, 141, 19, 3, 96, 173, 23, 3, 41, 3, 24, 105, 52,
 		168, 177, 238, 170, 160, 51, 177, 238, 48, 14, 138, 109, 11, 3, 170, 173,
 		31, 3, 141, 55, 3, 76, 60, 12, 138, 109, 31, 3, 141, 55, 3, 174,
-		11, 3, 189, 0, 4, 24, 109, 55, 3, 141, 39, 3, 96 ]),
-	fc_obx : new Uint8Array([
+		11, 3, 189, 0, 4, 24, 109, 55, 3, 141, 39, 3, 96 ]);
+	static fc_obx = new Uint8Array([
 		255, 255, 0, 4, 189, 8, 76, 9, 4, 32, 16, 4, 76, 173, 5, 162,
 		0, 160, 10, 32, 25, 5, 162, 8, 189, 172, 8, 157, 0, 210, 157, 16,
 		210, 202, 16, 244, 96, 133, 244, 162, 0, 134, 230, 134, 232, 134, 234, 169,
@@ -6060,8 +6225,8 @@ const Ci = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 0, 0, 1, 1, 0,
-		0, 255, 255, 31 ]),
-	mpt_obx : new Uint8Array([
+		0, 255, 255, 31 ]);
+	static mpt_obx = new Uint8Array([
 		255, 255, 0, 5, 178, 13, 76, 205, 11, 173, 46, 7, 208, 1, 96, 169,
 		0, 141, 28, 14, 238, 29, 14, 173, 23, 14, 205, 187, 13, 144, 80, 206,
 		21, 14, 240, 3, 76, 197, 5, 162, 0, 142, 23, 14, 169, 0, 157, 237,
@@ -6201,8 +6366,8 @@ const Ci = {
 		133, 249, 165, 250, 105, 0, 133, 250, 144, 15, 230, 251, 165, 251, 201, 0,
 		208, 7, 140, 121, 13, 140, 127, 13, 96, 177, 250, 36, 249, 48, 4, 74,
 		74, 74, 74, 41, 15, 168, 185, 69, 10, 160, 0, 96, 160, 0, 140, 27,
-		14, 140, 26, 14, 136, 140, 25, 14, 96 ]),
-	rmt4_obx : new Uint8Array([
+		14, 140, 26, 14, 136, 140, 25, 14, 96 ]);
+	static rmt4_obx = new Uint8Array([
 		255, 255, 144, 3, 96, 11, 128, 0, 128, 32, 128, 64, 0, 192, 128, 128,
 		128, 160, 0, 192, 64, 192, 0, 1, 5, 11, 21, 0, 1, 255, 255, 1,
 		1, 0, 255, 255, 0, 1, 1, 1, 0, 255, 255, 255, 255, 0, 1, 1,
@@ -6328,8 +6493,8 @@ const Ci = {
 		96, 160, 255, 173, 24, 3, 174, 28, 3, 141, 0, 210, 142, 1, 210, 173,
 		25, 3, 174, 29, 3, 141, 2, 210, 142, 3, 210, 173, 26, 3, 174, 30,
 		3, 141, 4, 210, 142, 5, 210, 173, 27, 3, 174, 31, 3, 141, 6, 210,
-		142, 7, 210, 140, 8, 210, 96 ]),
-	rmt8_obx : new Uint8Array([
+		142, 7, 210, 140, 8, 210, 96 ]);
+	static rmt8_obx = new Uint8Array([
 		255, 255, 144, 3, 108, 12, 128, 0, 128, 32, 128, 64, 0, 192, 128, 128,
 		128, 160, 0, 192, 64, 192, 0, 1, 5, 11, 21, 0, 1, 255, 255, 1,
 		1, 0, 255, 255, 0, 1, 1, 1, 0, 255, 255, 255, 255, 0, 1, 1,
@@ -6472,8 +6637,8 @@ const Ci = {
 		141, 20, 210, 142, 4, 210, 173, 62, 3, 174, 58, 3, 141, 21, 210, 142,
 		5, 210, 173, 55, 3, 174, 51, 3, 141, 22, 210, 142, 6, 210, 173, 63,
 		3, 174, 59, 3, 141, 23, 210, 142, 7, 210, 169, 255, 140, 24, 210, 141,
-		8, 210, 96 ]),
-	tm2_obx : new Uint8Array([
+		8, 210, 96 ]);
+	static tm2_obx = new Uint8Array([
 		255, 255, 0, 5, 107, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
 		1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
@@ -6705,8 +6870,8 @@ const Ci = {
 		9, 157, 88, 9, 177, 250, 41, 192, 29, 152, 8, 157, 152, 8, 168, 185,
 		0, 6, 157, 56, 8, 169, 0, 157, 184, 8, 157, 32, 9, 157, 8, 9,
 		157, 72, 9, 157, 128, 9, 157, 136, 9, 157, 144, 9, 169, 1, 157, 120,
-		8, 96 ]),
-	tmc_obx : new Uint8Array([
+		8, 96 ]);
+	static tmc_obx = new Uint8Array([
 		255, 255, 0, 5, 104, 15, 76, 206, 13, 76, 208, 8, 76, 239, 9, 15,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -6873,8 +7038,8 @@ const Ci = {
 		74, 74, 74, 157, 140, 8, 208, 3, 157, 172, 8, 177, 252, 41, 15, 157,
 		156, 8, 157, 164, 8, 136, 177, 252, 41, 192, 24, 125, 228, 7, 157, 228,
 		7, 157, 34, 5, 168, 185, 60, 6, 157, 244, 7, 169, 0, 157, 44, 8,
-		157, 100, 8, 157, 108, 8, 157, 148, 8, 169, 1, 157, 188, 7, 96 ]),
-	xexb_obx : new Uint8Array([
+		157, 100, 8, 157, 108, 8, 157, 148, 8, 169, 1, 157, 188, 7, 96 ]);
+	static xexb_obx = new Uint8Array([
 		255, 255, 36, 1, 223, 1, 120, 160, 0, 140, 14, 212, 173, 11, 212, 208,
 		251, 141, 0, 212, 162, 29, 157, 0, 208, 202, 16, 250, 162, 8, 157, 16,
 		210, 157, 0, 210, 202, 16, 247, 169, 3, 141, 31, 210, 141, 0, 210, 169,
@@ -6886,8 +7051,8 @@ const Ci = {
 		189, 220, 1, 105, 125, 176, 5, 221, 210, 1, 144, 4, 253, 210, 1, 56,
 		141, 162, 1, 189, 222, 1, 105, 0, 141, 181, 1, 201, 0, 208, 252, 173,
 		162, 1, 176, 198, 72, 138, 72, 174, 145, 1, 32, 152, 252, 104, 170, 104,
-		238, 186, 1, 64, 156, 131, 76 ]),
-	xexd_obx : new Uint8Array([
+		238, 186, 1, 64, 156, 131, 76 ]);
+	static xexd_obx = new Uint8Array([
 		255, 255, 36, 1, 152, 1, 120, 160, 0, 140, 14, 212, 173, 11, 212, 208,
 		251, 141, 0, 212, 162, 29, 157, 0, 208, 202, 16, 250, 141, 14, 210, 162,
 		8, 157, 16, 210, 157, 0, 210, 202, 16, 247, 169, 3, 141, 31, 210, 141,
@@ -6895,8 +7060,8 @@ const Ci = {
 		141, 250, 255, 169, 1, 141, 251, 255, 169, 64, 141, 14, 212, 173, 152, 1,
 		88, 76, 146, 1, 40, 8, 72, 138, 72, 152, 72, 32, 149, 1, 174, 53,
 		1, 240, 11, 174, 20, 208, 202, 240, 2, 162, 1, 32, 152, 252, 104, 168,
-		104, 170, 104, 64, 76 ]),
-	xexinfo_obx : new Uint8Array([
+		104, 170, 104, 64, 76 ]);
+	static xexinfo_obx = new Uint8Array([
 		255, 255, 112, 252, 221, 252, 65, 80, 252, 173, 11, 212, 208, 251, 141, 5,
 		212, 162, 38, 142, 22, 208, 162, 10, 142, 23, 208, 162, 33, 142, 0, 212,
 		162, 80, 142, 2, 212, 162, 252, 142, 3, 212, 142, 9, 212, 96, 216, 189,
@@ -6908,5 +7073,6 @@ const Ci = {
 		212, 208, 251, 141, 0, 212, 162, 29, 157, 0, 208, 202, 16, 250, 142, 1,
 		211, 185, 0, 224, 72, 185, 0, 225, 72, 185, 0, 227, 202, 142, 1, 211,
 		232, 153, 0, 255, 104, 153, 0, 254, 104, 153, 0, 253, 200, 208, 223, 32,
-		115, 252 ])
+		115, 252 ]);
+
 }

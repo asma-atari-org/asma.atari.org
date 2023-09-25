@@ -1,6 +1,7 @@
-"use strict";
+import { ASAPInfo, ASAPWriter } from "./asap-with-asapwriter.js";
+import { asapWeb } from "./asapweb.js";
 
-const Hardware = { ATARI2600: "ATARI2600", ATARI800: "ATARI800" };
+window.Hardware = { ATARI2600: "ATARI2600", ATARI800: "ATARI800" };
 
 const FileType = {
 	CM3: ".cm3", CMC: ".cmc", CMR: ".cmr", CMS: ".cms", DLT: ".dlt", DMC: ".dmc", FC: ".fc",
@@ -319,9 +320,9 @@ class ASMA {
 
 	searchUsingParameters(searchParameters) {
 
-		let wasPlaying = (asap.context != undefined && asap.context.state == "running");
+		const wasPlaying = asapWeb.isPaused() == false;
 		if (wasPlaying) {
-			asap.togglePause();
+			asapWeb.togglePause();
 		}
 
 		this.setSearchParameters(searchParameters);
@@ -455,7 +456,7 @@ class ASMA {
 		UI.getElementById("searchResultTableTitleHeader").click();
 
 		if (wasPlaying) {
-			asap.togglePause();
+			asapWeb.togglePause();
 		}
 
 		if (foundIndex == 1) {
@@ -677,7 +678,7 @@ class ASMA {
 		Logger.log("Playing local file \"" + file + "\"");
 		UI.getElementById("filePath").innerHTML = file.name;
 
-		asap.playFile(file);
+		asapWeb.playFile(file);
 	}
 
 	seekPlayingTime() {
@@ -686,7 +687,7 @@ class ASMA {
 		}
 		let playingTimeSlider = UI.getElementById("playingTimeSlider");
 		let position = playingTimeSlider.value;
-		asap.asap.seek(position);
+		asapWeb.seek(position);
 	}
 
 	// asma is passed as parameter, because "this" is the window in case of an interval event handler
@@ -730,7 +731,7 @@ class ASMA {
 				if (asapInfo != undefined) {
 					const duration = asapInfo.getDuration(this.currentSongIndex);
 					const loop = asapInfo.getLoop(this.currentSongIndex);
-					let position = asap.asap.getPosition();
+					let position = asapWeb.asap.getPosition();
 					if (duration > 0) {
 						// If the defined duration [milli seconds] is reached, play new random song?
 						if (this.isShuffleMode() && position > duration) {
@@ -746,7 +747,7 @@ class ASMA {
 						}
 					}
 					durationString = Util.getDurationString(position);
-					if (asap.context.state == "suspended") {
+					if (asapWeb.isPaused() == true) {
 						windowTitleString += " (Paused)";
 						durationString += " (Paused)";
 					}
@@ -816,7 +817,7 @@ class ASMA {
 
 	togglePauseCurrentSong() {
 		Logger.log("Toggle pause current song.");
-		asap.togglePause();
+		asapWeb.togglePause();
 	}
 
 	setCurrentSongState(songState) {
@@ -829,7 +830,7 @@ class ASMA {
 			Logger.log("Stopping current song.");
 			let playingTime = UI.getElementById("playingTime");
 			playingTime.innerHTML = "Stopping";
-			asap.stop();
+			asapWeb.stop();
 			this.setCurrentSongState(SongState.STOPPED);
 			UI.getElementById("playButton").focus();
 		}
@@ -939,7 +940,7 @@ class ASMA {
 		if (songIndex >= 0) {
 			switch (fileInfo.hardware) {
 				case Hardware.ATARI800:
-					asap.playContent(fileInfo.getFilePath(), fileInfo.content, songIndex);
+					asapWeb.playContent(fileInfo.getFilePath(), fileInfo.content, songIndex);
 					asma.setCurrentSongState(SongState.PLAYING);
 					break;
 				case Hardware.ATARI2600:
@@ -955,7 +956,7 @@ class ASMA {
 
 	playSong(songIndex) {
 		Logger.log("Playing \"" + this.currentFileInfo.title + "\", songIndex " + songIndex + ".");
-		asap.stop(); // Stop audio without change the asma state/display
+		asapWeb.stop(); // Stop audio without change the asma state/display
 		this.currentSongState = SongState.STOPPED;
 		this.setCurrentFileIndexAndSong(this.currentFileInfo.getFileIndex(), songIndex);
 	}
@@ -1302,4 +1303,4 @@ function titleCase(string) {
 
 
 
-var asmaInstance = new ASMA();
+window.asmaInstance = new ASMA();
