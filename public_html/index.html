@@ -15,9 +15,9 @@ function initialize(){
 	// URLs with schema "file://" do not support the implicit resolution of the "index.html" used for shortening the URLs.
 	if (document.location.protocol == "file:"){
 		var asmadbTab = document.getElementById("asmadbTab");
-		asmadbTab.href = asmadbTab.href + "/index.html";
+		asmadbTab.href = asmadbTab.href + "index.html";
 		var searchForm = document.getElementById("searchForm");
-		searchForm.action = searchForm.action + "/index.html";
+		searchForm.action = searchForm.action + "index.html";
 	}
 };
 </script>
@@ -45,7 +45,7 @@ function initialize(){
   <tr style="padding: 0px;">
    <td class="sections">
     <div id="top" class="main_search">
-     <form id="searchForm" action="asmadb" method="GET">
+     <form id="searchForm" action="asmadb/" method="GET">
       <input name="searchKeyword" type="search" placeholder="Song or author..." class="main_search_field"> <input type="submit" value="Search" class="main_search_field">
      </form>
     </div>
