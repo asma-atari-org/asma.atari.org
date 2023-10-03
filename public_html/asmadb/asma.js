@@ -101,7 +101,7 @@ class ASMA {
 				window.alert("There is no matching file in the database for the path \"" + filePath + "\".");
 			} else {
 				let foundSongIndex = hashMatches[2];
-				if (foundSongIndex == undefined || foundSongIndex<1) {
+				if (foundSongIndex == undefined || foundSongIndex < 1) {
 					foundSongIndex = foundFileInfo.getDefaultSongIndex();
 				} else {
 					foundSongIndex--; // Convert external one-based index to internal zero-based
@@ -120,11 +120,15 @@ class ASMA {
 		}
 	}
 
+	initFileInfos() {
+		this.fileInfos = asma.fileInfos; // "asma" or array of local file
+	}
+
 	initInternal() {
 
 		FileInfoList.init(asma.fileInfos);
 
-		this.fileInfos = asma.fileInfos; // "asma" or array of local file
+		this.initFileInfos();
 
 		this.demozoo = new Demozoo(asma.demozoo.productions);
 		this.demozooCheckResult = "";
@@ -523,7 +527,13 @@ class ASMA {
 		let date = "";
 		if (this.currentFileInfo == null) {
 			this.currentSongState = SongState.NONE;
+			UI.getElementById("title").innerHTML = UI.encodeHTML(title);
+			UI.getElementById("author").innerHTML = UI.encodeHTML(author);
+			UI.getElementById("date").innerHTML = UI.encodeHTML(date);
+
 			UI.getElementById("channels").innerHTML = "";
+			UI.getElementById("details").innerHTML = UI.encodeHTML(comment);
+			UI.getElementById("hardware").innerHTML = UI.encodeHTML(hardware);
 			UI.getElementById("originalModuleFormat").innerHTML = "";
 			UI.getElementById("songList").innerHTML = "";
 			replayFrequency.innerhtml = "";
@@ -537,6 +547,9 @@ class ASMA {
 			UI.getElementById("playButton").disabled = "true";
 			UI.getElementById("pauseButton").disabled = "true";
 			UI.getElementById("stopButton").disabled = "true";
+
+
+
 		} else {
 
 			comment = fileInfo.comment;
@@ -616,8 +629,8 @@ class ASMA {
 			UI.getElementById("author").innerHTML = authorsHTML;
 			UI.getElementById("date").innerHTML = UI.encodeHTML(date);
 
-			UI.getElementById("hardware").innerHTML = UI.encodeHTML(hardware);
 			UI.getElementById("details").innerHTML = UI.encodeHTML(comment);
+			UI.getElementById("hardware").innerHTML = UI.encodeHTML(hardware);
 
 			UI.getElementById("filePath").innerHTML = fileInfo.getFilePath();
 			UI.getElementById("fileSize").innerHTML = fileInfo.getFileSizeText();
@@ -803,7 +816,7 @@ class ASMA {
 
 	playRandomSong() {
 		this.stopCurrentSong();
-		if (this.fileInfos.length>0){
+		if (this.fileInfos.length > 0) {
 			let fileIndex = Math.floor(Math.random() * this.fileInfos.length);
 			this.playASMA(fileIndex, SongIndex.RANDOM);
 		}
@@ -854,7 +867,7 @@ class ASMA {
 			} catch (exception) {
 				throw "Cannot load \"" + fileInfo.getFilePath() + "\": " + exception;
 			}
-			fileInfo.setASAPInfo( asapInfo );
+			fileInfo.setASAPInfo(asapInfo);
 			fileInfo.saveExtensions = [];
 			ASAPWriter.getSaveExts(fileInfo.saveExtensions, fileInfo.getASAPInfo(), fileInfo.getContent(), fileInfo.getContent().length);
 		} else {
@@ -954,7 +967,7 @@ class ASMA {
 	}
 
 	onFileContentLoadFailure(asma, fileInfo, parameter) {
-		window.alert("Loading \"" + fileInfo.filePath + "\" with parameter \"" + parameter + "\" failed");
+		window.alert("Loading \"" + fileInfo.getFilePath() + "\" with parameter \"" + parameter + "\" failed");
 	}
 
 	playSong(songIndex) {
@@ -977,6 +990,7 @@ class ASMA {
 			fileInfo.author = "Unknown";
 		}
 		fileInfo.date = asapInfo.getDate();
+		fileInfo.fileSize = fileInfo.getContent().length;
 		fileInfo.originalModuleExt = asapInfo.getOriginalModuleExt(fileInfo.getContent(), fileInfo.getContent().length);
 		if (fileInfo.originalModuleExt != null) {
 			fileInfo.originalModuleExtDescription = ASAPInfo.getExtDescription(fileInfo.getOriginalModuleExt());
@@ -985,14 +999,12 @@ class ASMA {
 			fileInfo.originalModuleExtDescription = "Unknown";
 		}
 		fileInfo.songs = asapInfo.getSongs();
-		fileInfo.defaultSongIndex = asapInfo.getDefaultSongIndex();
+		fileInfo.defaultSongIndex = asapInfo.getDefaultSong();
 
 		asma.fileInfos[fileInfo.fileIndex] = fileInfo;
-		state.count -= 1;
-		if (state.count == 0) {
-			asma.clearSearchFields();
-			asma.search();
-		}
+		asma.clearSearchFields();
+		asma.search();
+		asma.playSong(fileIndex);
 	}
 
 	onOpenedFileContentLoadFailure(asma, fileInfo, state) {
@@ -1011,7 +1023,7 @@ class ASMA {
 
 		if (files.length == 0) {
 			this.clearCurrentFile();
-			this.fileInfos = asma;
+			this.initFileInfos();
 			this.clearSearchResult();
 		} else {
 			this.fileInfos = [];
@@ -1023,7 +1035,7 @@ class ASMA {
 			for (const file of files) {
 				let fileInfo = new FileInfo();
 				fileInfo.hardware = Hardware.ATARI800;
-				fileInfo.filePath = file.name,
+				fileInfo.filePath = file.name;
 				fileInfo.file = file;
 				fileInfo.title = getFileNameFromFilePath(file.name);
 				fileInfo.author = "";
@@ -1034,7 +1046,7 @@ class ASMA {
 				this.loadFileContent(fileInfo, this.onOpenedFileContentLoadSuccess, this.onOpenedFileContentLoadFailure, state);
 			}
 		}
-		sthis.setShuffleMode(false);
+		this.setShuffleMode(false);
 	}
 
 	displayAuthorDetails(composerIndex) {
@@ -1282,28 +1294,5 @@ function getFileNameWithoutExtensionFromFilePath(filePath) {
 function titleCase(string) {
 	return string[0].toUpperCase() + string.slice(1).toLowerCase();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 window.asmaInstance = new ASMA();
