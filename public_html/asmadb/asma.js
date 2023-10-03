@@ -28,7 +28,7 @@ class ASMA {
 	 * Edit song routine
 	 */
 	static getNTSCPALString(fileInfo) {
-		return fileInfo.asapInfo.isNtsc() ? "NTSC" : "PAL";
+		return fileInfo.getASAPInfo().isNtsc() ? "NTSC" : "PAL";
 	}
 
 	onWindowPopState(state) {
@@ -551,7 +551,7 @@ class ASMA {
 					throw "Unknown hardware " + fileInfo.hardware;
 			}
 
-			let asapInfo = this.currentFileInfo.asapInfo;
+			let asapInfo = this.currentFileInfo.getASAPInfo();
 			let canPlay = (asapInfo != null);
 
 			if (asapInfo == null) {
@@ -726,7 +726,7 @@ class ASMA {
 					let classList = (i == this.currentSongIndex ? 'player_song_button_active' : '');
 					playSongButton.classList = classList;
 				}
-				const asapInfo = this.currentFileInfo.asapInfo;
+				const asapInfo = this.currentFileInfo.getASAPInfo();
 
 				if (asapInfo != undefined) {
 					const duration = asapInfo.getDuration(this.currentSongIndex);
@@ -790,6 +790,7 @@ class ASMA {
 	setShuffleMode(shuffleMode) {
 		this.shuffleMode = shuffleMode;
 		let shuffleModeButton = UI.getElementById("shuffleModeButton");
+		shuffleModeButton.disabled = (this.fileInfos.length == 0);
 		shuffleModeButton.style.fontWeight = shuffleMode ? "bold" : "normal";
 		shuffleModeButton.style.backgroundColor = shuffleMode ? "lightBlue" : "";
 
@@ -801,9 +802,11 @@ class ASMA {
 	}
 
 	playRandomSong() {
-		let fileIndex = Math.floor(Math.random() * this.fileInfos.length);
 		this.stopCurrentSong();
-		this.playASMA(fileIndex, SongIndex.RANDOM);
+		if (this.fileInfos.length>0){
+			let fileIndex = Math.floor(Math.random() * this.fileInfos.length);
+			this.playASMA(fileIndex, SongIndex.RANDOM);
+		}
 	}
 
 	playCurrentSong() {
@@ -847,22 +850,22 @@ class ASMA {
 		if (fileInfo.hardware == Hardware.ATARI800) {
 			const asapInfo = new ASAPInfo();
 			try {
-				asapInfo.load(fileInfo.getFilePath(), fileInfo.content, fileInfo.content.length);
+				asapInfo.load(fileInfo.getFilePath(), fileInfo.getContent(), fileInfo.getContent().length);
 			} catch (exception) {
 				throw "Cannot load \"" + fileInfo.getFilePath() + "\": " + exception;
 			}
-			fileInfo.asapInfo = asapInfo;
+			fileInfo.setASAPInfo( asapInfo );
 			fileInfo.saveExtensions = [];
-			ASAPWriter.getSaveExts(fileInfo.saveExtensions, fileInfo.asapInfo, fileInfo.content, fileInfo.content.length);
+			ASAPWriter.getSaveExts(fileInfo.saveExtensions, fileInfo.getASAPInfo(), fileInfo.getContent(), fileInfo.getContent().length);
 		} else {
-			fileInfo.asapInfo = null;
+			fileInfo.setASAPInfo(null);
 			fileInfo.saveExtensions = ["ttt"];
 		}
 	}
 
 	// Loads the song content either from fileInfo.url or from fileInfo.file
 	loadFileContent(fileInfo, onLoadCompleted, onLoadFailed, parameter) {
-		if (fileInfo.content == null) {
+		if (fileInfo.getContent() == null) {
 			if (fileInfo.url != null) {
 				const request = new XMLHttpRequest();
 				request.open("GET", fileInfo.url, true);
@@ -909,20 +912,20 @@ class ASMA {
 	exportFileContentWithExtension(fileInfo, extension) {
 		let targetFilename = getFileNameWithoutExtensionFromFilePath(fileInfo.getFilePath());
 		targetFilename += "." + extension;
-		Logger.log("Exporting file content of \"" + fileInfo.filePath + "\" with extension \"" + extension + "\".");
+		Logger.log("Exporting file content of \"" + fileInfo.getFilePath() + "\" with extension \"" + extension + "\".");
 		let output = null;
-		if (fileInfo.asapInfo != null) {
+		if (fileInfo.getASAPInfo() != null) {
 			let asapWriter = new ASAPWriter();
 			output = new Uint8Array(655636);
 			let outputOffset = 0;
 			asapWriter.setOutput(output, outputOffset, output.length);
 
 			let tag = true;
-			outputOffset = asapWriter.write(targetFilename, fileInfo.asapInfo, fileInfo.content, fileInfo.content.length, tag);
+			outputOffset = asapWriter.write(targetFilename, fileInfo.getASAPInfo(), fileInfo.getContent(), fileInfo.getContent().length, tag);
 			output = output.slice(0, outputOffset);
 
 		} else {
-			output = fileInfo.content;
+			output = fileInfo.getContent();
 		}
 		var blob = new Blob([output], { type: "application/octet-stream" });
 		saveAs(blob, targetFilename);
@@ -940,7 +943,7 @@ class ASMA {
 		if (songIndex >= 0) {
 			switch (fileInfo.hardware) {
 				case Hardware.ATARI800:
-					asapWeb.playContent(fileInfo.getFilePath(), fileInfo.content, songIndex);
+					asapWeb.playContent(fileInfo.getFilePath(), fileInfo.getContent(), songIndex);
 					asma.setCurrentSongState(SongState.PLAYING);
 					break;
 				case Hardware.ATARI2600:
@@ -963,7 +966,7 @@ class ASMA {
 
 	onOpenedFileContentLoadSuccess(asma, fileInfo, state) {
 		const fileIndex = asma.fileInfos.length;
-		const asapInfo = fileInfo.asapInfo;
+		const asapInfo = fileInfo.getASAPInfo();
 		fileInfo.fileIndex = fileIndex;
 		fileInfo.title = asapInfo.getTitle();
 		if (fileInfo.title == "") {
@@ -974,9 +977,9 @@ class ASMA {
 			fileInfo.author = "Unknown";
 		}
 		fileInfo.date = asapInfo.getDate();
-		fileInfo.originalModuleExt = asapInfo.getOriginalModuleExt(fileInfo.content, fileInfo.content.length);
+		fileInfo.originalModuleExt = asapInfo.getOriginalModuleExt(fileInfo.getContent(), fileInfo.getContent().length);
 		if (fileInfo.originalModuleExt != null) {
-			fileInfo.originalModuleExtDescription = ASAPInfo.getExtDescription(fileInfo.originalModuleExt);
+			fileInfo.originalModuleExtDescription = ASAPInfo.getExtDescription(fileInfo.getOriginalModuleExt());
 		} else {
 			fileInfo.originalModuleExt = "???";
 			fileInfo.originalModuleExtDescription = "Unknown";
@@ -1018,20 +1021,20 @@ class ASMA {
 			};
 
 			for (const file of files) {
-				let fileInfo = {
-					hardware: Hardware.ATARI800,
-					filePath: file.name,
-					file: file,
-					title: getFileNameFromFilePath(file.name),
-					author: "",
-					date: "",
-					comment: "",
-					originalModuleExt: "",
-					originalModuleExtDescription: ""
-				};
+				let fileInfo = new FileInfo();
+				fileInfo.hardware = Hardware.ATARI800;
+				fileInfo.filePath = file.name,
+				fileInfo.file = file;
+				fileInfo.title = getFileNameFromFilePath(file.name);
+				fileInfo.author = "";
+				fileInfo.date = "";
+				fileInfo.comment = "";
+				fileInfo.originalModuleExt = "";
+				fileInfo.originalModuleExtDescription = "";
 				this.loadFileContent(fileInfo, this.onOpenedFileContentLoadSuccess, this.onOpenedFileContentLoadFailure, state);
 			}
 		}
+		sthis.setShuffleMode(false);
 	}
 
 	displayAuthorDetails(composerIndex) {
@@ -1097,7 +1100,7 @@ class ASMA {
 
 	editCurrentSong() {
 		let oldFileInfo = this.currentFileInfo;
-		if (oldFileInfo == null || oldFileInfo.asapInfo == null) {
+		if (oldFileInfo == null || oldFileInfo.getASAPInfo() == null) {
 			return;
 		}
 		this.stopCurrentSong();
