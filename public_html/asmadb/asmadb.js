@@ -15,7 +15,6 @@ const asma = {"composerInfos": [
 { "folderName" : "MusicMarius", "lastName" : "<?>", "firstName" : "", "handles" : "MusicMarius", "country" : "Netherlands", "demozooID" : "52084"},
 { "folderName" : "null1024", "lastName" : "<?>", "firstName" : "", "handles" : "null1024", "country" : "Canada", "demozooID" : "43412"},
 { "folderName" : "Pigu", "lastName" : "<?>", "firstName" : "", "handles" : "Pigu", "country" : "Thailand", "demozooID" : "74479"},
-{ "folderName" : "rdefabri", "lastName" : "<?>", "firstName" : "", "handles" : "rdefabri", "country" : "USA", "demozooID" : "134574"},
 { "folderName" : "Rentgen", "lastName" : "<?>", "firstName" : "", "handles" : "Rentgen", "country" : "Poland", "demozooID" : "52094"},
 { "folderName" : "Selector_Catalogue", "lastName" : "<?>", "firstName" : "", "handles" : "Selector Catalogue", "country" : "USA", "demozooID" : "56548"},
 { "folderName" : "Spring", "lastName" : "<?>", "firstName" : "", "handles" : "Spring, Spring Enterprises", "country" : "Denmark", "demozooID" : "134575"},
@@ -60,6 +59,7 @@ const asma = {"composerInfos": [
 { "folderName" : "Cybruch_Ryszard", "lastName" : "Cybruch", "firstName" : "Ryszard", "handles" : "Seabrush", "country" : "Poland", "demozooID" : "29724"},
 { "folderName" : "Czartynski_Marcin", "lastName" : "Czartynski", "firstName" : "Marcin", "handles" : "Cedyn", "country" : "Poland", "demozooID" : "16437"},
 { "folderName" : "Daglish_Ben", "lastName" : "Daglish", "firstName" : "Ben", "country" : "United Kingdom", "demozooID" : "40576"},
+{ "folderName" : "DeFabritus_Rich", "lastName" : "DeFabritus", "firstName" : "Rich", "handles" : "rdefabri", "country" : "USA", "demozooID" : "134574"},
 { "folderName" : "Delooze_Chris", "lastName" : "Delooze", "firstName" : "Chris", "country" : "United Kingdom (?)", "demozooID" : "52037"},
 { "folderName" : "Derkach_Andrey", "lastName" : "Derkach", "firstName" : "Andrey", "handles" : "DJ Andrey Balkonsky", "country" : "Ukraine", "demozooID" : "61578"},
 { "folderName" : "Diaz_Esteban", "lastName" : "Diaz", "firstName" : "Esteban", "handles" : "IDK", "country" : "Chile", "demozooID" : "52059"},
@@ -883,6 +883,9 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Daglish_Ben/Footballer_of_the_Year.sap", "fileSize": 2733, "title": "Footballer of the Year", "author": "Ben Daglish", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Daglish_Ben/Gauntlet.sap", "fileSize": 1953, "title": "Gauntlet", "author": "Ben Daglish", "date": "1985", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Daglish_Ben/Rampage.sap", "fileSize": 1308, "title": "Rampage", "author": "Ben Daglish", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/DeFabritus_Rich/Girl_U_Want.sap", "fileSize": 4225, "title": "Girl U Want", "author": "Rich DeFabritus (rdefabri)", "date": "13/10/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Composers/DeFabritus_Rich/Mecha_Mania_Boy.sap", "fileSize": 3898, "title": "Mecha-Mania Boy", "author": "Rich DeFabritus (rdefabri)", "date": "29/09/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Composers/DeFabritus_Rich/Panther.sap", "fileSize": 4778, "title": "Panther", "author": "Rich DeFabritus (rdefabri)", "date": "21/10/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Delooze_Chris/Astro_Droid.sap", "fileSize": 1424, "title": "Astro-Droid", "author": "Chris Delooze", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Delooze_Chris/Death_Races.sap", "fileSize": 1321, "title": "Death Races", "author": "Chris Delooze", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Delooze_Chris/Freaky_Factory.sap", "fileSize": 530, "title": "Freaky Factory", "author": "Chris Delooze", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3}
@@ -3987,9 +3990,6 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Rapalski_Konrad/Scorpio.sap", "fileSize": 4446, "title": "Scorpio", "author": "Konrad Rapalski (Scorpio)", "date": "199?", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Rapalski_Konrad/Supersco.sap", "fileSize": 3962, "title": "Supersco", "author": "Konrad Rapalski (Scorpio)", "date": "199?", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Rapalski_Konrad/Truck.sap", "fileSize": 4057, "title": "Truck", "author": "Konrad Rapalski (Scorpio)", "date": "199?", "typeLetter": "C", "originalModuleExt": "cmc"}
-, {"filePath": "Composers/rdefabri/Girl_U_Want.sap", "fileSize": 4213, "title": "Girl U Want", "author": "<?> (rdefabri)", "date": "13/10/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/rdefabri/Mecha_Mania_Boy.sap", "fileSize": 3886, "title": "Mecha-Mania Boy", "author": "<?> (rdefabri)", "date": "29/09/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/rdefabri/Panther.sap", "fileSize": 4766, "title": "Panther", "author": "<?> (rdefabri)", "date": "21/10/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Rentgen/Victoria_JHS.sap", "fileSize": 2958, "title": "Victoria JHS Zine", "author": "<?> (Rentgen)", "date": "1997", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Rentgen/Victoria_JHS_Hidden_1.sap", "fileSize": 3285, "title": "Victoria JHS - Hidden music 1", "author": "<?> (Rentgen)", "date": "1997", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Rentgen/Victoria_JHS_Hidden_2.sap", "fileSize": 3426, "title": "Victoria JHS - Hidden music 2", "author": "<?> (Rentgen)", "date": "1997", "typeLetter": "C", "originalModuleExt": "cmc"}
