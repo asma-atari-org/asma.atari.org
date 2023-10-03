@@ -31,6 +31,8 @@ class FileInfo {
 		}
 		throw "Unsupported hardware " + this.hardware;
 	}
+	
+	// Zero-based defaut song index.
 	getDefaultSongIndex() {
 		return this.defaultSongIndex;
 	}
