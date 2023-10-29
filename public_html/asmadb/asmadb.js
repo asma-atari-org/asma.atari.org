@@ -784,18 +784,18 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Cierkonski_Michal/Yeah_Yeah.sap", "fileSize": 3902, "title": "Yeah Yeah", "author": "Michal Cierkonski (Morgoth)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Cierkonski_Michal/Yo.sap", "fileSize": 19553, "title": "Yo", "author": "Michal Cierkonski (Morgoth)", "date": "1996", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Cieslewicz_Tomasz/Dom.sap", "fileSize": 4492, "title": "Dom", "author": "Tomasz Cieslewicz (TDC)", "date": "", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2}
-, {"filePath": "Composers/Clark_Bobby/3D_Worldrunner.sap", "fileSize": 2937, "title": "3D Worldrunner - Title", "author": "Bobby Clark (Synthpopalooza)", "date": "04/09/2019", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Clark_Bobby/Alex_Kidd.sap", "fileSize": 2676, "title": "Alex Kidd - Area 1 theme", "author": "Bobby Clark (Synthpopalooza)", "date": "19/08/2022", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Clark_Bobby/Bubble_Bobble_Main_Theme.sap", "fileSize": 2871, "title": "Bubble Bobble - Main theme", "author": "Bobby Clark (Synthpopalooza)", "date": "24/07/2019", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Clark_Bobby/Donkey_Kong_Country_Stick.sap", "fileSize": 3042, "title": "Donkey Kong Country - Stickerbrush Symphony", "author": "Bobby Clark (Synthpopalooza)", "date": "05/08/2020", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Clark_Bobby/EXO_Area1_Theme.sap", "fileSize": 3932, "title": "E.X.O. - Area 1 theme", "author": "Bobby Clark (Synthpopalooza)", "date": "17/02/2021", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Clark_Bobby/EXO_Area2_Theme.sap", "fileSize": 4675, "title": "E.X.O. - Area 2 theme", "author": "Bobby Clark (Synthpopalooza)", "date": "04/03/2021", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Clark_Bobby/EXO_Area3_Theme.sap", "fileSize": 3339, "title": "E.X.O. - Area 3 theme", "author": "Bobby Clark (Synthpopalooza)", "date": "12/07/2021", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Clark_Bobby/EXO_Area4_Theme.sap", "fileSize": 4357, "title": "E.X.O. - Area 4 theme", "author": "Bobby Clark (Synthpopalooza)", "date": "23/08/2021", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Clark_Bobby/3D_Worldrunner.sap", "fileSize": 2951, "title": "3D Worldrunner - Title", "author": "Bobby Clark (Synthpopalooza)", "date": "04/09/2019", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Clark_Bobby/Alex_Kidd.sap", "fileSize": 2690, "title": "Alex Kidd - Area 1 theme", "author": "Bobby Clark (Synthpopalooza)", "date": "19/08/2022", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Clark_Bobby/Bubble_Bobble_Main_Theme.sap", "fileSize": 2885, "title": "Bubble Bobble - Main theme", "author": "Bobby Clark (Synthpopalooza)", "date": "24/07/2019", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Clark_Bobby/Donkey_Kong_Country_Stick.sap", "fileSize": 3056, "title": "Donkey Kong Country - Stickerbrush Symphony", "author": "Bobby Clark (Synthpopalooza)", "date": "05/08/2020", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Clark_Bobby/EXO_Area1_Theme.sap", "fileSize": 3946, "title": "E.X.O. - Area 1 theme", "author": "Bobby Clark (Synthpopalooza)", "date": "17/02/2021", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Clark_Bobby/EXO_Area2_Theme.sap", "fileSize": 4689, "title": "E.X.O. - Area 2 theme", "author": "Bobby Clark (Synthpopalooza)", "date": "04/03/2021", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Clark_Bobby/EXO_Area3_Theme.sap", "fileSize": 3353, "title": "E.X.O. - Area 3 theme", "author": "Bobby Clark (Synthpopalooza)", "date": "12/07/2021", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Clark_Bobby/EXO_Area4_Theme.sap", "fileSize": 4371, "title": "E.X.O. - Area 4 theme", "author": "Bobby Clark (Synthpopalooza)", "date": "23/08/2021", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Clark_Bobby/EXO_Area5_Theme.sap", "fileSize": 5919, "title": "E.X.O. - Area 5 theme", "author": "Bobby Clark (Synthpopalooza)", "date": "12/10/2021", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Clark_Bobby/EXO_Title.sap", "fileSize": 4807, "title": "E.X.O. - title theme", "author": "Bobby Clark (Synthpopalooza)", "date": "12/10/2021", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Clark_Bobby/Super_Mario_World_Overworl.sap", "fileSize": 2157, "title": "Super Mario World - Overworld", "author": "Bobby Clark (Synthpopalooza)", "date": "05/08/2020", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Clark_Bobby/Zanac_Area_1_and_3.sap", "fileSize": 1697, "title": "Zanac - Area 1 / Area 3", "author": "Bobby Clark (Synthpopalooza)", "date": "05/08/2020", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Clark_Bobby/EXO_Title.sap", "fileSize": 4821, "title": "E.X.O. - title theme", "author": "Bobby Clark (Synthpopalooza)", "date": "12/10/2021", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Clark_Bobby/Super_Mario_World_Overworl.sap", "fileSize": 2171, "title": "Super Mario World - Overworld", "author": "Bobby Clark (Synthpopalooza)", "date": "05/08/2020", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Clark_Bobby/Zanac_Area_1_and_3.sap", "fileSize": 1711, "title": "Zanac - Area 1 / Area 3", "author": "Bobby Clark (Synthpopalooza)", "date": "05/08/2020", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Coleman_Steve/Ninja.sap", "fileSize": 1195, "title": "Ninja", "author": "Steve Coleman <?>", "date": "1986", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Coleman_Steve/Pharaohs_Curse.sap", "fileSize": 728, "title": "Pharaohs Curse", "author": "Steve Coleman", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Coleman_Steve/Rainbow_Walker.sap", "fileSize": 904, "title": "Rainbow Walker", "author": "Steve Coleman", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3}
@@ -887,7 +887,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Daglish_Ben/Gauntlet.sap", "fileSize": 1953, "title": "Gauntlet", "author": "Ben Daglish", "date": "1985", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Daglish_Ben/Rampage.sap", "fileSize": 1308, "title": "Rampage", "author": "Ben Daglish", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/DeFabritus_Rich/Girl_U_Want.sap", "fileSize": 4225, "title": "Girl U Want", "author": "Rich DeFabritus (rdefabri)", "date": "13/10/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/DeFabritus_Rich/Jerkin_Back_N_Forth.sap", "fileSize": 11875, "title": "Jerkin' Back N' Forth", "author": "Rich DeFabritus (rdefabri)", "date": "10/2023", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Composers/DeFabritus_Rich/Jerkin_Back_N_Forth.sap", "fileSize": 8899, "title": "Jerkin' Back & Forth", "author": "Rich DeFabritus", "date": "22/10/2023", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/DeFabritus_Rich/Mecha_Mania_Boy.sap", "fileSize": 3898, "title": "Mecha-Mania Boy", "author": "Rich DeFabritus (rdefabri)", "date": "29/09/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/DeFabritus_Rich/Panther.sap", "fileSize": 4778, "title": "Panther", "author": "Rich DeFabritus (rdefabri)", "date": "21/10/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Delooze_Chris/Astro_Droid.sap", "fileSize": 1424, "title": "Astro-Droid", "author": "Chris Delooze", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -1137,7 +1137,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Eisenhammer_Zdenek/Marble_Machine.sap", "fileSize": 4876, "title": "Marble Machine", "author": "Zdenek Eisenhammer (PG)", "date": "09/12/2016", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Eisenhammer_Zdenek/Mashed_Turtles.sap", "fileSize": 6066, "title": "Mashed Turtles", "author": "Zdenek Eisenhammer (PG)", "date": "02/2011", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 2}
 , {"filePath": "Composers/Eisenhammer_Zdenek/Maze_Rush.sap", "fileSize": 4826, "title": "Maze Rush", "author": "Zdenek Eisenhammer (PG)", "date": "17/03/2012", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Eisenhammer_Zdenek/Mega_Man_2_Dr_Willys_Castl.sap", "fileSize": 5860, "title": "Mega Man 2 - Dr. Willy's Castle", "author": "Zdenek Eisenhammer (PG)", "date": "07/03/2018", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
+, {"filePath": "Composers/Eisenhammer_Zdenek/Mega_Man_2_Dr_Willys_Castl.sap", "fileSize": 5874, "title": "Mega Man 2 - Dr. Willy's Castle", "author": "Zdenek Eisenhammer (PG)", "date": "07/03/2018", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Eisenhammer_Zdenek/Millionaire.sap", "fileSize": 8506, "title": "Millionaire", "author": "Zdenek Eisenhammer (PG)", "date": "2018", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 11}
 , {"filePath": "Composers/Eisenhammer_Zdenek/Mind_Blast_Congratulations.sap", "fileSize": 5467, "title": "Mind Blast - Congratulations", "author": "Zdenek Eisenhammer (PG)", "date": "03/2007", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Eisenhammer_Zdenek/Mind_Blast_Ingame.sap", "fileSize": 9137, "title": "Mind Blast - Ingame", "author": "Zdenek Eisenhammer (PG)", "date": "03/2007", "typeLetter": "B", "originalModuleExt": "rmt"}
@@ -1413,7 +1413,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Fragmare/Ys_Fountain_of_Love.sap", "fileSize": 3585, "title": "Ys - Fountain of Love", "author": "<?> (Fragmare)", "date": "20/05/2017", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Fragmare/Ys_Last_Moment_of_the_Dark.sap", "fileSize": 5856, "title": "Ys - Last Moment of the Dark", "author": "<?> (Fragmare)", "date": "28/05/2017", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Fragmare/Ys_Opening_Fanfare.sap", "fileSize": 4520, "title": "Ys - Opening Fanfare", "author": "<?> (Fragmare)", "date": "30/04/2019", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Fragmare/Ys_Rest_in_Peace.sap", "fileSize": 2771, "title": "Ys - Rest in Peace", "author": "<?> (Fragmare)", "date": "21/05/2017", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Composers/Fragmare/Ys_Rest_in_Peace.sap", "fileSize": 2785, "title": "Ys - Rest in Peace", "author": "<?> (Fragmare)", "date": "21/05/2017", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Fragmare/Ys_Tower_of_the_Shadow.sap", "fileSize": 8000, "title": "Ys - Tower of the Shadow of Death", "author": "<?> (Fragmare)", "date": "21/05/2017", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Fusik_Piotr/Falcon.sap", "fileSize": 4402, "title": "Falcon", "author": "Piotr Fusik (0xF)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Fusik_Piotr/Future.sap", "fileSize": 4020, "title": "Future", "author": "Piotr Fusik (0xF)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
@@ -3567,12 +3567,12 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Pos_Bernhard/Pokey_Tune.sap", "fileSize": 8524, "title": "A Pokey Tune", "author": "Bernhard Pos (Analmux)", "date": "24/05/2000", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Pos_Bernhard/Samurai_8.sap", "fileSize": 3426, "title": "Samurai 8 [Patch 2]", "author": "Bernhard Pos (Analmux)", "date": "13/12/2008", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Pos_Bernhard/Sonic_Hedg_2_Wing_Fortress.sap", "fileSize": 3918, "title": "Sonic the Hedgehog 2 - Wing Fortress", "author": "Bernhard Pos (Analmux)", "date": "09/08/2005", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Potter_Mike/Chicken.sap", "fileSize": 587, "title": "Chicken", "author": "Mike Potter", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Potter_Mike/Nautilus.sap", "fileSize": 970, "title": "Nautilus", "author": "Mike Potter <?>", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Potter_Mike/Plaque_Man.sap", "fileSize": 766, "title": "Plaque Man", "author": "Mike Potter", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
-, {"filePath": "Composers/Potter_Mike/Protector.sap", "fileSize": 433, "title": "Protector", "author": "Mike Potter", "date": "1981", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Potter_Mike/Protector_II.sap", "fileSize": 468, "title": "Protector II", "author": "Mike Potter", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Potter_Mike/Shadow_World.sap", "fileSize": 983, "title": "Shadow World", "author": "Mike Potter", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Potter_Mike/Chicken.sap", "fileSize": 601, "title": "Chicken", "author": "Mike Potter", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Potter_Mike/Nautilus.sap", "fileSize": 984, "title": "Nautilus", "author": "Mike Potter <?>", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Potter_Mike/Plaque_Man.sap", "fileSize": 780, "title": "Plaque Man", "author": "Mike Potter", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
+, {"filePath": "Composers/Potter_Mike/Protector.sap", "fileSize": 447, "title": "Protector", "author": "Mike Potter", "date": "1981", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Potter_Mike/Protector_II.sap", "fileSize": 482, "title": "Protector II", "author": "Mike Potter", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Potter_Mike/Shadow_World.sap", "fileSize": 997, "title": "Shadow World", "author": "Mike Potter", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Przybyszewski_Krzysztof/Apex_1.sap", "fileSize": 15205, "title": "Apex #1", "author": "Krzysztof Przybyszewski (BLB)", "date": "1995", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Przybyszewski_Krzysztof/Blasta_Basta.sap", "fileSize": 8581, "title": "Blasta Basta", "author": "Krzysztof Przybyszewski (BLB)", "date": "1999", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
 , {"filePath": "Composers/Przybyszewski_Krzysztof/BLB_Music_3.sap", "fileSize": 3957, "title": "BLB Music #3", "author": "Krzysztof Przybyszewski (BLB)", "date": "199?", "typeLetter": "C", "originalModuleExt": "cmc"}
@@ -5887,7 +5887,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Games/Simple_Minds.sap", "fileSize": 4110, "title": "Simple Minds", "author": "Erik Stok (TCC)", "date": "1994", "typeLetter": "C", "originalModuleExt": "sap", "songs": 6, "defaultSongIndex": 4}
 , {"filePath": "Games/Skateboard.sap", "fileSize": 411, "title": "Skateboard a Cross-Country Race", "author": "", "date": "1987", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Skywriter.sap", "fileSize": 1586, "title": "Skywriter", "author": "D. M. Zink <?>", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap", "songs": 2}
-, {"filePath": "Games/Sky_Blazer.sap", "fileSize": 381, "title": "Sky Blazer", "author": "Tony Suzuki <?>", "date": "1981", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Games/Sky_Blazer.sap", "fileSize": 395, "title": "Sky Blazer", "author": "Tony Suzuki <?>", "date": "1981", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Slime.sap", "fileSize": 793, "title": "Slime", "author": "Steve Hales <?>", "date": "1982", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Smasher.sap", "fileSize": 757, "title": "Smasher", "author": "Chris & John Goodman <?>", "date": "1983", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Games/Snake.sap", "fileSize": 3627, "title": "The Snake", "author": "Piotr Nowicki (Paptak)", "date": "2010", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2}
