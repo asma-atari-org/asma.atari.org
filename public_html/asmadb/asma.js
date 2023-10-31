@@ -1168,7 +1168,7 @@ class ASMA {
 
 		let targetFilePath = this.exportFileContentWithExtension(fileInfo, "sap");
 		if (mail) {
-			let emailTo = "asma@wudsn.com";
+			let emailTo = "asma-team@googlegroups.com";
 			let emailSubject = "ASMA: " + (upload ? "Upload" : "Update ") + " " + fileInfo.getFilePath();
 			let emailBody = this.getAttributeLine("Title", title, fileInfo.title)
 				+ this.getAttributeLine("Author", author, fileInfo.author)
