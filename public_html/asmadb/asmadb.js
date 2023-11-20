@@ -500,7 +500,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Bienias_Adam/Ice_Machine.sap", "fileSize": 8888, "title": "Ice Machine", "author": "Adam Bienias (SoTe)", "date": "", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Bienias_Adam/Impression.sap", "fileSize": 4147, "title": "Impression", "author": "Adam Bienias (SoTe)", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Bienias_Adam/Intros.sap", "fileSize": 4403, "title": "The Intros", "author": "Adam Bienias (SoTe)", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Bienias_Adam/Invitro_Orneta_95.sap", "fileSize": 13400, "title": "Invitro Orneta '95", "author": "Adam Bienias (SoTe)", "date": "1995", "typeLetter": "B", "originalModuleExt": "sap", "songs": 4}
+, {"filePath": "Composers/Bienias_Adam/Invitro_Orneta_95.sap", "fileSize": 13408, "title": "Invitro Orneta '95", "author": "Adam Bienias (SoTe)", "date": "1995", "typeLetter": "B", "originalModuleExt": "sap", "channels": 2, "songs": 4}
 , {"filePath": "Composers/Bienias_Adam/Jack_Dance.sap", "fileSize": 3572, "title": "Jack Dance", "author": "Adam Bienias (SoTe)", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Bienias_Adam/Just_Fancy.sap", "fileSize": 3911, "title": "Just Fancy", "author": "Adam Bienias (SoTe)", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Bienias_Adam/Kebab_Magazine.sap", "fileSize": 4256, "title": "Kebab Magazine", "author": "Adam Bienias (SoTe)", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
