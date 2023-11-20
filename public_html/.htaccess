@@ -10,9 +10,8 @@ ExpiresDefault "now plus 1 hour"
 # Referrer-Policy
 <IfModule mod_headers.c>
 Header set Referrer-Policy "origin-when-cross-origin"
-Header set Content-Security-Policy-Report-Only "script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client; frame-src https://accounts.google.com/gsi/; connect-src https://accounts.google.com/gsi/;"
 </IfModule>
 
-<FilesMatch ".sap$">
-Header set X-Robots-Tag "noindex, noarchive, nosnippet"
+<FilesMatch ".(ttt|sap)$">
+Header set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
 </FilesMatch>
