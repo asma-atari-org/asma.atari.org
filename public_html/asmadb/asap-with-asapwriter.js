@@ -282,7 +282,7 @@ export class ASAP
 			let playerLastByte = ASAPInfo.getWord(playerRoutine, 4);
 			let music = this.#moduleInfo.getMusicAddress();
 			if (music <= playerLastByte)
-				throw "Module address conflicts with the player routine";
+				throw new ASAPFormatException("Module address conflicts with the player routine");
 			this.#cpu.memory[19456] = 0;
 			if (this.#moduleInfo.type == ASAPModuleType.FC)
 				this.#cpu.memory.set(module.subarray(0, moduleLen), music);
@@ -299,7 +299,7 @@ export class ASAP
 			let startAddr = ASAPInfo.getWord(module, moduleIndex);
 			let blockLen = ASAPInfo.getWord(module, moduleIndex + 2) + 1 - startAddr;
 			if (blockLen <= 0 || moduleIndex + blockLen > moduleLen)
-				throw "Invalid binary block";
+				throw new ASAPFormatException("Invalid binary block");
 			moduleIndex += 4;
 			this.#cpu.memory.set(module.subarray(moduleIndex, moduleIndex + blockLen), startAddr);
 			moduleIndex += blockLen;
@@ -308,7 +308,7 @@ export class ASAP
 			if (moduleIndex + 7 <= moduleLen && module[moduleIndex] == 255 && module[moduleIndex + 1] == 255)
 				moduleIndex += 2;
 		}
-		throw "Invalid binary block";
+		throw new ASAPFormatException("Invalid binary block");
 	}
 
 	/**
@@ -334,7 +334,7 @@ export class ASAP
 			if (this.#cpu.pc == 53760)
 				return;
 		}
-		throw "INIT routine didn't return";
+		throw new ASAPFormatException("INIT routine didn't return");
 	}
 
 	/**
@@ -347,17 +347,8 @@ export class ASAP
 		this.#pokeys.extraPokey.mute(mask >> 4);
 	}
 
-	/**
-	 * Prepares playback of the specified song of the loaded module.
-	 * @param song Zero-based song index.
-	 * @param duration Playback time in milliseconds, -1 means infinity.
-	 */
-	playSong(song, duration)
+	#restartSong()
 	{
-		if (song < 0 || song >= this.#moduleInfo.getSongs())
-			throw "Song number out of range";
-		this.#currentSong = song;
-		this.#currentDuration = duration;
 		this.#nextPlayerCycle = 8388608;
 		this.#blocksPlayed = 0;
 		this.#silenceCyclesCounter = this.#silenceCycles;
@@ -374,7 +365,7 @@ export class ASAP
 		let music = this.#moduleInfo.getMusicAddress();
 		switch (this.#moduleInfo.type) {
 		case ASAPModuleType.SAP_B:
-			this.#do6502Init(this.#moduleInfo.getInitAddress(), song, 0, 0);
+			this.#do6502Init(this.#moduleInfo.getInitAddress(), this.#currentSong, 0, 0);
 			break;
 		case ASAPModuleType.SAP_C:
 		case ASAPModuleType.CMC:
@@ -382,38 +373,52 @@ export class ASAP
 		case ASAPModuleType.CMR:
 		case ASAPModuleType.CMS:
 			this.#do6502Init(player + 3, 112, music, music >> 8);
-			this.#do6502Init(player + 3, 0, song, 0);
+			this.#do6502Init(player + 3, 0, this.#currentSong, 0);
 			break;
 		case ASAPModuleType.SAP_D:
 		case ASAPModuleType.SAP_S:
 			this.#cpu.pc = this.#moduleInfo.getInitAddress();
-			this.#cpu.a = song;
+			this.#cpu.a = this.#currentSong;
 			this.#cpu.x = 0;
 			this.#cpu.y = 0;
 			this.#cpu.s = 255;
 			break;
 		case ASAPModuleType.DLT:
-			this.#do6502Init(player + 256, 0, 0, this.#moduleInfo.songPos[song]);
+			this.#do6502Init(player + 256, 0, 0, this.#moduleInfo.songPos[this.#currentSong]);
 			break;
 		case ASAPModuleType.MPT:
 			this.#do6502Init(player, 0, music >> 8, music);
-			this.#do6502Init(player, 2, this.#moduleInfo.songPos[song], 0);
+			this.#do6502Init(player, 2, this.#moduleInfo.songPos[this.#currentSong], 0);
 			break;
 		case ASAPModuleType.RMT:
-			this.#do6502Init(player, this.#moduleInfo.songPos[song], music, music >> 8);
+			this.#do6502Init(player, this.#moduleInfo.songPos[this.#currentSong], music, music >> 8);
 			break;
 		case ASAPModuleType.TMC:
 		case ASAPModuleType.TM2:
 			this.#do6502Init(player, 112, music >> 8, music);
-			this.#do6502Init(player, 0, song, 0);
+			this.#do6502Init(player, 0, this.#currentSong, 0);
 			this.#tmcPerFrameCounter = 1;
 			break;
 		case ASAPModuleType.FC:
-			this.#do6502Init(player, song, 0, 0);
+			this.#do6502Init(player, this.#currentSong, 0, 0);
 			break;
 		}
 		this.mutePokeyChannels(0);
 		this.#nextPlayerCycle = 0;
+	}
+
+	/**
+	 * Prepares playback of the specified song of the loaded module.
+	 * @param song Zero-based song index.
+	 * @param duration Playback time in milliseconds, -1 means infinity.
+	 */
+	playSong(song, duration)
+	{
+		if (song < 0 || song >= this.#moduleInfo.getSongs())
+			throw new ASAPArgumentException("Song number out of range");
+		this.#currentSong = song;
+		this.#currentDuration = duration;
+		this.#restartSong();
 	}
 
 	/**
@@ -446,7 +451,7 @@ export class ASAP
 	seekSample(block)
 	{
 		if (block < this.#blocksPlayed)
-			this.playSong(this.#currentSong, this.#currentDuration);
+			this.#restartSong();
 		while (this.#blocksPlayed + this.#pokeys.readySamplesEnd < block) {
 			this.#blocksPlayed += this.#pokeys.readySamplesEnd;
 			this.#doFrame();
@@ -651,6 +656,22 @@ const ASAPModuleType = {
 	FC : 13
 }
 
+/**
+ * Exception thrown when the input file is invalid.
+ */
+export class ASAPFormatException extends Error
+{
+	name = "ASAPFormatException";
+}
+
+/**
+ * Exception thrown when an invalid argument is passed.
+ */
+export class ASAPArgumentException extends Error
+{
+	name = "ASAPArgumentException";
+}
+
 class DurationParser
 {
 	#source;
@@ -660,10 +681,10 @@ class DurationParser
 	#parseDigit(max)
 	{
 		if (this.#position >= this.#length)
-			throw "Invalid duration";
+			throw new ASAPFormatException("Invalid duration");
 		let digit = this.#source.charCodeAt(this.#position++) - 48;
 		if (digit < 0 || digit > max)
-			throw "Invalid duration";
+			throw new ASAPFormatException("Invalid duration");
 		return digit;
 	}
 
@@ -692,7 +713,7 @@ class DurationParser
 		if (this.#position >= this.#length)
 			return result;
 		if (s.charCodeAt(this.#position++) != 46)
-			throw "Invalid duration";
+			throw new ASAPFormatException("Invalid duration");
 		digit = this.#parseDigit(9);
 		result += digit * 100;
 		if (this.#position >= this.#length)
@@ -729,12 +750,12 @@ export class ASAPInfo
 	/**
 	 * ASAP version - micro part.
 	 */
-	static VERSION_MICRO = 0;
+	static VERSION_MICRO = 1;
 
 	/**
 	 * ASAP version as a string.
 	 */
-	static VERSION = "6.0.0";
+	static VERSION = "6.0.1";
 
 	/**
 	 * Years ASAP was created in.
@@ -791,12 +812,6 @@ export class ASAPInfo
 		return c >= 32 && c <= 124 && c != 96 && c != 123;
 	}
 
-	static #checkValidChar(c)
-	{
-		if (!ASAPInfo.#isValidChar(c))
-			throw "Invalid character";
-	}
-
 	static getWord(array, i)
 	{
 		return array[i] + (array[i + 1] << 8);
@@ -805,21 +820,21 @@ export class ASAPInfo
 	#parseModule(module, moduleLen)
 	{
 		if ((module[0] != 255 || module[1] != 255) && (module[0] != 0 || module[1] != 0))
-			throw "Invalid two leading bytes of the module";
+			throw new ASAPFormatException("Invalid two leading bytes of the module");
 		this.#music = ASAPInfo.getWord(module, 2);
 		let musicLastByte = ASAPInfo.getWord(module, 4);
 		if (this.#music <= 55295 && musicLastByte >= 53248)
-			throw "Module address conflicts with hardware registers";
+			throw new ASAPFormatException("Module address conflicts with hardware registers");
 		let blockLen = musicLastByte + 1 - this.#music;
 		if (6 + blockLen != moduleLen) {
 			if (this.type != ASAPModuleType.RMT || 11 + blockLen > moduleLen)
-				throw "Module length doesn't match headers";
+				throw new ASAPFormatException("Module length doesn't match headers");
 			let infoAddr = ASAPInfo.getWord(module, 6 + blockLen);
 			if (infoAddr != this.#music + blockLen)
-				throw "Invalid address of RMT info";
+				throw new ASAPFormatException("Invalid address of RMT info");
 			let infoLen = ASAPInfo.getWord(module, 8 + blockLen) + 1 - infoAddr;
 			if (10 + blockLen + infoLen != moduleLen)
-				throw "Invalid RMT info block";
+				throw new ASAPFormatException("Invalid RMT info block");
 		}
 	}
 
@@ -918,7 +933,7 @@ export class ASAPInfo
 	#parseCmc(module, moduleLen, type)
 	{
 		if (moduleLen < 774)
-			throw "Module too short";
+			throw new ASAPFormatException("Module too short");
 		this.type = type;
 		this.#parseModule(module, moduleLen);
 		let lastPos = 84;
@@ -991,11 +1006,11 @@ export class ASAPInfo
 	#parseDlt(module, moduleLen)
 	{
 		if (moduleLen != 11270 && moduleLen != 11271)
-			throw "Invalid module length";
+			throw new ASAPFormatException("Invalid module length");
 		this.type = ASAPModuleType.DLT;
 		this.#parseModule(module, moduleLen);
 		if (this.#music != 8192)
-			throw "Unsupported module address";
+			throw new ASAPFormatException("Unsupported module address");
 		const seen = new Array(128);
 		this.#songs = 0;
 		for (let pos = 0; pos < 128 && this.#songs < 32; pos++) {
@@ -1003,7 +1018,7 @@ export class ASAPInfo
 				this.#parseDltSong(module, seen, pos);
 		}
 		if (this.#songs == 0)
-			throw "No songs found";
+			throw new ASAPFormatException("No songs found");
 	}
 
 	#parseMptSong(module, globalSeen, songLen, pos)
@@ -1081,15 +1096,15 @@ export class ASAPInfo
 	#parseMpt(module, moduleLen)
 	{
 		if (moduleLen < 464)
-			throw "Module too short";
+			throw new ASAPFormatException("Module too short");
 		this.type = ASAPModuleType.MPT;
 		this.#parseModule(module, moduleLen);
 		let track0Addr = ASAPInfo.getWord(module, 2) + 458;
 		if (module[454] + (module[458] << 8) != track0Addr)
-			throw "Invalid address of the first track";
+			throw new ASAPFormatException("Invalid address of the first track");
 		let songLen = (module[455] + (module[459] << 8) - track0Addr) >> 1;
 		if (songLen > 254)
-			throw "Song too long";
+			throw new ASAPFormatException("Song too long");
 		const globalSeen = new Array(256);
 		this.#songs = 0;
 		for (let pos = 0; pos < songLen && this.#songs < 32; pos++) {
@@ -1099,7 +1114,7 @@ export class ASAPInfo
 			}
 		}
 		if (this.#songs == 0)
-			throw "No songs found";
+			throw new ASAPFormatException("No songs found");
 	}
 
 	static #getRmtInstrumentFrames(module, instrument, volume, volumeFrame, onExtraPokey)
@@ -1276,7 +1291,7 @@ export class ASAPInfo
 	#parseRmt(module, moduleLen)
 	{
 		if (!ASAPInfo.#validateRmt(module, moduleLen))
-			throw "Invalid RMT file";
+			throw new ASAPFormatException("Invalid RMT file");
 		let posShift;
 		switch (module[9]) {
 		case 52:
@@ -1287,11 +1302,11 @@ export class ASAPInfo
 			posShift = 3;
 			break;
 		default:
-			throw "Unsupported number of channels";
+			throw new ASAPFormatException("Unsupported number of channels");
 		}
 		let perFrame = module[12];
 		if (perFrame < 1 || perFrame > 4)
-			throw "Unsupported player call rate";
+			throw new ASAPFormatException("Unsupported player call rate");
 		this.type = ASAPModuleType.RMT;
 		this.#parseModule(module, moduleLen);
 		let blockLen = ASAPInfo.getWord(module, 4) + 1 - this.#music;
@@ -1300,7 +1315,7 @@ export class ASAPInfo
 			songLen += 4;
 		songLen >>= posShift;
 		if (songLen >= 256)
-			throw "Song too long";
+			throw new ASAPFormatException("Song too long");
 		const globalSeen = new Array(256);
 		this.#songs = 0;
 		for (let pos = 0; pos < songLen && this.#songs < 32; pos++) {
@@ -1312,7 +1327,7 @@ export class ASAPInfo
 		this.#fastplay = 312 / perFrame | 0;
 		this.player = 1536;
 		if (this.#songs == 0)
-			throw "No songs found";
+			throw new ASAPFormatException("No songs found");
 		const title = new Uint8Array(127);
 		let titleLen;
 		for (titleLen = 0; titleLen < 127 && 10 + blockLen + titleLen < moduleLen; titleLen++) {
@@ -1425,21 +1440,21 @@ export class ASAPInfo
 	#parseTmc(module, moduleLen)
 	{
 		if (moduleLen < 464)
-			throw "Module too short";
+			throw new ASAPFormatException("Module too short");
 		this.type = ASAPModuleType.TMC;
 		this.#parseModule(module, moduleLen);
 		this.#channels = 2;
 		let i = 0;
 		while (module[102 + i] == 0) {
 			if (++i >= 64)
-				throw "No instruments";
+				throw new ASAPFormatException("No instruments");
 		}
 		let lastPos = (module[102 + i] << 8) + module[38 + i] - ASAPInfo.getWord(module, 2) - 432;
 		if (437 + lastPos >= moduleLen)
-			throw "Module too short";
+			throw new ASAPFormatException("Module too short");
 		do {
 			if (lastPos <= 0)
-				throw "No songs found";
+				throw new ASAPFormatException("No songs found");
 			lastPos -= 16;
 		}
 		while (module[437 + lastPos] >= 128);
@@ -1450,7 +1465,7 @@ export class ASAPInfo
 				this.#parseTmcSong(module, i + 16);
 		i = module[37];
 		if (i < 1 || i > 4)
-			throw "Unsupported player call rate";
+			throw new ASAPFormatException("Unsupported player call rate");
 		this.#fastplay = 312 / i | 0;
 		const title = new Uint8Array(127);
 		let titleLen = ASAPInfo.#parseTmcTitle(title, 0, module, 6);
@@ -1532,12 +1547,12 @@ export class ASAPInfo
 	#parseTm2(module, moduleLen)
 	{
 		if (moduleLen < 932)
-			throw "Module too short";
+			throw new ASAPFormatException("Module too short");
 		this.type = ASAPModuleType.TM2;
 		this.#parseModule(module, moduleLen);
 		let i = module[37];
 		if (i < 1 || i > 4)
-			throw "Unsupported player call rate";
+			throw new ASAPFormatException("Unsupported player call rate");
 		this.#fastplay = 312 / i | 0;
 		this.player = 2048;
 		if (module[31] != 0)
@@ -1555,11 +1570,11 @@ export class ASAPInfo
 		}
 		lastPos -= ASAPInfo.getWord(module, 2) + 896;
 		if (902 + lastPos >= moduleLen)
-			throw "Module too short";
+			throw new ASAPFormatException("Module too short");
 		let c;
 		do {
 			if (lastPos <= 0)
-				throw "No songs found";
+				throw new ASAPFormatException("No songs found");
 			lastPos -= 17;
 			c = module[918 + lastPos];
 		}
@@ -1584,7 +1599,7 @@ export class ASAPInfo
 			if (module[currentOffset++] == 255)
 				return currentOffset;
 		}
-		throw "Module too short";
+		throw new ASAPFormatException("Module too short");
 	}
 
 	static #getFcTrackCommand(module, trackPos, n)
@@ -1623,7 +1638,7 @@ export class ASAPInfo
 	#parseFc(module, moduleLen)
 	{
 		if (!ASAPInfo.#validateFc(module, moduleLen))
-			throw "Invalid FC file";
+			throw new ASAPFormatException("Invalid FC file");
 		this.type = ASAPModuleType.FC;
 		this.player = 1024;
 		this.#music = 2560;
@@ -1720,30 +1735,30 @@ export class ASAPInfo
 	static #parseDec(module, i, argEnd, minVal, maxVal)
 	{
 		if (i < 0)
-			throw "Missing number";
+			throw new ASAPFormatException("Missing number");
 		let r = 0;
 		while (i < argEnd) {
 			let c = module[i++];
 			if (c < 48 || c > 57)
-				throw "Invalid number";
+				throw new ASAPFormatException("Invalid number");
 			r = r * 10 + c - 48;
 			if (r > maxVal)
-				throw "Number too big";
+				throw new ASAPFormatException("Number too big");
 		}
 		if (r < minVal)
-			throw "Number too small";
+			throw new ASAPFormatException("Number too small");
 		return r;
 	}
 
 	static #parseHex(module, i, argEnd)
 	{
 		if (i < 0)
-			throw "Missing number";
+			throw new ASAPFormatException("Missing number");
 		let r = 0;
 		while (i < argEnd) {
 			let c = module[i++];
 			if (r > 4095)
-				throw "Number too big";
+				throw new ASAPFormatException("Number too big");
 			r <<= 4;
 			if (c >= 48 && c <= 57)
 				r += c - 48;
@@ -1752,7 +1767,7 @@ export class ASAPInfo
 			else if (c >= 97 && c <= 102)
 				r += c - 97 + 10;
 			else
-				throw "Invalid number";
+				throw new ASAPFormatException("Invalid number");
 		}
 		return r;
 	}
@@ -1775,7 +1790,7 @@ export class ASAPInfo
 	#parseSap(module, moduleLen)
 	{
 		if (!ASAPInfo.#validateSap(module, moduleLen))
-			throw "Invalid SAP file";
+			throw new ASAPFormatException("Invalid SAP file");
 		this.#fastplay = -1;
 		let type = 0;
 		let moduleIndex = 5;
@@ -1784,7 +1799,7 @@ export class ASAPInfo
 			let lineStart = moduleIndex;
 			while (module[moduleIndex] > 32) {
 				if (++moduleIndex >= moduleLen)
-					throw "Invalid SAP file";
+					throw new ASAPFormatException("Invalid SAP file");
 			}
 			let tagLen = moduleIndex - lineStart;
 			let argStart = -1;
@@ -1792,7 +1807,8 @@ export class ASAPInfo
 			for (;;) {
 				let c = module[moduleIndex];
 				if (c > 32) {
-					ASAPInfo.#checkValidChar(c);
+					if (!ASAPInfo.#isValidChar(c))
+						throw new ASAPFormatException("Invalid character");
 					if (argStart < 0)
 						argStart = moduleIndex;
 					argEnd = -1;
@@ -1804,10 +1820,10 @@ export class ASAPInfo
 						break;
 				}
 				if (++moduleIndex >= moduleLen)
-					throw "Invalid SAP file";
+					throw new ASAPFormatException("Invalid SAP file");
 			}
 			if (++moduleIndex + 6 >= moduleLen)
-				throw "Invalid SAP file";
+				throw new ASAPFormatException("Invalid SAP file");
 			switch (new TextDecoder().decode(module.subarray(lineStart, lineStart + tagLen))) {
 			case "AUTHOR":
 				this.#author = ASAPInfo.#parseText(module, argStart, argEnd);
@@ -1820,9 +1836,9 @@ export class ASAPInfo
 				break;
 			case "TIME":
 				if (durationIndex >= 32)
-					throw "Too many TIME tags";
+					throw new ASAPFormatException("Too many TIME tags");
 				if (argStart < 0)
-					throw "Missing TIME argument";
+					throw new ASAPFormatException("Missing TIME argument");
 				if (argEnd - argStart > 5 && ASAPInfo.#hasStringAt(module, argEnd - 5, " LOOP")) {
 					this.#loops[durationIndex] = true;
 					argEnd -= 5;
@@ -1840,7 +1856,7 @@ export class ASAPInfo
 				break;
 			case "TYPE":
 				if (argStart < 0)
-					throw "Missing TYPE argument";
+					throw new ASAPFormatException("Missing TYPE argument");
 				type = module[argStart];
 				break;
 			case "FASTPLAY":
@@ -1858,7 +1874,7 @@ export class ASAPInfo
 			case "COVOX":
 				this.#covoxAddr = ASAPInfo.#parseHex(module, argStart, argEnd);
 				if (this.#covoxAddr != 54784)
-					throw "COVOX should be D600";
+					throw new ASAPFormatException("COVOX should be D600");
 				this.#channels = 2;
 				break;
 			case "STEREO":
@@ -1872,41 +1888,41 @@ export class ASAPInfo
 			}
 		}
 		if (this.#defaultSong >= this.#songs)
-			throw "DEFSONG too big";
+			throw new ASAPFormatException("DEFSONG too big");
 		switch (type) {
 		case 66:
 			if (this.player < 0)
-				throw "Missing PLAYER tag";
+				throw new ASAPFormatException("Missing PLAYER tag");
 			if (this.#init < 0)
-				throw "Missing INIT tag";
+				throw new ASAPFormatException("Missing INIT tag");
 			this.type = ASAPModuleType.SAP_B;
 			break;
 		case 67:
 			if (this.player < 0)
-				throw "Missing PLAYER tag";
+				throw new ASAPFormatException("Missing PLAYER tag");
 			if (this.#music < 0)
-				throw "Missing MUSIC tag";
+				throw new ASAPFormatException("Missing MUSIC tag");
 			this.type = ASAPModuleType.SAP_C;
 			break;
 		case 68:
 			if (this.#init < 0)
-				throw "Missing INIT tag";
+				throw new ASAPFormatException("Missing INIT tag");
 			this.type = ASAPModuleType.SAP_D;
 			break;
 		case 83:
 			if (this.#init < 0)
-				throw "Missing INIT tag";
+				throw new ASAPFormatException("Missing INIT tag");
 			this.type = ASAPModuleType.SAP_S;
 			if (this.#fastplay < 0)
 				this.#fastplay = 78;
 			break;
 		default:
-			throw "Unsupported TYPE";
+			throw new ASAPFormatException("Unsupported TYPE");
 		}
 		if (this.#fastplay < 0)
 			this.#fastplay = this.#ntsc ? 262 : 312;
 		if (module[moduleIndex + 1] != 255)
-			throw "Invalid binary header";
+			throw new ASAPFormatException("Invalid binary header");
 		this.headerLen = moduleIndex;
 	}
 
@@ -1980,7 +1996,7 @@ export class ASAPInfo
 			return 2122598;
 		if (ASAPInfo.#validateRmt(module, moduleLen))
 			return 7630194;
-		throw "Unknown format";
+		throw new ASAPFormatException("Unknown format");
 	}
 
 	/**
@@ -2006,7 +2022,7 @@ export class ASAPInfo
 					ext = i;
 			}
 			if (ext < 0)
-				throw "Filename has no extension";
+				throw new ASAPFormatException("Filename has no extension");
 			ext -= basename;
 			if (ext > 127)
 				ext = 127;
@@ -2079,16 +2095,17 @@ export class ASAPInfo
 			this.#parseFc(module, moduleLen);
 			return;
 		default:
-			throw "Unknown filename extension";
+			throw new ASAPFormatException("Unknown filename extension");
 		}
 	}
 
 	static #checkValidText(s)
 	{
 		if (s.length > 127)
-			throw "Text too long";
+			throw new ASAPArgumentException("Text too long");
 		for (const c of s)
-			ASAPInfo.#checkValidChar(c.codePointAt(0));
+			if (!ASAPInfo.#isValidChar(c.codePointAt(0)))
+				throw new ASAPArgumentException("Invalid character");
 	}
 
 	/**
@@ -2276,7 +2293,7 @@ export class ASAPInfo
 	setDefaultSong(song)
 	{
 		if (song < 0 || song >= this.#songs)
-			throw "Song out of range";
+			throw new ASAPArgumentException("Song out of range");
 		this.#defaultSong = song;
 	}
 
@@ -2299,7 +2316,7 @@ export class ASAPInfo
 	setDuration(song, duration)
 	{
 		if (song < 0 || song >= this.#songs)
-			throw "Song out of range";
+			throw new ASAPArgumentException("Song out of range");
 		this.#durations[song] = duration;
 	}
 
@@ -2332,7 +2349,7 @@ export class ASAPInfo
 	setLoop(song, loop)
 	{
 		if (song < 0 || song >= this.#songs)
-			throw "Song out of range";
+			throw new ASAPArgumentException("Song out of range");
 		this.#loops[song] = loop;
 	}
 
@@ -2422,7 +2439,7 @@ export class ASAPInfo
 	setMusicAddress(address)
 	{
 		if (address < 0 || address >= 65535)
-			throw "Invalid music address";
+			throw new ASAPArgumentException("Invalid music address");
 		this.#music = address;
 	}
 
@@ -2514,9 +2531,11 @@ export class ASAPInfo
 		case 7890296:
 			return "Atari 8-bit executable";
 		default:
-			throw "Unknown extension";
+			throw new ASAPFormatException("Unknown extension");
 		}
 	}
+
+	static RMT_INIT = 3200;
 
 	getRmtSapOffset(module, moduleLen)
 	{
@@ -2599,6 +2618,14 @@ export class ASAPInfo
 	static #GET_RMT_INSTRUMENT_FRAMES_RMT_VOLUME_SILENT = new Uint8Array([ 16, 8, 4, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1 ]);
 }
 
+/**
+ * Exception thrown when format conversion fails.
+ */
+export class ASAPConversionException extends Error
+{
+	name = "ASAPConversionException";
+}
+
 class ASAPNativeModuleWriter
 {
 	writer;
@@ -2655,7 +2682,7 @@ class ASAPNativeModuleWriter
 		let startAddr = this.getWord(2);
 		this.#addressDiff = info.getMusicAddress() < 0 ? 0 : info.getMusicAddress() - startAddr;
 		if (this.getWord(4) + this.#addressDiff > 65535)
-			throw "Address set too high";
+			throw new ASAPConversionException("Address set too high");
 		switch (type) {
 		case ASAPModuleType.CMC:
 		case ASAPModuleType.CM3:
@@ -2712,7 +2739,7 @@ class ASAPNativeModuleWriter
 			this.#relocateBytes(134, 774, 128, 8);
 			break;
 		default:
-			throw "Impossible conversion";
+			throw new ASAPConversionException("Impossible conversion");
 		}
 		this.#copy(moduleLen);
 	}
@@ -2833,7 +2860,7 @@ export class ASAPWriter
 	writeByte(value)
 	{
 		if (this.outputOffset >= this.#outputEnd)
-			throw "Output full";
+			throw new ASAPConversionException("Output full");
 		this.output[this.outputOffset++] = value;
 	}
 
@@ -2847,7 +2874,7 @@ export class ASAPWriter
 	{
 		let length = endIndex - startIndex;
 		if (this.outputOffset + length > this.#outputEnd)
-			throw "Output full";
+			throw new ASAPConversionException("Output full");
 		this.output.set(array.subarray(startIndex, startIndex + length), this.outputOffset);
 		this.outputOffset += length;
 	}
@@ -3006,7 +3033,7 @@ export class ASAPWriter
 			player = ASAPInfo.getWord(playerRoutine, 2);
 			playerLastByte = ASAPInfo.getWord(playerRoutine, 4);
 			if (music <= playerLastByte)
-				throw "Module address conflicts with the player routine";
+				throw new ASAPConversionException("Module address conflicts with the player routine");
 		}
 		let startAddr;
 		switch (info.type) {
@@ -3331,7 +3358,7 @@ export class ASAPWriter
 			nativeWriter.sourceOffset = info.headerLen;
 			let blockLen = nativeWriter.getWord(4) - nativeWriter.getWord(2) + 7;
 			if (blockLen < 7 || info.headerLen + blockLen >= moduleLen)
-				throw "Cannot extract module from SAP";
+				throw new ASAPConversionException("Cannot extract module from SAP");
 			type = info.getOriginalModuleType(module, moduleLen);
 			if (type == ASAPModuleType.FC)
 				this.writeBytes(module, info.headerLen + 6, info.headerLen + blockLen);
@@ -3370,7 +3397,7 @@ export class ASAPWriter
 				switch (info.type) {
 				case ASAPModuleType.SAP_D:
 					if (info.getPlayerRateScanlines() != 312)
-						throw "Impossible conversion";
+						throw new ASAPConversionException("Impossible conversion");
 					this.writeBytes(Fu.xexd_obx, 2, 117);
 					this.writeWord(initAndPlayer[0]);
 					if (initAndPlayer[1] < 0) {
@@ -3385,7 +3412,7 @@ export class ASAPWriter
 					this.writeByte(info.getDefaultSong());
 					break;
 				case ASAPModuleType.SAP_S:
-					throw "Impossible conversion";
+					throw new ASAPConversionException("Impossible conversion");
 				default:
 					this.writeBytes(Fu.xexb_obx, 2, 183);
 					this.writeWord(initAndPlayer[0]);
@@ -3418,7 +3445,7 @@ export class ASAPWriter
 					return this.outputOffset;
 				}
 			}
-			throw "Impossible conversion";
+			throw new ASAPConversionException("Impossible conversion");
 		}
 	}
 
@@ -4467,7 +4494,7 @@ class FlashPack
 		for (;;) {
 			while (this.#memory[end] >= 0)
 				if (--end < 9216)
-					throw "Too much data to compress";
+					throw new ASAPConversionException("Too much data to compress");
 			let start = end;
 			while (this.#memory[--start] < 0)
 				if (end - start >= 1023)
@@ -4650,17 +4677,17 @@ class FlashPack
 			}
 			let endAddress = w.output[i + 2] + (w.output[i + 3] << 8);
 			if (startAddress > endAddress)
-				throw "Start address greater than end address";
+				throw new ASAPConversionException("Start address greater than end address");
 			i += 4;
 			if (i + endAddress - startAddress >= w.outputOffset)
-				throw "Truncated block";
+				throw new ASAPConversionException("Truncated block");
 			while (startAddress <= endAddress)
 				this.#memory[startAddress++] = w.output[i++];
 		}
 		if (this.#memory[736] < 0 || this.#memory[737] < 0)
-			throw "Missing run address";
+			throw new ASAPConversionException("Missing run address");
 		if (this.#memory[252] >= 0 || this.#memory[253] >= 0 || this.#memory[254] >= 0 || this.#memory[255] >= 0)
-			throw "Conflict with decompressor variables";
+			throw new ASAPConversionException("Conflict with decompressor variables");
 		let runAddress = this.#memory[736] + (this.#memory[737] << 8);
 		this.#memory[736] = this.#memory[737] = -1;
 		let depackerEndAddress = this.#findHole();
@@ -4678,7 +4705,7 @@ class FlashPack
 		let depackerStartAddress = depackerEndAddress - 87;
 		let compressedStartAddress = depackerStartAddress - this.#compressedLength;
 		if (compressedStartAddress < 8192)
-			throw "Too much compressed data";
+			throw new ASAPConversionException("Too much compressed data");
 		w.outputOffset = 0;
 		w.writeWord(65535);
 		w.writeWord(54017);
@@ -4796,6 +4823,12 @@ class PokeyChannel
 	periodCycles;
 	tickCycle;
 	timerCycle;
+
+	static MUTE_INIT = 1;
+
+	static MUTE_USER = 2;
+
+	static MUTE_SERIAL_INPUT = 4;
 	mute;
 	#out;
 	delta;
@@ -4918,6 +4951,8 @@ class Pokey
 	#reloadCycles1;
 	#reloadCycles3;
 	polyIndex;
+
+	static NEVER_CYCLE = 8388608;
 	#deltaBufferLength;
 	#deltaBuffer;
 	#sumDACInputs;
@@ -4962,6 +4997,7 @@ class Pokey
 		this.#iirAcc = 0;
 		this.#iirRate = 264600 / sampleRate | 0;
 		this.#sumDACInputs = 0;
+		this.#sumDACOutputs = 0;
 		this.startFrame();
 	}
 
@@ -5354,6 +5390,8 @@ class PokeyPair
 	extraPokey = new Pokey();
 	sampleRate;
 	sincLookup = new Array(1024);
+
+	static SAMPLE_FACTOR_SHIFT = 18;
 	sampleFactor;
 	sampleOffset;
 	readySamplesStart;
