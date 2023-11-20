@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.atari.asma.util.JSONWriter;
 
 import net.sf.asap.ASAP;
+import net.sf.asap.ASAPFormatException;
 import net.sf.asap.ASAPInfo;
 
 public final class FileInfo {
@@ -33,7 +34,7 @@ public final class FileInfo {
 		ASAP asap = new ASAP();
 		try {
 			asap.load(filePath, module, module.length);
-		} catch (Exception ex) {
+		} catch (ASAPFormatException ex) {
 			// ERROR: Cannot load sound file '{0}'. {1}
 			throw new RuntimeException(ex);
 		}
@@ -53,8 +54,8 @@ public final class FileInfo {
 		// Translate the file type to a human readable text.
 		try {
 			ASAPInfo.getExtDescription(this.originalModuleExt);
-		} catch (Exception unknownExtensionException) {
-			throw new RuntimeException(unknownExtensionException.getMessage());
+		} catch (ASAPFormatException ex) {
+			throw new RuntimeException(ex);
 		}
 
 		this.channels = asapInfo.getChannels();
