@@ -31,26 +31,31 @@ public final class MessageQueue {
 	}
 
 	public void printSummary() {
-		out.println(errorCount + " errors, " + warningCount + " warnings, " + infoCount + " warnings");
+		out.println(errorCount + " errors, " + warningCount + " warnings, " + infoCount + " infos");
+		out.flush();
 		clear();
 	}
 
 	public void sendMessage(String message) {
 		out.println(message);
+		out.flush();
 	}
 
 	public void sendInfo(String message) {
 		out.println("INFO:    " + message);
+		out.flush();
 		infoCount++;
 	}
 
 	public void sendWarning(String message) {
 		err.println("WARNING: " + message);
+		err.flush();
 		warningCount++;
 	}
 
 	public void sendError(String message) {
 		err.println("ERROR:   " + message);
+		err.flush();
 		errorCount++;
 	}
 }
