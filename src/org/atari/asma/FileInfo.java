@@ -18,7 +18,7 @@ public final class FileInfo {
 	public String title;
 	public String author;
 	public String date;
-	public String comment;
+	public String comment; // TODO use COMMENT from STIL
 	public String typeLetter;;
 	public String originalModuleExt;
 	public int channels;
