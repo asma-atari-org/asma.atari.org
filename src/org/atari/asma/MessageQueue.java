@@ -11,7 +11,7 @@ public final class MessageQueue {
 	private int warningCount;
 	private int errorCount;
 
-	MessageQueue(PrintStream out, PrintStream err) {
+	public MessageQueue(PrintStream out, PrintStream err) {
 		if (out == null) {
 			throw new IllegalArgumentException("Parameter 'out' must not be null.");
 		}
