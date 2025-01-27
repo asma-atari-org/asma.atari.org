@@ -4,51 +4,61 @@ import java.io.File;
 import java.io.FileFilter;
 
 import org.atari.asma.ASMAExporter.FileExtension;
-import org.atari.asma.MessageQueue;
 import org.atari.asma.util.FileUtility;
+import org.atari.asma.util.MessageQueue;
 
-public class SAPEditor {
+import net.sf.asap.ASAP;
+import net.sf.asap.ASAPInfo;
+import net.sf.asap.ASAPWriter;
+
+public class SAPFileEditor {
 
 	private MessageQueue messageQueue;
 	private SAPFileLogic sapFileLogic;
 	private SAPFileDialog sapFileDialog;
 
-	private SAPEditor() {
+	private SAPFileEditor() {
 		messageQueue = new MessageQueue(System.out, System.err);
 		sapFileLogic = new SAPFileLogic();
-		sapFileDialog = new SAPFileDialog();
-
+		sapFileDialog = new SAPFileDialog(this);
 	}
 
 	public static void main(String[] args) {
-		SAPEditor instance = new SAPEditor();
+		SAPFileEditor instance = new SAPFileEditor();
 		instance.run(args);
 	};
 
 	private void run(String[] args) {
 
-		if (args.length != 1) {
-			messageQueue.sendMessage("Usage: SAPEditor <sap file|sap folder>");
-			return;
-		}
+//		if (args.length > 1) {
+//			messageQueue.sendMessage("Usage: SAPEditor <sap file|sap folder>");
+//			return;
+//		}
 
 		String filePath = args[0];
+		File file = new File(filePath);
 
-		try {
-			File file = new File(filePath);
-			if (file.isDirectory()) {
-				scanFolder(file);
-			} else {
-				messageQueue.sendInfo("Reading '" + file.getAbsolutePath() + "'.");
-				checkSAPFile(file, true);
+		runFiles(new File[] { file });
+
+	}
+
+	public void runFiles(File[] files) {
+		messageQueue.clear();
+		for (File file : files) {
+			try {
+				if (file.isDirectory()) {
+					scanFolder(file);
+				} else {
+					messageQueue.sendInfo("Reading '" + file.getAbsolutePath() + "'.");
+					checkSAPFile(file, true);
+				}
+
+			} catch (Exception ex) {
+				messageQueue.sendError(ex.getMessage());
+				ex.printStackTrace();
 			}
-
-		} catch (Exception ex) {
-			messageQueue.sendError(ex.getMessage());
-			ex.printStackTrace();
 		}
 		messageQueue.printSummary();
-
 	}
 
 	private void scanFolder(File folder) {
@@ -84,7 +94,6 @@ public class SAPEditor {
 		var sapFile = sapFileLogic.readSAPFile(file, messageQueue);
 		if (sapFile != null) {
 			if (details) {
-				messageQueue.sendMessage(sapFile.toString());
 				sapFileDialog.show(file, sapFile);
 			}
 		} else {

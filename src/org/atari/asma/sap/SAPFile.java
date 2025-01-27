@@ -3,6 +3,8 @@ package org.atari.asma.sap;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.asap.ASAPInfo;
+
 class SAPFile {
 	// https://asap.sourceforge.net/sap-format.html
 	final static String UPPPER_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -15,8 +17,12 @@ class SAPFile {
 		segmentList = new ArrayList<Segment>();
 	}
 
+	public byte[] content;
+	public int segmentsStartIndex;
+
 	public String header;
 	public List<Segment> segmentList;
+	public ASAPInfo asapInfo;
 
 	public String toString() {
 		return header + getSegmentsString();

@@ -1,4 +1,4 @@
-package org.atari.asma;
+package org.atari.asma.util;
 
 import java.io.PrintStream;
 

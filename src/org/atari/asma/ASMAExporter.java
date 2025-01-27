@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 
 import org.atari.asma.demozoo.ProductionList;
 import org.atari.asma.util.JSONWriter;
+import org.atari.asma.util.MessageQueue;
 
 public class ASMAExporter {
 

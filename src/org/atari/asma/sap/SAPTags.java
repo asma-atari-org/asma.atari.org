@@ -17,6 +17,7 @@ class SAPTags {
 	public static final String INIT = "INIT";
 	public static final String MUSIC = "MUSIC";
 	public static final String PLAYER = "PLAYER";
+	public static final String TRACKER = "TRACKER"; // TODO: New!
 	public static final String COVOX = "COVOX";
 	public static final String TIME = "TIME";
 
@@ -35,6 +36,7 @@ class SAPTags {
 		result.add(INIT);
 		result.add(MUSIC);
 		result.add(PLAYER);
+		result.add(TRACKER);
 		result.add(COVOX);
 		result.add(TIME);
 		return result;

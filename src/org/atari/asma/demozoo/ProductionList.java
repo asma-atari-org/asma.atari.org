@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.atari.asma.MessageQueue;
 import org.atari.asma.util.FileUtility;
+import org.atari.asma.util.MessageQueue;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;

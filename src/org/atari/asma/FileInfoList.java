@@ -11,6 +11,7 @@ import org.atari.asma.ASMAExporter.FileExtension;
 import org.atari.asma.demozoo.ProductionList;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.JSONWriter;
+import org.atari.asma.util.MessageQueue;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
