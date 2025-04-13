@@ -1,9 +1,10 @@
 @echo off
 rem ASAP Wiki and SVN are at http://asma.scene.pl
 rem SVN download is available at https://tortoisesvn.net/downloads.html
+rem This script assumes that "svn.exe" is in the path.
 rem Global SVN configuration is stored in %APPDATA%\Subversion\
 rem Make sure to configure using commit time as file date/time.
-rem SVM content is checked out into a separate folder structure to separate SVN anf Git versioning.
+rem SVN content is checked out into a separate folder structure to separate SVN and Git versioning.
 rem A symbolic link is created for the "asma" folder in "public_html/asma" to include it into the website upload.
 
 set SITES_FOLDER=C:\jac\system\WWW\Sites
