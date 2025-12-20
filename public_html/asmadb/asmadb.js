@@ -1501,20 +1501,12 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Gilmore_Adam/Arcade_Fruit_Machine_Simul.sap", "fileSize": 3816, "title": "Arcade Fruit Machine Simulator", "author": "Adam Gilmore", "date": "1990", "typeLetter": "B", "originalModuleExt": "sap", "songs": 32}
 , {"filePath": "Composers/Gilmore_Adam/Blinkys_Scary_School.sap", "fileSize": 2604, "title": "Blinky's Scary School", "author": "Adam Gilmore", "date": "1990", "typeLetter": "B", "originalModuleExt": "sap", "songs": 4}
 , {"filePath": "Composers/Gilmore_Adam/Draconus.sap", "fileSize": 2795, "title": "Draconus", "author": "Adam Gilmore", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap", "songs": 7}
-, {"filePath": "Composers/Gilmore_Adam/Draconus_2024-2.sap", "fileSize": 11056, "title": "Draconus 2024 (8880 frames)", "author": "Adam Gilmore", "date": "10/12/2024", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Gilmore_Adam/Draconus_2024.sap", "fileSize": 6635, "title": "Draconus 2024", "author": "Adam Gilmore", "date": "2024", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Gilmore_Adam/Jocky_Wilsons_Darts_Chall.sap", "fileSize": 2736, "title": "Jocky Wilson's Darts Challenge", "author": "Adam Gilmore", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5}
 , {"filePath": "Composers/Gilmore_Adam/Jocky_Wilsons_Darts_Compen.sap", "fileSize": 3036, "title": "Jocky Wilson's Darts Compendium", "author": "Adam Gilmore", "date": "1991", "typeLetter": "B", "originalModuleExt": "sap", "songs": 11, "defaultSongIndex": 10}
 , {"filePath": "Composers/Gilmore_Adam/Las_Vegas_Casino.sap", "fileSize": 3041, "title": "Las Vegas Casino", "author": "Adam Gilmore", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSongIndex": 2}
 , {"filePath": "Composers/Gilmore_Adam/Mountain_Bike.sap", "fileSize": 2185, "title": "Mountain Bike", "author": "Adam Gilmore", "date": "1989", "typeLetter": "B", "originalModuleExt": "sap", "songs": 3}
 , {"filePath": "Composers/Gilmore_Adam/Ninja_Commando.sap", "fileSize": 2203, "title": "Ninja Commando", "author": "Adam Gilmore", "date": "1989", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5}
-, {"filePath": "Composers/Gilmore_Adam/Time Wizard Deluxe - Boss Level.sap", "fileSize": 5905, "title": "Time Wizard Deluxe - Boss Level (5632 frames)", "author": "Adam Gilmore", "date": "10/12/2024", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Gilmore_Adam/Time Wizard Deluxe - Level 1.sap", "fileSize": 5664, "title": "Time Wizard Deluxe - Level 1 (5120 frames)", "author": "Adam Gilmore", "date": "10/12/2024", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Gilmore_Adam/Time Wizard Deluxe - Level 2.sap", "fileSize": 6179, "title": "Time Wizard Deluxe - Level 2 (5632 frames)", "author": "Adam Gilmore", "date": "10/12/2024", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Gilmore_Adam/Time Wizard Deluxe - Level 3.sap", "fileSize": 6343, "title": "Time Wizard Deluxe - Level 3 (5632 frames)", "author": "Adam Gilmore", "date": "10/12/2024", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Gilmore_Adam/Time Wizard Deluxe - Level Complete.sap", "fileSize": 4869, "title": "Time Wizard Deluxe - Level Complete (1280 frames)", "author": "Adam Gilmore", "date": "10/12/2024", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Gilmore_Adam/Time Wizard Deluxe - Title.sap", "fileSize": 9582, "title": "Time Wizard Deluxe - Title (9664 frames)", "author": "Adam Gilmore", "date": "10/12/2024", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Gilmore_Adam/Time Wizard Deluxe - Win Game.sap", "fileSize": 6037, "title": "Time Wizard Deluxe - Win Game (2304 frames)", "author": "Adam Gilmore", "date": "10/12/2024", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Gilmore_Adam/Zybex.sap", "fileSize": 2399, "title": "Zybex", "author": "Adam Gilmore", "date": "1988", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSongIndex": 4}
 , {"filePath": "Composers/Gmurek_Konrad/Jurassic_Park.sap", "fileSize": 3930, "title": "Jurassic Park", "author": "Konrad Gmurek (KeyG)", "date": "1994 <?>", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Gmurek_Konrad/Kosci.sap", "fileSize": 3421, "title": "Kosci", "author": "Konrad Gmurek (KeyG)", "date": "1994 <?>", "typeLetter": "C", "originalModuleExt": "cmc"}
@@ -2494,11 +2486,8 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Lajciak_Pavol/This_One_Comes_from_Slovak.sap", "fileSize": 4207, "title": "This One Comes from Slovakia", "author": "Pavol Lajciak (pL79)", "date": "2001", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Lajciak_Pavol/Wild_Jet.sap", "fileSize": 3846, "title": "Wild Jet", "author": "Pavol Lajciak (pL79)", "date": "2001", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Lanfranchi_Michael/Agent_X_II_Level_1.sap", "fileSize": 9451, "title": "Agent X II (C64) - Level 1 ", "author": "Michael Lanfranchi (EnderDude) & Vin Samuel (VinsCool)", "date": "29/10/2021", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Lanfranchi_Michael/Agent_X_II_Level_1_rmt134.sap", "fileSize": 10736, "title": "Agent x ii level 1", "author": "", "date": "", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Lanfranchi_Michael/Bionic_Commando_Stage_1.sap", "fileSize": 6536, "title": "Bionic Commando (C64) - Stage 1 ", "author": "Michael Lanfranchi (EnderDude)", "date": "07/12/2020", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Lanfranchi_Michael/Gauntlet_III_C64_Title.sap", "fileSize": 11992, "title": "Gauntlet III (C64) - Title", "author": "Michael Lanfranchi (EnderDude)", "date": "19/10/2021", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Lanfranchi_Michael/Monty_on_the_Run_Theme.sap", "fileSize": 17556, "title": "Monty on the Run (C64) - Main Theme ", "author": "Michael Lanfranchi (EnderDude)", "date": "23/10/2021", "typeLetter": "B", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Lanfranchi_Michael/Overlord.sap", "fileSize": 14290, "title": "Overlord (NES) - Main Theme", "author": "Michael Lanfranchi (EnderDude)", "date": "25/09/2022", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Lanfranchi_Michael/Sonic_1_Bridge_Zone.sap", "fileSize": 5662, "title": "Sonic 1 (8-Bit) - Bridge Zone", "author": "Michael Lanfranchi (EnderDude)", "date": "15/01/2022", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Lanfranchi_Michael/Treasure_Cove.sap", "fileSize": 4703, "title": "Treasure Cove (Astrocade)", "author": "Michael Lanfranchi (EnderDude)", "date": "29/09/2021", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Lanfranchi_Michael/Ubisound.sap", "fileSize": 21207, "title": "Ubi-Sound (C64)", "author": "Michael Lanfranchi (EnderDude)", "date": "23/09/2022", "typeLetter": "B", "originalModuleExt": "sap"}
@@ -2835,6 +2824,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Makary_Brauner/Weekend.sap", "fileSize": 4599, "title": "Weekend", "author": "<?> (Makary Brauner)", "date": "17/02/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Makary_Brauner/We_Are_Oldschool.sap", "fileSize": 12538, "title": "We Are Oldschool", "author": "<?> (Makary Brauner)", "date": "10/02/2017", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Makary_Brauner/When_We_Were_Young.sap", "fileSize": 5343, "title": "When We Were Young", "author": "<?> (Makary Brauner)", "date": "02/01/2017", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Composers/Makary_Brauner/When_You_Grow_Up.sap", "fileSize": 6876, "title": "When You Grow Up, Your Heart Dies", "author": "<?> (Makary Brauner)", "date": "2024", "typeLetter": "B", "originalModuleExt": "sap", "channels": 2}
 , {"filePath": "Composers/Makary_Brauner/Yokey_Pokey.sap", "fileSize": 4309, "title": "Yokey Pokey", "author": "<?> (Makary Brauner)", "date": "07/03/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Makary_Brauner/Zybex_Remix.sap", "fileSize": 5683, "title": "Zybex Main Theme (Break8Bit Remix)", "author": "<?> (Makary Brauner)", "date": "15/04/2016", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Makowski_Robert/Alfaboot_1.sap", "fileSize": 5171, "title": "Alfaboot 1", "author": "Robert Makowski (Gutek)", "date": "1994", "typeLetter": "C", "originalModuleExt": "sap"}
@@ -4477,6 +4467,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/SuperJet_Spade/Plant_Man.sap", "fileSize": 6217, "title": "Plant Man", "author": "<?> (SuperJet Spade)", "date": "01/01/2019", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/SuperJet_Spade/Snake_Man.sap", "fileSize": 10544, "title": "Snake Man", "author": "<?> (SuperJet Spade)", "date": "25/01/2019", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/SuperJet_Spade/Vampire_Killer.sap", "fileSize": 4701, "title": "Vampire Killer", "author": "<?> (SuperJet Spade)", "date": "20/09/2018", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Composers/Swierszcz_Piotr/22_22.sap", "fileSize": 4290, "title": "22:22", "author": "Piotr Swierszcz (Tatqoo)", "date": "2022", "typeLetter": "B", "originalModuleExt": "sap", "channels": 2}
 , {"filePath": "Composers/Swierszcz_Piotr/Anarchy_Menu_3.sap", "fileSize": 7868, "title": "Anarchy Menu #3", "author": "Piotr Swierszcz (Samurai)", "date": "14/02/2004", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Swierszcz_Piotr/Begin_1.sap", "fileSize": 3503, "title": "Begin 1", "author": "Piotr Swierszcz (Samurai)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Swierszcz_Piotr/Blue_Twilight.sap", "fileSize": 5517, "title": "Blue Twilight", "author": "Piotr Swierszcz (Tatqoo)", "date": "16/08/2009", "typeLetter": "B", "originalModuleExt": "rmt"}
@@ -4515,7 +4506,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Swierszcz_Piotr/Rebellion_Battle.sap", "fileSize": 4654, "title": "Rebellion: Battle", "author": "Piotr Swierszcz (Samurai)", "date": "1994", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Swierszcz_Piotr/Rebellion_Rise.sap", "fileSize": 4105, "title": "Rebellion: Rise", "author": "Piotr Swierszcz (Samurai)", "date": "1994", "typeLetter": "C", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Swierszcz_Piotr/Rebellion_Victory.sap", "fileSize": 4170, "title": "Rebellion: Victory", "author": "Piotr Swierszcz (Samurai)", "date": "1994", "typeLetter": "C", "originalModuleExt": "sap"}
-, {"filePath": "Composers/Swierszcz_Piotr/REpilogue_Part_2.sap", "fileSize": 7604, "title": "R:Epilogue - Part II", "author": "Piotr Swierszcz (Tatqoo) & Michal Szpilowski (Mker)", "date": "13/08/2022", "typeLetter": "B", "originalModuleExt": "rmt"}
+, {"filePath": "Composers/Swierszcz_Piotr/REpilogue_Part_2.sap", "fileSize": 7605, "title": "R:Epilogue - Part II", "author": "Piotr Swierszcz (Tatqoo) & Michal Szpilowski (Miker)", "date": "13/08/2022", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Swierszcz_Piotr/Resal.sap", "fileSize": 14957, "title": "Resal", "author": "Piotr Swierszcz (Samurai)", "date": "1994", "typeLetter": "B", "originalModuleExt": "sap", "songs": 5, "defaultSongIndex": 4}
 , {"filePath": "Composers/Swierszcz_Piotr/Reverse_1.sap", "fileSize": 3589, "title": "Reverse - 1", "author": "Piotr Swierszcz (Samurai)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Swierszcz_Piotr/Reverse_2.sap", "fileSize": 4930, "title": "Reverse - 2", "author": "Piotr Swierszcz (Samurai)", "date": "1993", "typeLetter": "C", "originalModuleExt": "cmc"}
@@ -4528,6 +4519,8 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Swierszcz_Piotr/Strayball.sap", "fileSize": 5845, "title": "Strayball", "author": "Piotr Swierszcz (Tatqoo)", "date": "2001", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 6}
 , {"filePath": "Composers/Swierszcz_Piotr/TBL_TINT_Secondpart.sap", "fileSize": 4496, "title": "TBL-TINT - Secondpart", "author": "Piotr Swierszcz (Tatqoo)", "date": "02/03/2004", "typeLetter": "B", "originalModuleExt": "rmt"}
 , {"filePath": "Composers/Swierszcz_Piotr/Thermostat_7.sap", "fileSize": 9632, "title": "Thermostat 7", "author": "Piotr Swierszcz (Samurai)", "date": "01/04/2004", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Swierszcz_Piotr/The_Drive.sap", "fileSize": 4468, "title": "The Drive", "author": "Piotr Swierszcz (Tatqoo)", "date": "2022", "typeLetter": "B", "originalModuleExt": "sap", "channels": 2}
+, {"filePath": "Composers/Swierszcz_Piotr/The_Greedits.sap", "fileSize": 3958, "title": "The Greedits", "author": "Piotr Swierszcz (Tatqoo)", "date": "2022", "typeLetter": "B", "originalModuleExt": "sap", "channels": 2}
 , {"filePath": "Composers/Swierszcz_Piotr/Voice_of_Silence.sap", "fileSize": 4300, "title": "Voice of Silence", "author": "Piotr Swierszcz (Samurai)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Swierszcz_Piotr/White_Lamp.sap", "fileSize": 4819, "title": "White Lamp", "author": "Piotr Swierszcz (Samurai)", "date": "14/03/2004", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Sychowicz_Lukasz/ABC.sap", "fileSize": 3634, "title": "ABC", "author": "Lukasz Sychowicz (X-Ray)", "date": "1996", "typeLetter": "C", "originalModuleExt": "cmc"}
@@ -4554,12 +4547,14 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Sychowicz_Lukasz/Czubek.sap", "fileSize": 3611, "title": "Czubek", "author": "Lukasz Sychowicz (X-Ray)", "date": "199?", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Czyrak.sap", "fileSize": 3626, "title": "Czyrak", "author": "Lukasz Sychowicz (X-Ray)", "date": "", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Ddk.sap", "fileSize": 6315, "title": "Ddk", "author": "Lukasz Sychowicz (X-Ray)", "date": "1994 <?>", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5, "defaultSongIndex": 1}
+, {"filePath": "Composers/Sychowicz_Lukasz/Demons_Bath.sap", "fileSize": 19479, "title": "Demon's Bath", "author": "Lukasz Sychowicz (X-Ray)", "date": "10/10/2025", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
 , {"filePath": "Composers/Sychowicz_Lukasz/Drab.sap", "fileSize": 488, "title": "Drab", "author": "Lukasz Sychowicz (X-Ray)", "date": "12/02/2003", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Draka.sap", "fileSize": 4261, "title": "Draka", "author": "Lukasz Sychowicz (X-Ray)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2}
 , {"filePath": "Composers/Sychowicz_Lukasz/Dred.sap", "fileSize": 4353, "title": "Dred", "author": "Lukasz Sychowicz (X-Ray)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 3}
 , {"filePath": "Composers/Sychowicz_Lukasz/Drunk_Chessboard.sap", "fileSize": 3563, "title": "Drunk Chessboard", "author": "Lukasz Sychowicz (X-Ray)", "date": "1996", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Dynas.sap", "fileSize": 3796, "title": "Dynas", "author": "Lukasz Sychowicz (X-Ray)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 3}
 , {"filePath": "Composers/Sychowicz_Lukasz/Dziobaty.sap", "fileSize": 3295, "title": "Dziobaty", "author": "Lukasz Sychowicz (X-Ray)", "date": "", "typeLetter": "B", "originalModuleExt": "mpt"}
+, {"filePath": "Composers/Sychowicz_Lukasz/Easy_Money.sap", "fileSize": 22088, "title": "Easy Money", "author": "Lukasz Sychowicz (X-Ray)", "date": "20/10/2025", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
 , {"filePath": "Composers/Sychowicz_Lukasz/Explosive_Phlegm.sap", "fileSize": 4244, "title": "Explosive Phlegm", "author": "Lukasz Sychowicz (X-Ray)", "date": "1996", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Fagas.sap", "fileSize": 3618, "title": "Fagas", "author": "Lukasz Sychowicz (X-Ray)", "date": "", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Falex.sap", "fileSize": 4062, "title": "Falex", "author": "Lukasz Sychowicz (X-Ray)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc"}
@@ -4582,6 +4577,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Sychowicz_Lukasz/Groch.sap", "fileSize": 3758, "title": "Groch", "author": "Lukasz Sychowicz (X-Ray)", "date": "1995", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Ground.sap", "fileSize": 3839, "title": "Ground", "author": "Lukasz Sychowicz (X-Ray)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 4}
 , {"filePath": "Composers/Sychowicz_Lukasz/Gwoopie_Yes_Them.sap", "fileSize": 17171, "title": "Gwoopie Yes Them", "author": "Lukasz Sychowicz (X-Ray)", "date": "2005", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
+, {"filePath": "Composers/Sychowicz_Lukasz/Half_a_Little.sap", "fileSize": 13993, "title": "Half a little", "author": "Lukasz Sychowicz (X-Ray)", "date": "16/11/2025", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
 , {"filePath": "Composers/Sychowicz_Lukasz/Halo.sap", "fileSize": 16464, "title": "Halo", "author": "Lukasz Sychowicz (X-Ray)", "date": "199?", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Happy_Oriental_Kids.sap", "fileSize": 10686, "title": "Happy Oriental Kids", "author": "Lukasz Sychowicz (X-Ray)", "date": "30/07/2003", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
 , {"filePath": "Composers/Sychowicz_Lukasz/Hujoza.sap", "fileSize": 3664, "title": "Hujoza", "author": "Lukasz Sychowicz (X-Ray)", "date": "199?", "typeLetter": "B", "originalModuleExt": "mpt"}
@@ -4596,6 +4592,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Sychowicz_Lukasz/Klita.sap", "fileSize": 5043, "title": "Klita", "author": "Lukasz Sychowicz (X-Ray)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 5}
 , {"filePath": "Composers/Sychowicz_Lukasz/Koko_1.sap", "fileSize": 11882, "title": "Koko - 1", "author": "Lukasz Sychowicz (X-Ray)", "date": "1995 <?>", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Komar.sap", "fileSize": 6035, "title": "Komar", "author": "Lukasz Sychowicz (X-Ray)", "date": "2002", "typeLetter": "B", "originalModuleExt": "mpt"}
+, {"filePath": "Composers/Sychowicz_Lukasz/Korpozar.sap", "fileSize": 278, "title": "Korpozar (61 Shades of Flame)", "author": "Lukasz Sychowicz (X-Ray)", "date": "29/07/2025", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Kowip.sap", "fileSize": 5132, "title": "Kowip", "author": "Lukasz Sychowicz (X-Ray)", "date": "", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Kpina.sap", "fileSize": 3592, "title": "Kpina", "author": "Lukasz Sychowicz (X-Ray)", "date": "", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Live.sap", "fileSize": 3697, "title": "Live", "author": "Lukasz Sychowicz (X-Ray)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc"}
@@ -4705,6 +4702,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Sychowicz_Lukasz/Wariacje_na_drutach.sap", "fileSize": 6287, "title": "Wariacje na drutach", "author": "Lukasz Sychowicz (X-Ray)", "date": "1996", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Sychowicz_Lukasz/Wroom.sap", "fileSize": 16134, "title": "Wroom", "author": "Lukasz Sychowicz (X-Ray)", "date": "30/07/2003", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
 , {"filePath": "Composers/Sychowicz_Lukasz/X_Ray_2.sap", "fileSize": 4912, "title": "X_Ray_2", "author": "Lukasz Sychowicz (X-Ray)", "date": "", "typeLetter": "C", "originalModuleExt": "sap"}
+, {"filePath": "Composers/Sychowicz_Lukasz/Yatzeck_Platzeck_v32.sap", "fileSize": 19930, "title": "Yatzeck Platzeck v.32", "author": "Lukasz Sychowicz (X-Ray)", "date": "20/10/2025", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
 , {"filePath": "Composers/Sychowicz_Lukasz/Yoomp.sap", "fileSize": 5888, "title": "Yoomp!", "author": "Lukasz Sychowicz (X-Ray)", "date": "2007", "typeLetter": "B", "originalModuleExt": "sap", "channels": 2, "songs": 6}
 , {"filePath": "Composers/Sychowicz_Lukasz/Zanos.sap", "fileSize": 4395, "title": "Zanos", "author": "Lukasz Sychowicz (X-Ray)", "date": "1995", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2}
 , {"filePath": "Composers/Sychowicz_Lukasz/Zbig.sap", "fileSize": 11241, "title": "Zbig", "author": "Lukasz Sychowicz (X-Ray)", "date": "05/2007", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
@@ -4954,7 +4952,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Szpilowski_Michal/Salute.sap", "fileSize": 5378, "title": "Salute", "author": "Michal Szpilowski (Miker)", "date": "1995", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Composers/Szpilowski_Michal/Samba_Gone_Bad.sap", "fileSize": 4425, "title": "Samba Gone Bad", "author": "Michal Szpilowski (Miker)", "date": "2013", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2}
 , {"filePath": "Composers/Szpilowski_Michal/Saperflaj.sap", "fileSize": 4340, "title": "Saperflaj", "author": "Michal Szpilowski (Miker)", "date": "03/05/2013", "typeLetter": "B", "originalModuleExt": "rmt"}
-, {"filePath": "Composers/Szpilowski_Michal/Scorch.sap", "fileSize": 6176, "title": "Scorch", "author": "Michal Szpilowski )Miker)", "date": "08-10/2022", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 6}
+, {"filePath": "Composers/Szpilowski_Michal/Scorch.sap", "fileSize": 6176, "title": "Scorch", "author": "Michal Szpilowski (Miker)", "date": "08-10/2022", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 6}
 , {"filePath": "Composers/Szpilowski_Michal/Scorpio.sap", "fileSize": 4455, "title": "Scorpio", "author": "Michal Szpilowski (Miker)", "date": "1994 <?>", "typeLetter": "C", "originalModuleExt": "cmc"}
 , {"filePath": "Composers/Szpilowski_Michal/Settlers.sap", "fileSize": 3778, "title": "Settlers", "author": "Michal Szpilowski (Miker)", "date": "1998", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Composers/Szpilowski_Michal/Sexy_Six_Alfa_Ingame.sap", "fileSize": 3367, "title": "Sexy Six Alfa - Ingame", "author": "Michal Szpilowski (Miker)", "date": "1994", "typeLetter": "C", "originalModuleExt": "cmc", "songs": 2}
@@ -6205,6 +6203,7 @@ const asma = {"composerInfos": [
 , {"filePath": "Misc/Tribute_To_Virus.sap", "fileSize": 5330, "title": "Tribute to Virus", "author": "Tomasz Andzejewski (Tkacz)", "date": "1998", "typeLetter": "B", "originalModuleExt": "mpt"}
 , {"filePath": "Misc/Udders.sap", "fileSize": 1653, "title": "Udders", "author": "<?> (The Fender)", "date": "08/04/2017", "typeLetter": "D", "originalModuleExt": "sap"}
 , {"filePath": "Misc/Unite.sap", "fileSize": 2961, "title": "Unite", "author": "Daniel Kolakowski (Mozart)", "date": "", "typeLetter": "B", "originalModuleExt": "sap"}
+, {"filePath": "Misc/Unleashed.sap", "fileSize": 5451, "title": "Unleashed", "author": "Kamil Wolnikowski (Jammer)", "date": "2024", "typeLetter": "B", "originalModuleExt": "sap"}
 , {"filePath": "Misc/Utwor_z_najwieksza_iloscia.sap", "fileSize": 3287, "title": "Utwor z najwieksza iloscia punktow na jednostke czasu", "author": "Rafal Dziamski (Vasco)", "date": "10/11/2011", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Misc/Walec.sap", "fileSize": 5265, "title": "Walec", "author": "<?> (Mruczy)", "date": "", "typeLetter": "B", "originalModuleExt": "tmc", "channels": 2}
 , {"filePath": "Misc/Wall_of_Fuzz.sap", "fileSize": 3007, "title": "Wall of Fuzz", "author": "<?> (Chunter)", "date": "29/01/2013", "typeLetter": "B", "originalModuleExt": "rmt"}
