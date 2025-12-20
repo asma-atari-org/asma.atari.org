@@ -25,7 +25,7 @@ set WINSCP=C:\jac\system\Windows\Tools\NET\WinSCP\WinSCP.com
 mode con:cols=320 lines=800
 echo Synchronizing folder %FOLDER%.
 
-rem The host keyis displayed in case is does not match.n"
+rem The host key is displayed in case it does not match.
 "%WINSCP%" ^
   /ini=nul ^
   /loglevel=2 ^
