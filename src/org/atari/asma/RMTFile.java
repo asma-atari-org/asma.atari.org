@@ -3,6 +3,14 @@ package org.atari.asma;
 // https://github.com/raster-atari-org/RASTER-Music-Tracker/blob/stable/RMT/docs/rmt_format1x.txt
 public class RMTFile {
 
+	public static class Instrument {
+		
+	}
+	
+	public static class Track {
+		
+	}
+
 	public static String RMT4 = "RMT4";
 	public static String RMT8 = "RMT8";
 

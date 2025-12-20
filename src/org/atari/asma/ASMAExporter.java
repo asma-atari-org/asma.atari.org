@@ -1,6 +1,7 @@
 package org.atari.asma;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -34,8 +35,19 @@ public class ASMAExporter {
 		var sourceFolderPath = args[0];
 		File sourceFolder = new File(sourceFolderPath);
 
+		File stilFile = new File(sourceFolder, "Docs/STIL.txt");
+		messageQueue.sendMessage("Loading STIL information '" + stilFile.getPath() + "'.");
+		STIL stil = new STIL();
+		try {
+			stil.load(stilFile);
+		} catch (IOException ex) {
+			messageQueue.sendError("Cannot read STIL file: " + ex.getMessage());
+			return;
+		}
+		messageQueue.sendMessage(stil.getSize() + " STIL entries loaded.");
+
 		File composersFile = new File(sourceFolder, "Docs/ASMA-Composers.json");
-		messageQueue.sendMessage("Loading composers from " + composersFile.getPath() + ".");
+		messageQueue.sendMessage("Loading composers from '" + composersFile.getPath() + "'.");
 		ComposerList composerList = ComposerList.load(composersFile);
 		composerList.deserialize();
 		composerList.init(messageQueue);
@@ -43,7 +55,7 @@ public class ASMAExporter {
 		composerList.checkFolders(sourceFolder, messageQueue);
 
 		File groupsFile = new File(sourceFolder, "Docs/ASMA-Groups.json");
-		messageQueue.sendMessage("Loading groups from " + composersFile.getPath() + ".");
+		messageQueue.sendMessage("Loading groups from '" + composersFile.getPath() + "'.");
 		GroupList groupList = GroupList.load(groupsFile);
 		groupList.deserialize();
 
@@ -54,14 +66,14 @@ public class ASMAExporter {
 		composerList.checkGroups(groupList, messageQueue);
 
 		File productionsFile = new File(sourceFolder, "Docs/Demozoo-Productions.json");
-		messageQueue.sendMessage("Loading Demozoo productions from " + composersFile.getPath() + ".");
+		messageQueue.sendMessage("Loading Demozoo productions from '" + composersFile.getPath() + "'.");
 		ProductionList productionList = ProductionList.load(productionsFile);
 		productionList.deserialize();
 		messageQueue.sendMessage(productionList.getEntries().size() + " productions loaded.");
 
 		productionList.init(messageQueue);
 
-		FileInfoList fileInfoList = new FileInfoList();
+		FileInfoList fileInfoList = new FileInfoList(stil);
 		fileInfoList.scanFolder(sourceFolder);
 		fileInfoList.checkFiles(composerList, productionList, messageQueue);
 

@@ -5,9 +5,12 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.atari.asma.ASMAExporter.FileExtension;
+import org.atari.asma.STIL.STILEntry;
 import org.atari.asma.demozoo.ProductionList;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.JSONWriter;
@@ -18,10 +21,13 @@ import com.google.gson.GsonBuilder;
 
 public class FileInfoList {
 
+	private STIL stil;
 	private List<FileInfo> fileInfoList;
 	private Gson gson;
 
-	public FileInfoList() {
+	public FileInfoList(STIL stil) {
+		this.stil = stil;
+
 		fileInfoList = new ArrayList<FileInfo>();
 		gson = new GsonBuilder().create();
 
@@ -65,23 +71,35 @@ public class FileInfoList {
 		System.out.println(fileList.size() + " matching files found.");
 
 		int index = sourceFolder.getAbsolutePath().length() + 1;
-		int count = 0;
+		var  count = new AtomicInteger();
 
 		final int blockSize = 100;
 		for (int i = 0; i < fileList.size() / blockSize; i++) {
 			System.out.print("=");
 		}
 		System.out.println();
-		for (File file : fileList) {
-			count++;
-			if (count % blockSize == 0) {
+		
+		fileList.parallelStream().forEach(file -> {
+			if (count.incrementAndGet() % blockSize == 0) {
 				System.out.print("^");
 			}
 			String filePath = file.getAbsolutePath().substring(index);
 			filePath = filePath.replace(File.separator, "/");
 			var songInfo = readFile(file, filePath);
-			fileInfoList.add(songInfo);
-		}
+			synchronized (fileInfoList) {
+				fileInfoList.add(songInfo);
+			}
+		});
+		
+		// Parallel process destroyed the order, so sort again.
+		fileInfoList.sort(new Comparator<FileInfo>() {
+
+
+			@Override
+			public int compare(FileInfo o1, FileInfo o2) {
+				return o1.filePath.compareTo(o2.filePath);
+			}
+		});
 		System.out.println();
 	}
 
@@ -97,6 +115,12 @@ public class FileInfoList {
 		if (filePath.toLowerCase().endsWith(FileExtension.SAP)) {
 			fileInfo.hardware = FileInfo.ATARI800;
 			fileInfo.readFromSAPFile(filePath, module);
+			
+			STILEntry stilEntry = stil.getSTILEntry("/"+filePath);
+			if (stilEntry != null) {
+				// "TODO";
+				// fileInfo.comment = stilEntry.getComment(); 
+			}
 		} else if (filePath.toLowerCase().endsWith(FileExtension.TTT)) {
 			fileInfo.hardware = FileInfo.ATARI2600;
 			String jsonString = new String(module, StandardCharsets.UTF_8);
