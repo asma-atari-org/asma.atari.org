@@ -20,6 +20,14 @@ const SongIndex = { FIRST: 0, NONE: -1, DEFAULT: -2, RANDOM: -3 };
 
 const DEFAULT_WINDOW_TITLE = "Atari SAP Music Archive";
 
+class ASMAWriter extends ASAPWriter {
+	save(filename, buffer, offset, length) {
+		const output = buffer.slice(offset, offset + length);
+		const blob = new Blob([output], { type: "application/octet-stream" });
+		saveAs(blob, filename);
+	}
+}
+
 class ASMA {
 	constructor() {
 	}
@@ -869,7 +877,7 @@ class ASMA {
 			}
 			fileInfo.setASAPInfo(asapInfo);
 			fileInfo.saveExtensions = [];
-			ASAPWriter.getSaveExts(fileInfo.saveExtensions, fileInfo.getASAPInfo(), fileInfo.getContent(), fileInfo.getContent().length);
+			ASAPWriter.getSaveExts(fileInfo.saveExtensions, fileInfo.getASAPInfo());
 		} else {
 			fileInfo.setASAPInfo(null);
 			fileInfo.saveExtensions = ["ttt"];
@@ -926,22 +934,15 @@ class ASMA {
 		let targetFilename = getFileNameWithoutExtensionFromFilePath(fileInfo.getFilePath());
 		targetFilename += "." + extension;
 		Logger.log("Exporting file content of \"" + fileInfo.getFilePath() + "\" with extension \"" + extension + "\".");
-		let output = null;
 		if (fileInfo.getASAPInfo() != null) {
-			let asapWriter = new ASAPWriter();
-			output = new Uint8Array(655636);
-			let outputOffset = 0;
-			asapWriter.setOutput(output, outputOffset, output.length);
-
-			let tag = true;
-			outputOffset = asapWriter.write(targetFilename, fileInfo.getASAPInfo(), fileInfo.getContent(), fileInfo.getContent().length, tag);
-			output = output.slice(0, outputOffset);
-
+			const asapWriter = new ASMAWriter();
+			const tag = true;
+			asapWriter.write(targetFilename, fileInfo.getASAPInfo(), fileInfo.getContent(), fileInfo.getContent().length, tag);
 		} else {
-			output = fileInfo.getContent();
+			const output = fileInfo.getContent();
+			const blob = new Blob([output], { type: "application/octet-stream" });
+			saveAs(blob, targetFilename);
 		}
-		var blob = new Blob([output], { type: "application/octet-stream" });
-		saveAs(blob, targetFilename);
 		return targetFilename;
 	}
 

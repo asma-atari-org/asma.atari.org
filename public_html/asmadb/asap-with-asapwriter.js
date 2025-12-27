@@ -1,5 +1,69 @@
 // Generated automatically with "fut". Do not edit.
 
+export class ASAPFileLoader
+{
+}
+
+class ASAPMptSamples
+{
+	content = new Uint8Array(12320);
+	contentLength;
+	is15kHz;
+
+	#doLoad(loader, moduleFilename, moduleFilenameLength, extNumber)
+	{
+		let extInitial = moduleFilename.charCodeAt(moduleFilenameLength - 3) == 77 ? "D" : "d";
+		let filename = `${moduleFilename.substring(0, moduleFilenameLength - 3)}${extInitial}${extNumber}`;
+		this.contentLength = loader.load(filename, this.content, 12320);
+		if (this.contentLength < 288)
+			return false;
+		let end = -1;
+		for (let i = 0; i < 16; i++) {
+			let start = this.content[i];
+			if (start == 0) {
+				for (; i < 16; i++) {
+					if (this.content[i] != 0 || this.content[16 + i] != 0)
+						return false;
+				}
+				break;
+			}
+			if (i > 0 && start != end)
+				return false;
+			end = this.content[16 + i];
+			if (end <= start)
+				return false;
+		}
+		return this.contentLength == ((end - this.content[0]) << 8) + 32;
+	}
+
+	load(loader, moduleFilename)
+	{
+		let moduleFilenameLength = moduleFilename.length;
+		if (moduleFilename.charCodeAt(moduleFilenameLength - 1) == 49 && this.#doLoad(loader, moduleFilename, moduleFilenameLength, 15)) {
+			this.is15kHz = true;
+			return true;
+		}
+		if (this.#doLoad(loader, moduleFilename, moduleFilenameLength, 8)) {
+			this.is15kHz = false;
+			return true;
+		}
+		return false;
+	}
+
+	relocate(music, musicLast)
+	{
+		let start = (this.content[0] << 8) - 32;
+		if ((musicLast < start || music >= start + this.contentLength) && start >= 3840)
+			return;
+		let h = 4064 + this.contentLength <= music ? 16 : (53280 - this.contentLength) >> 8;
+		h -= this.content[0];
+		for (let i = 0; i < 32; i++) {
+			if (this.content[i] != 0)
+				this.content[i] += h;
+		}
+	}
+}
+
 const NmiStatus = {
 	RESET : 0,
 	ON_V_BLANK : 1,
@@ -30,6 +94,8 @@ export class ASAP
 	#covox = new Uint8Array(4);
 	#pokeys = new PokeyPair();
 	#moduleInfo = new ASAPInfo();
+	#mptSamplesPage;
+	#mptSamples15kHz;
 	#nextPlayerCycle;
 	#tmcPerFrameCounter;
 	#currentSong;
@@ -146,12 +212,36 @@ export class ASAP
 			this.#cpu.memory[addr] = data;
 	}
 
-	#call6502(addr)
+	#storeJsr(addr, target)
 	{
-		this.#cpu.memory[53760] = 32;
-		this.#cpu.memory[53761] = addr & 255;
-		this.#cpu.memory[53762] = addr >> 8;
+		this.#cpu.memory[addr] = 32;
+		this.#cpu.memory[addr + 1] = target & 255;
+		this.#cpu.memory[addr + 2] = target >> 8;
+	}
+
+	#call6502(target)
+	{
+		this.#storeJsr(53760, target);
 		this.#cpu.memory[53763] = 210;
+		this.#cpu.pc = 53760;
+	}
+
+	#call6502PreservingRegisters(target)
+	{
+		this.#cpu.pushPc();
+		this.#cpu.memory[53760] = 8;
+		this.#cpu.memory[53761] = 72;
+		this.#cpu.memory[53762] = 138;
+		this.#cpu.memory[53763] = 72;
+		this.#cpu.memory[53764] = 152;
+		this.#cpu.memory[53765] = 72;
+		this.#storeJsr(53766, target);
+		this.#cpu.memory[53769] = 104;
+		this.#cpu.memory[53770] = 168;
+		this.#cpu.memory[53771] = 104;
+		this.#cpu.memory[53772] = 170;
+		this.#cpu.memory[53773] = 104;
+		this.#cpu.memory[53774] = 64;
 		this.#cpu.pc = 53760;
 	}
 
@@ -170,25 +260,8 @@ export class ASAP
 			this.#call6502(player + 6);
 			break;
 		case ASAPModuleType.SAP_D:
-			if (player >= 0) {
-				this.#cpu.pushPc();
-				this.#cpu.memory[53760] = 8;
-				this.#cpu.memory[53761] = 72;
-				this.#cpu.memory[53762] = 138;
-				this.#cpu.memory[53763] = 72;
-				this.#cpu.memory[53764] = 152;
-				this.#cpu.memory[53765] = 72;
-				this.#cpu.memory[53766] = 32;
-				this.#cpu.memory[53767] = player & 255;
-				this.#cpu.memory[53768] = player >> 8;
-				this.#cpu.memory[53769] = 104;
-				this.#cpu.memory[53770] = 168;
-				this.#cpu.memory[53771] = 104;
-				this.#cpu.memory[53772] = 170;
-				this.#cpu.memory[53773] = 104;
-				this.#cpu.memory[53774] = 64;
-				this.#cpu.pc = 53760;
-			}
+			if (player >= 0)
+				this.#call6502PreservingRegisters(player);
 			break;
 		case ASAPModuleType.SAP_S:
 			let i = this.#cpu.memory[69] - 1;
@@ -204,6 +277,10 @@ export class ASAP
 		case ASAPModuleType.TM2:
 		case ASAPModuleType.FC:
 			this.#call6502(player + 3);
+			break;
+		case ASAPModuleType.MD1:
+		case ASAPModuleType.MD2:
+			this.#call6502PreservingRegisters(player + 3);
 			break;
 		case ASAPModuleType.TMC:
 			if (--this.#tmcPerFrameCounter <= 0) {
@@ -275,6 +352,32 @@ export class ASAP
 	 */
 	load(filename, module, moduleLen)
 	{
+		this.loadWithExtraFiles(filename, module, moduleLen, null);
+	}
+
+	/**
+	 * Loads music data, possibly from several files.
+	 * @param filename Filename of the main file ("module").
+	 * @param loader File loader.
+	 */
+	loadFiles(filename, loader)
+	{
+		const module = new Uint8Array(65000);
+		let moduleLen = loader.load(filename, module, 65000);
+		if (moduleLen < 0)
+			throw new ASAPFormatException("File not found");
+		this.loadWithExtraFiles(filename, module, moduleLen, loader);
+	}
+
+	/**
+	 * Loads music data, possibly with extra files.
+	 * @param filename Filename, used to determine the format.
+	 * @param module Contents of the main file.
+	 * @param moduleLen Length of the main file.
+	 * @param loader Loader for extra files, should they be needed.
+	 */
+	loadWithExtraFiles(filename, module, moduleLen, loader)
+	{
 		this.#moduleInfo.load(filename, module, moduleLen);
 		let playerRoutine = ASAP6502.getPlayerRoutine(this.#moduleInfo);
 		if (playerRoutine != null) {
@@ -283,6 +386,17 @@ export class ASAP
 			let music = this.#moduleInfo.getMusicAddress();
 			if (music <= playerLastByte)
 				throw new ASAPFormatException("Module address conflicts with the player routine");
+			if (this.#moduleInfo.type == ASAPModuleType.MD1 || this.#moduleInfo.type == ASAPModuleType.MD2) {
+				if (loader == null)
+					throw new ASAPFormatException("MD1/MD2 not supported in this ASAP port");
+				const samples = new ASAPMptSamples();
+				if (!samples.load(loader, filename))
+					throw new ASAPFormatException("Missing D15/D8 file");
+				samples.relocate(music, music + moduleLen - 5);
+				this.#mptSamplesPage = samples.content[0];
+				this.#mptSamples15kHz = samples.is15kHz;
+				this.#cpu.memory.set(samples.content.subarray(0, samples.contentLength), (this.#mptSamplesPage << 8) - 32);
+			}
 			this.#cpu.memory[19456] = 0;
 			if (this.#moduleInfo.type == ASAPModuleType.FC)
 				this.#cpu.memory.set(module.subarray(0, moduleLen), music);
@@ -387,8 +501,18 @@ export class ASAP
 			this.#do6502Init(player + 256, 0, 0, this.#moduleInfo.songPos[this.#currentSong]);
 			break;
 		case ASAPModuleType.MPT:
+		case ASAPModuleType.MD1:
+		case ASAPModuleType.MD2:
 			this.#do6502Init(player, 0, music >> 8, music);
+			if (this.#moduleInfo.type != ASAPModuleType.MPT)
+				this.#do6502Init(player, 3, this.#mptSamplesPage - 1, 224);
 			this.#do6502Init(player, 2, this.#moduleInfo.songPos[this.#currentSong], 0);
+			if (this.#moduleInfo.type == ASAPModuleType.MPT)
+				break;
+			this.#cpu.pc = player;
+			this.#cpu.a = this.#moduleInfo.type == ASAPModuleType.MD1 ? 5 : 6;
+			this.#cpu.x = this.#mptSamples15kHz ? 1 : 0;
+			this.#cpu.s = 255;
 			break;
 		case ASAPModuleType.RMT:
 			this.#do6502Init(player, this.#moduleInfo.songPos[this.#currentSong], music, music >> 8);
@@ -560,9 +684,9 @@ export class ASAP
 		let blockShift = this.#moduleInfo.getChannels() - (format == ASAPSampleFormat.U8 ? 1 : 0);
 		let bufferBlocks = bufferLen >> blockShift;
 		if (this.#currentDuration > 0) {
-			let totalBlocks = this.#millisecondsToBlocks(this.#currentDuration);
-			if (bufferBlocks > totalBlocks - this.#blocksPlayed)
-				bufferBlocks = totalBlocks - this.#blocksPlayed;
+			let remainingBlocks = this.#millisecondsToBlocks(this.#currentDuration) - this.#blocksPlayed;
+			if (bufferBlocks > remainingBlocks)
+				bufferBlocks = remainingBlocks;
 		}
 		let block = 0;
 		for (;;) {
@@ -624,6 +748,8 @@ class ASAP6502
 		case ASAPModuleType.DLT:
 			return Fu.dlt_obx;
 		case ASAPModuleType.MPT:
+		case ASAPModuleType.MD1:
+		case ASAPModuleType.MD2:
 			return Fu.mpt_obx;
 		case ASAPModuleType.RMT:
 			return info.getChannels() == 1 ? Fu.rmt4_obx : Fu.rmt8_obx;
@@ -650,10 +776,12 @@ const ASAPModuleType = {
 	CMS : 7,
 	DLT : 8,
 	MPT : 9,
-	RMT : 10,
-	TMC : 11,
-	TM2 : 12,
-	FC : 13
+	MD1 : 10,
+	MD2 : 11,
+	RMT : 12,
+	TMC : 13,
+	TM2 : 14,
+	FC : 15
 }
 
 /**
@@ -740,7 +868,7 @@ export class ASAPInfo
 	/**
 	 * ASAP version - major part.
 	 */
-	static VERSION_MAJOR = 6;
+	static VERSION_MAJOR = 7;
 
 	/**
 	 * ASAP version - minor part.
@@ -750,22 +878,22 @@ export class ASAPInfo
 	/**
 	 * ASAP version - micro part.
 	 */
-	static VERSION_MICRO = 1;
+	static VERSION_MICRO = 0;
 
 	/**
 	 * ASAP version as a string.
 	 */
-	static VERSION = "6.0.1";
+	static VERSION = "7.0.0";
 
 	/**
 	 * Years ASAP was created in.
 	 */
-	static YEARS = "2005-2023";
+	static YEARS = "2005-2025";
 
 	/**
 	 * Short credits for ASAP.
 	 */
-	static CREDITS = "Another Slight Atari Player (C) 2005-2023 Piotr Fusik\nCMC, MPT, TMC, TM2 players (C) 1994-2005 Marcin Lewandowski\nRMT player (C) 2002-2005 Radek Sterba\nDLT player (C) 2009 Marek Konopka\nCMS player (C) 1999 David Spilka\nFC player (C) 2011 Jerzy Kut\n";
+	static CREDITS = "Another Slight Atari Player (C) 2005-2025 Piotr Fusik\nCMC, MPT, TMC, TM2 players (C) 1994-2005 Marcin Lewandowski\nRMT player (C) 2002-2005 Radek Sterba\nDLT player (C) 2009 Marek Konopka\nCMS player (C) 1999 David Spilka\nFC player (C) 2011 Jerzy Kut\n";
 
 	/**
 	 * Short license notice.
@@ -799,6 +927,7 @@ export class ASAPInfo
 	#loops = new Array(32);
 	#ntsc;
 	type;
+	originalType;
 	#fastplay;
 	#music;
 	#init;
@@ -934,7 +1063,7 @@ export class ASAPInfo
 	{
 		if (moduleLen < 774)
 			throw new ASAPFormatException("Module too short");
-		this.type = type;
+		this.originalType = this.type = type;
 		this.#parseModule(module, moduleLen);
 		let lastPos = 84;
 		while (--lastPos >= 0) {
@@ -1007,7 +1136,7 @@ export class ASAPInfo
 	{
 		if (moduleLen != 11270 && moduleLen != 11271)
 			throw new ASAPFormatException("Invalid module length");
-		this.type = ASAPModuleType.DLT;
+		this.originalType = this.type = ASAPModuleType.DLT;
 		this.#parseModule(module, moduleLen);
 		if (this.#music != 8192)
 			throw new ASAPFormatException("Unsupported module address");
@@ -1093,11 +1222,11 @@ export class ASAPInfo
 			this.#addSong(playerCalls);
 	}
 
-	#parseMpt(module, moduleLen)
+	#parseMpt(module, moduleLen, type)
 	{
 		if (moduleLen < 464)
 			throw new ASAPFormatException("Module too short");
-		this.type = ASAPModuleType.MPT;
+		this.originalType = this.type = type;
 		this.#parseModule(module, moduleLen);
 		let track0Addr = ASAPInfo.getWord(module, 2) + 458;
 		if (module[454] + (module[458] << 8) != track0Addr)
@@ -1307,7 +1436,7 @@ export class ASAPInfo
 		let perFrame = module[12];
 		if (perFrame < 1 || perFrame > 4)
 			throw new ASAPFormatException("Unsupported player call rate");
-		this.type = ASAPModuleType.RMT;
+		this.originalType = this.type = ASAPModuleType.RMT;
 		this.#parseModule(module, moduleLen);
 		let blockLen = ASAPInfo.getWord(module, 4) + 1 - this.#music;
 		let songLen = ASAPInfo.getWord(module, 4) + 1 - ASAPInfo.getWord(module, 20);
@@ -1441,7 +1570,7 @@ export class ASAPInfo
 	{
 		if (moduleLen < 464)
 			throw new ASAPFormatException("Module too short");
-		this.type = ASAPModuleType.TMC;
+		this.originalType = this.type = ASAPModuleType.TMC;
 		this.#parseModule(module, moduleLen);
 		this.#channels = 2;
 		let i = 0;
@@ -1548,7 +1677,7 @@ export class ASAPInfo
 	{
 		if (moduleLen < 932)
 			throw new ASAPFormatException("Module too short");
-		this.type = ASAPModuleType.TM2;
+		this.originalType = this.type = ASAPModuleType.TM2;
 		this.#parseModule(module, moduleLen);
 		let i = module[37];
 		if (i < 1 || i > 4)
@@ -1639,7 +1768,7 @@ export class ASAPInfo
 	{
 		if (!ASAPInfo.#validateFc(module, moduleLen))
 			throw new ASAPFormatException("Invalid FC file");
-		this.type = ASAPModuleType.FC;
+		this.originalType = this.type = ASAPModuleType.FC;
 		this.player = 1024;
 		this.#music = 2560;
 		this.#songs = 0;
@@ -1787,6 +1916,18 @@ export class ASAPInfo
 		return moduleLen >= 30 && ASAPInfo.#hasStringAt(module, 0, "SAP\r\n");
 	}
 
+	static RMT_INIT = 3200;
+
+	getRmtSapOffset(module, moduleLen)
+	{
+		if (this.player != 13315)
+			return -1;
+		let offset = this.headerLen + ASAPInfo.getWord(module, this.headerLen + 4) - ASAPInfo.getWord(module, this.headerLen + 2) + 7;
+		if (offset + 6 >= moduleLen || module[offset + 4] != 82 || module[offset + 5] != 77 || module[offset + 6] != 84)
+			return -1;
+		return offset;
+	}
+
 	#parseSap(module, moduleLen)
 	{
 		if (!ASAPInfo.#validateSap(module, moduleLen))
@@ -1895,24 +2036,52 @@ export class ASAPInfo
 				throw new ASAPFormatException("Missing PLAYER tag");
 			if (this.#init < 0)
 				throw new ASAPFormatException("Missing INIT tag");
-			this.type = ASAPModuleType.SAP_B;
+			this.originalType = this.type = ASAPModuleType.SAP_B;
+			if ((this.#init == 1019 || this.#init == 1017) && this.player == 1283)
+				this.originalType = ASAPModuleType.DLT;
+			else if (((this.#init == 1267 || this.#init == 1263) && this.player == 1283) || (this.#init == 62707 && this.player == 62723))
+				this.originalType = ASAPModuleType.MPT;
+			else if (this.#init == 3200 || this.getRmtSapOffset(module, moduleLen) > 0)
+				this.originalType = ASAPModuleType.RMT;
+			else if (this.#init == 1269 || this.#init == 62709 || this.#init == 1266 || ((this.#init == 1255 || this.#init == 62695 || this.#init == 1252) && this.#fastplay == 156) || ((this.#init == 1253 || this.#init == 62693 || this.#init == 1250) && (this.#fastplay == 104 || this.#fastplay == 78)))
+				this.originalType = ASAPModuleType.TMC;
+			else if ((this.#init == 4224 && this.player == 1283) || (this.#init == 4992 && this.player == 2051))
+				this.originalType = ASAPModuleType.TM2;
+			else if (this.#init == 1024 && this.player == 1027)
+				this.originalType = ASAPModuleType.FC;
 			break;
 		case 67:
 			if (this.player < 0)
 				throw new ASAPFormatException("Missing PLAYER tag");
 			if (this.#music < 0)
 				throw new ASAPFormatException("Missing MUSIC tag");
-			this.type = ASAPModuleType.SAP_C;
+			this.originalType = this.type = ASAPModuleType.SAP_C;
+			if ((this.player == 1280 || this.player == 62720) && moduleLen >= 1024) {
+				if (this.#channels > 1)
+					this.originalType = ASAPModuleType.CMS;
+				else if (module[moduleLen - 170] == 30)
+					this.originalType = ASAPModuleType.CMR;
+				else if (module[moduleLen - 909] == 48)
+					this.originalType = ASAPModuleType.CM3;
+				else
+					this.originalType = ASAPModuleType.CMC;
+			}
 			break;
 		case 68:
 			if (this.#init < 0)
 				throw new ASAPFormatException("Missing INIT tag");
-			this.type = ASAPModuleType.SAP_D;
+			this.originalType = this.type = ASAPModuleType.SAP_D;
+			if (this.player == 1283 || this.player == 62723) {
+				if (this.#init == this.player - 32 && moduleLen > 2231 && module[moduleLen - 2231] == 162)
+					this.originalType = ASAPModuleType.MD1;
+				else if (this.#init == this.player - 30)
+					this.originalType = ASAPModuleType.MD2;
+			}
 			break;
 		case 83:
 			if (this.#init < 0)
 				throw new ASAPFormatException("Missing INIT tag");
-			this.type = ASAPModuleType.SAP_S;
+			this.originalType = this.type = ASAPModuleType.SAP_S;
 			if (this.#fastplay < 0)
 				this.#fastplay = 78;
 			break;
@@ -1957,6 +2126,8 @@ export class ASAPInfo
 		case 7629924:
 		case 7630957:
 		case 6582381:
+		case 3236973:
+		case 3302509:
 		case 7630194:
 		case 6516084:
 		case 3698036:
@@ -2009,24 +2180,21 @@ export class ASAPInfo
 	{
 		let ext;
 		if (filename != null) {
-			let len = filename.length;
 			let basename = 0;
-			ext = -1;
-			for (let i = len; --i >= 0;) {
+			let extPos = -1;
+			for (let i = filename.length; --i >= 0;) {
 				let c = filename.charCodeAt(i);
 				if (c == 47 || c == 92) {
 					basename = i + 1;
 					break;
 				}
 				if (c == 46)
-					ext = i;
+					extPos = i;
 			}
-			if (ext < 0)
+			if (extPos < 0)
 				throw new ASAPFormatException("Filename has no extension");
-			ext -= basename;
-			if (ext > 127)
-				ext = 127;
-			this.#filename = filename.substring(basename, basename + ext);
+			extPos = Math.min(extPos - basename, 127);
+			this.#filename = filename.substring(basename, basename + extPos);
 			ext = ASAPInfo.getPackedExt(filename);
 		}
 		else {
@@ -2075,11 +2243,17 @@ export class ASAPInfo
 			this.#parseDlt(module, moduleLen);
 			return;
 		case 7630957:
-			this.#parseMpt(module, moduleLen);
+			this.#parseMpt(module, moduleLen, ASAPModuleType.MPT);
 			return;
 		case 6582381:
 			this.#fastplay = 156;
-			this.#parseMpt(module, moduleLen);
+			this.#parseMpt(module, moduleLen, ASAPModuleType.MPT);
+			return;
+		case 3236973:
+			this.#parseMpt(module, moduleLen, ASAPModuleType.MD1);
+			return;
+		case 3302509:
+			this.#parseMpt(module, moduleLen, ASAPModuleType.MD2);
 			return;
 		case 7630194:
 			this.#parseRmt(module, moduleLen);
@@ -2517,6 +2691,10 @@ export class ASAPInfo
 			return "Delta Music Composer";
 		case 7630957:
 			return "Music ProTracker";
+		case 3236973:
+			return "Music ProTracker (1-channel samples)";
+		case 3302509:
+			return "Music ProTracker (2-channel samples)";
 		case 6582381:
 			return "MPT DoublePlay";
 		case 7630194:
@@ -2535,61 +2713,14 @@ export class ASAPInfo
 		}
 	}
 
-	static RMT_INIT = 3200;
-
-	getRmtSapOffset(module, moduleLen)
-	{
-		if (this.player != 13315)
-			return -1;
-		let offset = this.headerLen + ASAPInfo.getWord(module, this.headerLen + 4) - ASAPInfo.getWord(module, this.headerLen + 2) + 7;
-		if (offset + 6 >= moduleLen || module[offset + 4] != 82 || module[offset + 5] != 77 || module[offset + 6] != 84)
-			return -1;
-		return offset;
-	}
-
-	getOriginalModuleType(module, moduleLen)
-	{
-		switch (this.type) {
-		case ASAPModuleType.SAP_B:
-			if ((this.#init == 1019 || this.#init == 1017) && this.player == 1283)
-				return ASAPModuleType.DLT;
-			if (((this.#init == 1267 || this.#init == 1263) && this.player == 1283) || (this.#init == 62707 && this.player == 62723))
-				return ASAPModuleType.MPT;
-			if (this.#init == 3200 || this.getRmtSapOffset(module, moduleLen) > 0)
-				return ASAPModuleType.RMT;
-			if (this.#init == 1269 || this.#init == 62709 || this.#init == 1266 || ((this.#init == 1255 || this.#init == 62695 || this.#init == 1252) && this.#fastplay == 156) || ((this.#init == 1253 || this.#init == 62693 || this.#init == 1250) && (this.#fastplay == 104 || this.#fastplay == 78)))
-				return ASAPModuleType.TMC;
-			if ((this.#init == 4224 && this.player == 1283) || (this.#init == 4992 && this.player == 2051))
-				return ASAPModuleType.TM2;
-			if (this.#init == 1024 && this.player == 1027)
-				return ASAPModuleType.FC;
-			return this.type;
-		case ASAPModuleType.SAP_C:
-			if ((this.player == 1280 || this.player == 62720) && moduleLen >= 1024) {
-				if (this.#channels > 1)
-					return ASAPModuleType.CMS;
-				if (module[moduleLen - 170] == 30)
-					return ASAPModuleType.CMR;
-				if (module[moduleLen - 909] == 48)
-					return ASAPModuleType.CM3;
-				return ASAPModuleType.CMC;
-			}
-			return this.type;
-		default:
-			return this.type;
-		}
-	}
-
 	/**
 	 * Returns the extension of the original module format.
 	 * For native modules it simply returns their extension.
 	 * For the SAP format it attempts to detect the original module format.
-	 * @param module Contents of the file.
-	 * @param moduleLen Length of the file.
 	 */
-	getOriginalModuleExt(module, moduleLen)
+	getOriginalModuleExt()
 	{
-		switch (this.getOriginalModuleType(module, moduleLen)) {
+		switch (this.originalType) {
 		case ASAPModuleType.CMC:
 			return this.#fastplay == 156 ? "dmc" : "cmc";
 		case ASAPModuleType.CM3:
@@ -2602,6 +2733,10 @@ export class ASAPInfo
 			return "dlt";
 		case ASAPModuleType.MPT:
 			return this.#fastplay == 156 ? "mpd" : "mpt";
+		case ASAPModuleType.MD1:
+			return "md1";
+		case ASAPModuleType.MD2:
+			return "md2";
 		case ASAPModuleType.RMT:
 			return "rmt";
 		case ASAPModuleType.TMC:
@@ -2626,6 +2761,11 @@ export class ASAPConversionException extends Error
 	name = "ASAPConversionException";
 }
 
+export class ASAPIOException extends Error
+{
+	name = "ASAPIOException";
+}
+
 class ASAPNativeModuleWriter
 {
 	writer;
@@ -2645,7 +2785,7 @@ class ASAPNativeModuleWriter
 
 	#copy(endOffset)
 	{
-		this.writer.writeBytes(this.sourceModule, this.sourceOffset + this.writer.outputOffset, this.sourceOffset + endOffset);
+		this.writer.writeBytes(this.sourceModule, this.sourceOffset + this.writer.getOutputLength(), this.sourceOffset + endOffset);
 	}
 
 	#relocateBytes(lowOffset, highOffset, count, shift)
@@ -2662,7 +2802,7 @@ class ASAPNativeModuleWriter
 
 	#relocateLowHigh(count)
 	{
-		let lowOffset = this.writer.outputOffset;
+		let lowOffset = this.writer.getOutputLength();
 		this.#relocateBytes(lowOffset, lowOffset + count, count, 0);
 		this.#relocateBytes(lowOffset, lowOffset + count, count, 8);
 	}
@@ -2670,7 +2810,7 @@ class ASAPNativeModuleWriter
 	#relocateWords(count)
 	{
 		while (--count >= 0) {
-			let address = this.getWord(this.writer.outputOffset);
+			let address = this.getWord(this.writer.getOutputLength());
 			if (address != 0 && address != 65535)
 				address += this.#addressDiff;
 			this.writer.writeWord(address);
@@ -2696,6 +2836,8 @@ class ASAPNativeModuleWriter
 			this.#relocateWords(3);
 			break;
 		case ASAPModuleType.MPT:
+		case ASAPModuleType.MD1:
+		case ASAPModuleType.MD2:
 			this.#relocateWords(99);
 			this.#copy(454);
 			this.#relocateLowHigh(4);
@@ -2711,13 +2853,11 @@ class ASAPNativeModuleWriter
 			this.#copy(songOffset);
 			let songEnd = 7 + this.getWord(4) - startAddr;
 			while (songOffset + 3 < songEnd) {
-				let nextSongOffset = songOffset + this.#getByte(9) - 48;
+				let nextSongOffset = Math.min(songOffset + this.#getByte(9) - 48, songEnd);
 				if (this.#getByte(songOffset) == 254) {
 					this.#copy(songOffset + 2);
 					this.#relocateWords(1);
 				}
-				if (nextSongOffset > songEnd)
-					nextSongOffset = songEnd;
 				this.#copy(nextSongOffset);
 				songOffset = nextSongOffset;
 			}
@@ -2746,7 +2886,8 @@ class ASAPNativeModuleWriter
 }
 
 /**
- * Static methods for writing modules in different formats.
+ * Converter between the SAP format, native module formats
+ * and the Atari 8-bit XEX executables.
  */
 export class ASAPWriter
 {
@@ -2764,31 +2905,26 @@ export class ASAPWriter
 	 * Returns the number of extensions written to <code>exts</code>.
 	 * @param exts Receives filename extensions without the leading dot.
 	 * @param info File information.
-	 * @param module Contents of the file.
-	 * @param moduleLen Length of the file.
 	 */
-	static getSaveExts(exts, info, module, moduleLen)
+	static getSaveExts(exts, info)
 	{
 		let i = 0;
 		switch (info.type) {
 		case ASAPModuleType.SAP_B:
 		case ASAPModuleType.SAP_C:
-			exts[i++] = "sap";
-			let ext = info.getOriginalModuleExt(module, moduleLen);
-			if (ext != null)
-				exts[i++] = ext;
-			exts[i++] = "xex";
-			break;
 		case ASAPModuleType.SAP_D:
 			exts[i++] = "sap";
-			if (info.getPlayerRateScanlines() == 312)
+			let ext = info.getOriginalModuleExt();
+			if (ext != null)
+				exts[i++] = ext;
+			if (info.type != ASAPModuleType.SAP_D || info.getPlayerRateScanlines() == 312)
 				exts[i++] = "xex";
 			break;
 		case ASAPModuleType.SAP_S:
 			exts[i++] = "sap";
 			break;
 		default:
-			exts[i++] = info.getOriginalModuleExt(module, moduleLen);
+			exts[i++] = info.getOriginalModuleExt();
 			exts[i++] = "sap";
 			exts[i++] = "xex";
 			break;
@@ -2840,28 +2976,40 @@ export class ASAPWriter
 		result[8] = 48 + value;
 		return 9;
 	}
-	output;
-	outputOffset;
-	#outputEnd;
+	#sourceFilename;
+	#loader = null;
 
 	/**
-	 * Sets the destination array for <code>Write</code>.
-	 * @param output The destination array.
-	 * @param startIndex The array offset to start writing at.
-	 * @param endIndex The array offset to finish writing before.
+	 * Sets the loader for extra input files, if they are needed.
+	 * Conversion from MD1/MD2 to SAP/XEX needs an extra D15/D8 file.
+	 * @param sourceFilename Filename of the main input.
+	 * @param loader Loader for extra files, if needed.
 	 */
-	setOutput(output, startIndex, endIndex)
+	setInput(sourceFilename, loader)
 	{
-		this.output = output;
-		this.outputOffset = startIndex;
-		this.#outputEnd = endIndex;
+		this.#sourceFilename = sourceFilename;
+		this.#loader = loader;
+	}
+	init;
+	player;
+	#outputLen;
+	#output = new Uint8Array(65000);
+
+	clearOutput()
+	{
+		this.#outputLen = 0;
+	}
+
+	getOutput()
+	{
+		return this.#output;
 	}
 
 	writeByte(value)
 	{
-		if (this.outputOffset >= this.#outputEnd)
+		if (this.#outputLen >= 65000)
 			throw new ASAPConversionException("Output full");
-		this.output[this.outputOffset++] = value;
+		this.#output[this.#outputLen++] = value;
 	}
 
 	writeWord(value)
@@ -2873,10 +3021,10 @@ export class ASAPWriter
 	writeBytes(array, startIndex, endIndex)
 	{
 		let length = endIndex - startIndex;
-		if (this.outputOffset + length > this.#outputEnd)
+		if (this.#outputLen + length > 65000)
 			throw new ASAPConversionException("Output full");
-		this.output.set(array.subarray(startIndex, startIndex + length), this.outputOffset);
-		this.outputOffset += length;
+		this.#output.set(array.subarray(startIndex, startIndex + length), this.#outputLen);
+		this.#outputLen += length;
 	}
 
 	#writeString(s)
@@ -2927,7 +3075,7 @@ export class ASAPWriter
 		this.writeByte(10);
 	}
 
-	#writeSapHeader(info, type, init, player)
+	#writeSapHeader(info, type)
 	{
 		this.#writeString("SAP\r\n");
 		this.#writeTextSapTag("AUTHOR ", info.getAuthor());
@@ -2950,8 +3098,8 @@ export class ASAPWriter
 			this.#writeDecSapTag("FASTPLAY ", info.getPlayerRateScanlines());
 		if (type == 67)
 			this.#writeHexSapTag("MUSIC ", info.getMusicAddress());
-		this.#writeHexSapTag("INIT ", init);
-		this.#writeHexSapTag("PLAYER ", player);
+		this.#writeHexSapTag("INIT ", this.init);
+		this.#writeHexSapTag("PLAYER ", this.player);
 		this.#writeHexSapTag("COVOX ", info.getCovoxAddress());
 		for (let song = 0; song < info.getSongs(); song++) {
 			if (info.getDuration(song) < 0)
@@ -2966,16 +3114,6 @@ export class ASAPWriter
 		}
 	}
 
-	#writeExecutableHeader(initAndPlayer, info, type, init, player)
-	{
-		if (initAndPlayer == null)
-			this.#writeSapHeader(info, type, init, player);
-		else {
-			initAndPlayer[0] = init;
-			initAndPlayer[1] = player;
-		}
-	}
-
 	#writePlaTaxLda0()
 	{
 		this.writeByte(104);
@@ -2984,10 +3122,8 @@ export class ASAPWriter
 		this.writeByte(0);
 	}
 
-	#writeCmcInit(initAndPlayer, info)
+	#writeCmcInit(info)
 	{
-		if (initAndPlayer == null)
-			return;
 		this.writeWord(4064);
 		this.writeWord(4080);
 		this.writeByte(72);
@@ -2999,31 +3135,72 @@ export class ASAPWriter
 		this.writeByte(169);
 		this.writeByte(112);
 		this.writeByte(32);
-		this.writeWord(initAndPlayer[1] + 3);
+		this.writeWord(this.player + 3);
 		this.#writePlaTaxLda0();
 		this.writeByte(76);
-		this.writeWord(initAndPlayer[1] + 3);
-		initAndPlayer[0] = 4064;
-		initAndPlayer[1] += 6;
+		this.writeWord(this.player + 3);
+		this.init = 4064;
+		this.player += 6;
 	}
 
-	#writeExecutableFromSap(initAndPlayer, info, type, module, moduleLen)
+	#writeExecutableFromSap(toSap, info, type, module, moduleLen)
 	{
-		this.#writeExecutableHeader(initAndPlayer, info, type, info.getInitAddress(), info.player);
+		this.init = info.getInitAddress();
+		this.player = info.player;
+		if (toSap)
+			this.#writeSapHeader(info, type);
 		this.writeBytes(module, info.headerLen, moduleLen);
 	}
 
-	#writeExecutableHeaderForSongPos(initAndPlayer, info, player, codeForOneSong, codeForManySongs, playerOffset)
+	#writeExecutableHeaderForSongPos(toSap, info, type, player, codeForOneSong, codeForManySongs, playerOffset)
 	{
+		this.player = player + playerOffset;
 		if (info.getSongs() != 1) {
-			this.#writeExecutableHeader(initAndPlayer, info, 66, player - codeForManySongs, player + playerOffset);
+			this.init = player - codeForManySongs;
+			if (toSap)
+				this.#writeSapHeader(info, type);
 			return player - codeForManySongs - info.getSongs();
 		}
-		this.#writeExecutableHeader(initAndPlayer, info, 66, player - codeForOneSong, player + playerOffset);
+		this.init = player - codeForOneSong;
+		if (toSap)
+			this.#writeSapHeader(info, type);
 		return player - codeForOneSong;
 	}
 
-	writeExecutable(initAndPlayer, info, module, moduleLen)
+	#writeMptInit(info, player)
+	{
+		if (info.getSongs() != 1) {
+			this.writeBytes(info.songPos, 0, info.getSongs());
+			this.writeByte(72);
+		}
+		let music = info.getMusicAddress();
+		this.writeByte(160);
+		this.writeByte(music & 255);
+		this.writeByte(162);
+		this.writeByte(music >> 8);
+		this.writeByte(169);
+		this.writeByte(0);
+		this.writeByte(32);
+		this.writeWord(player);
+	}
+
+	#writeMptPlaySong(info, startAddr)
+	{
+		if (info.getSongs() != 1) {
+			this.writeByte(104);
+			this.writeByte(168);
+			this.writeByte(190);
+			this.writeWord(startAddr);
+		}
+		else {
+			this.writeByte(162);
+			this.writeByte(0);
+		}
+		this.writeByte(169);
+		this.writeByte(2);
+	}
+
+	writeExecutable(toSap, info, module, moduleLen)
 	{
 		let playerRoutine = ASAP6502.getPlayerRoutine(info);
 		let player = -1;
@@ -3035,33 +3212,39 @@ export class ASAPWriter
 			if (music <= playerLastByte)
 				throw new ASAPConversionException("Module address conflicts with the player routine");
 		}
+		this.#outputLen = 0;
 		let startAddr;
 		switch (info.type) {
 		case ASAPModuleType.SAP_B:
-			this.#writeExecutableFromSap(initAndPlayer, info, 66, module, moduleLen);
+			this.#writeExecutableFromSap(toSap, info, 66, module, moduleLen);
 			break;
 		case ASAPModuleType.SAP_C:
-			this.#writeExecutableFromSap(initAndPlayer, info, 67, module, moduleLen);
-			this.#writeCmcInit(initAndPlayer, info);
+			this.#writeExecutableFromSap(toSap, info, 67, module, moduleLen);
+			if (!toSap)
+				this.#writeCmcInit(info);
 			break;
 		case ASAPModuleType.SAP_D:
-			this.#writeExecutableFromSap(initAndPlayer, info, 68, module, moduleLen);
+			this.#writeExecutableFromSap(toSap, info, 68, module, moduleLen);
 			break;
 		case ASAPModuleType.SAP_S:
-			this.#writeExecutableFromSap(initAndPlayer, info, 83, module, moduleLen);
+			this.#writeExecutableFromSap(toSap, info, 83, module, moduleLen);
 			break;
 		case ASAPModuleType.CMC:
 		case ASAPModuleType.CM3:
 		case ASAPModuleType.CMR:
 		case ASAPModuleType.CMS:
-			this.#writeExecutableHeader(initAndPlayer, info, 67, -1, player);
+			this.init = -1;
+			this.player = player;
+			if (toSap)
+				this.#writeSapHeader(info, 67);
 			this.writeWord(65535);
 			this.writeBytes(module, 2, moduleLen);
 			this.writeBytes(playerRoutine, 2, playerLastByte - player + 7);
-			this.#writeCmcInit(initAndPlayer, info);
+			if (!toSap)
+				this.#writeCmcInit(info);
 			break;
 		case ASAPModuleType.DLT:
-			startAddr = this.#writeExecutableHeaderForSongPos(initAndPlayer, info, player, 5, 7, 259);
+			startAddr = this.#writeExecutableHeaderForSongPos(toSap, info, 66, player, 5, 7, 259);
 			if (moduleLen == 11270) {
 				this.writeBytes(module, 0, 4);
 				this.writeWord(19456);
@@ -3087,38 +3270,62 @@ export class ASAPWriter
 			this.writeBytes(playerRoutine, 6, playerLastByte - player + 7);
 			break;
 		case ASAPModuleType.MPT:
-			startAddr = this.#writeExecutableHeaderForSongPos(initAndPlayer, info, player, 13, 17, 3);
+			startAddr = this.#writeExecutableHeaderForSongPos(toSap, info, 66, player, 13, 17, 3);
 			this.writeBytes(module, 0, moduleLen);
 			this.writeWord(startAddr);
 			this.writeWord(playerLastByte);
-			if (info.getSongs() != 1) {
-				this.writeBytes(info.songPos, 0, info.getSongs());
-				this.writeByte(72);
-			}
+			this.#writeMptInit(info, player);
+			this.#writeMptPlaySong(info, startAddr);
+			this.writeBytes(playerRoutine, 6, playerLastByte - player + 7);
+			break;
+		case ASAPModuleType.MD1:
+		case ASAPModuleType.MD2:
+			if (this.#loader == null)
+				throw new ASAPConversionException("MD1/MD2 conversion not supported by this program");
+			const samples = new ASAPMptSamples();
+			if (!samples.load(this.#loader, this.#sourceFilename))
+				throw new ASAPConversionException("Missing D15/D8 file");
+			samples.relocate(music, music + moduleLen - 5);
+			let samplesPage = samples.content[0] - 1;
+			let codeForOneSong = info.type == ASAPModuleType.MD1 ? 29 : 27;
+			startAddr = this.#writeExecutableHeaderForSongPos(toSap, info, 68, player, codeForOneSong, codeForOneSong + 4, 3);
+			this.writeBytes(module, 0, moduleLen);
+			this.writeByte(224);
+			this.writeByte(samplesPage);
+			this.writeByte(255);
+			this.writeByte(samplesPage + (samples.contentLength >> 8));
+			this.writeBytes(samples.content, 0, samples.contentLength);
+			this.writeWord(startAddr);
+			this.writeWord(playerLastByte);
+			this.#writeMptInit(info, player);
 			this.writeByte(160);
-			this.writeByte(music & 255);
+			this.writeByte(224);
 			this.writeByte(162);
-			this.writeByte(music >> 8);
+			this.writeByte(samplesPage);
 			this.writeByte(169);
-			this.writeByte(0);
+			this.writeByte(3);
 			this.writeByte(32);
 			this.writeWord(player);
-			if (info.getSongs() != 1) {
-				this.writeByte(104);
-				this.writeByte(168);
-				this.writeByte(190);
-				this.writeWord(startAddr);
+			this.#writeMptPlaySong(info, startAddr);
+			this.writeByte(32);
+			this.writeWord(player);
+			if (info.type == ASAPModuleType.MD1) {
+				this.writeByte(162);
+				this.writeByte(samples.is15kHz ? 1 : 0);
+				this.writeByte(169);
+				this.writeByte(5);
 			}
 			else {
-				this.writeByte(162);
-				this.writeByte(0);
+				this.writeByte(169);
+				this.writeByte(6);
 			}
-			this.writeByte(169);
-			this.writeByte(2);
 			this.writeBytes(playerRoutine, 6, playerLastByte - player + 7);
 			break;
 		case ASAPModuleType.RMT:
-			this.#writeExecutableHeader(initAndPlayer, info, 66, 3200, 1539);
+			this.init = 3200;
+			this.player = 1539;
+			if (toSap)
+				this.#writeSapHeader(info, 66);
 			this.writeBytes(module, 0, ASAPInfo.getWord(module, 4) - music + 7);
 			this.writeWord(3200);
 			if (info.getSongs() != 1) {
@@ -3144,13 +3351,14 @@ export class ASAPWriter
 			break;
 		case ASAPModuleType.TMC:
 			let perFrame = module[37];
-			let player2 = player + ASAPWriter.#WRITE_EXECUTABLE_TMC_PLAYER_OFFSET[perFrame - 1];
-			startAddr = player2 + ASAPWriter.#WRITE_EXECUTABLE_TMC_INIT_OFFSET[perFrame - 1];
+			this.player = player + ASAPWriter.#WRITE_EXECUTABLE_TMC_PLAYER_OFFSET[perFrame - 1];
+			this.init = this.player + ASAPWriter.#WRITE_EXECUTABLE_TMC_INIT_OFFSET[perFrame - 1];
 			if (info.getSongs() != 1)
-				startAddr -= 3;
-			this.#writeExecutableHeader(initAndPlayer, info, 66, startAddr, player2);
+				this.init -= 3;
+			if (toSap)
+				this.#writeSapHeader(info, 66);
 			this.writeBytes(module, 0, moduleLen);
-			this.writeWord(startAddr);
+			this.writeWord(this.init);
 			this.writeWord(playerLastByte);
 			if (info.getSongs() != 1)
 				this.writeByte(72);
@@ -3209,7 +3417,10 @@ export class ASAPWriter
 			this.writeBytes(playerRoutine, 6, playerLastByte - player + 7);
 			break;
 		case ASAPModuleType.TM2:
-			this.#writeExecutableHeader(initAndPlayer, info, 66, 4992, 2051);
+			this.init = 4992;
+			this.player = 2051;
+			if (toSap)
+				this.#writeSapHeader(info, 66);
 			this.writeBytes(module, 0, moduleLen);
 			this.writeWord(4992);
 			if (info.getSongs() != 1) {
@@ -3238,7 +3449,10 @@ export class ASAPWriter
 			this.writeBytes(playerRoutine, 2, playerLastByte - player + 7);
 			break;
 		case ASAPModuleType.FC:
-			this.#writeExecutableHeader(initAndPlayer, info, 66, player, player + 3);
+			this.init = player;
+			this.player = player + 3;
+			if (toSap)
+				this.#writeSapHeader(info, 66);
 			this.writeWord(65535);
 			this.writeWord(music);
 			this.writeWord(music + moduleLen - 1);
@@ -3340,39 +3554,92 @@ export class ASAPWriter
 		this.writeBytes(Fu.xexinfo_obx, 6, 178);
 	}
 
-	#writeNative(info, module, moduleLen)
+	/**
+	 * Writes the a native module, possibly extracting it from a SAP file.
+	 * @param info Source file information, optionally with the address changed.
+	 * @param module Contents of the source file.
+	 * @param moduleLen Length of the source file.
+	 */
+	writeNative(info, module, moduleLen)
 	{
 		const nativeWriter = new ASAPNativeModuleWriter();
 		nativeWriter.writer = this;
 		nativeWriter.sourceModule = module;
-		let type = info.type;
-		switch (type) {
+		this.#outputLen = 0;
+		switch (info.type) {
 		case ASAPModuleType.SAP_B:
 		case ASAPModuleType.SAP_C:
+		case ASAPModuleType.SAP_D:
 			let offset = info.getRmtSapOffset(module, moduleLen);
 			if (offset > 0) {
 				nativeWriter.sourceOffset = offset - 2;
 				nativeWriter.write(info, ASAPModuleType.RMT, moduleLen - offset + 2);
-				return;
+				break;
 			}
 			nativeWriter.sourceOffset = info.headerLen;
 			let blockLen = nativeWriter.getWord(4) - nativeWriter.getWord(2) + 7;
 			if (blockLen < 7 || info.headerLen + blockLen >= moduleLen)
 				throw new ASAPConversionException("Cannot extract module from SAP");
-			type = info.getOriginalModuleType(module, moduleLen);
-			if (type == ASAPModuleType.FC)
+			if (info.originalType == ASAPModuleType.FC)
 				this.writeBytes(module, info.headerLen + 6, info.headerLen + blockLen);
 			else
-				nativeWriter.write(info, type, blockLen);
+				nativeWriter.write(info, info.originalType, blockLen);
 			break;
 		case ASAPModuleType.FC:
 			this.writeBytes(module, 0, moduleLen);
-			return;
+			break;
 		default:
 			nativeWriter.sourceOffset = 0;
-			nativeWriter.write(info, type, moduleLen);
+			nativeWriter.write(info, info.type, moduleLen);
 			break;
 		}
+		return this.#output;
+	}
+
+	/**
+	 * Writes the given module in the SAP format.
+	 * @param info Source file information, with metadata updated for the output.
+	 * @param module Contents of the source file.
+	 * @param moduleLen Length of the source file.
+	 */
+	writeSap(info, module, moduleLen)
+	{
+		this.writeExecutable(true, info, module, moduleLen);
+		return this.#output;
+	}
+
+	/**
+	 * Returns the number of bytes written by <code>WriteNative</code> or <code>WriteSap</code>.
+	 */
+	getOutputLength()
+	{
+		return this.#outputLen;
+	}
+
+	/**
+	 * Writes a SAP/XEX/native module file.
+	 * If <code>Write</code> is used, <code>Save</code> needs to be overridden in a subclass of <code>ASAPWriter</code>.
+	 * @param filename Output filename.
+	 * @param buffer Contents to write.
+	 * @param offset Starting index in <code>buffer</code> to write into the file.
+	 * @param length Number of bytes to write.
+	 */
+	save(filename, buffer, offset, length)
+	{
+	}
+
+	#writeMptSamples(moduleFilename, info, module, moduleLen, extNumber)
+	{
+		let offset = info.headerLen + this.#outputLen + 4;
+		if (offset + 256 >= moduleLen || module[offset - 4] != 224 || module[offset - 2] != 255)
+			throw new ASAPConversionException("Invalid samples block");
+		let length = (module[offset - 1] - module[offset - 3]) << 8 | 32;
+		if (offset + length >= moduleLen)
+			throw new ASAPConversionException("Invalid samples block");
+		let moduleExt = moduleFilename.length - 3;
+		let extInitial = moduleFilename.charCodeAt(moduleExt) == 77 ? "D" : "d";
+		let filename = `${moduleFilename.substring(0, moduleExt)}${extInitial}${extNumber}`;
+		this.save(filename, module, offset, length);
 	}
 
 	/**
@@ -3388,61 +3655,84 @@ export class ASAPWriter
 		let destExt = ASAPInfo.getPackedExt(targetFilename);
 		switch (destExt) {
 		case 7364979:
-			this.writeExecutable(null, info, module, moduleLen);
-			return this.outputOffset;
+			this.writeExecutable(true, info, module, moduleLen);
+			this.save(targetFilename, this.#output, 0, this.#outputLen);
+			return;
 		case 7890296:
-			{
-				const initAndPlayer = new Int32Array(2);
-				this.writeExecutable(initAndPlayer, info, module, moduleLen);
-				switch (info.type) {
-				case ASAPModuleType.SAP_D:
-					if (info.getPlayerRateScanlines() != 312)
-						throw new ASAPConversionException("Impossible conversion");
-					this.writeBytes(Fu.xexd_obx, 2, 117);
-					this.writeWord(initAndPlayer[0]);
-					if (initAndPlayer[1] < 0) {
-						this.writeByte(96);
-						this.writeByte(96);
-						this.writeByte(96);
-					}
-					else {
-						this.writeByte(76);
-						this.writeWord(initAndPlayer[1]);
-					}
-					this.writeByte(info.getDefaultSong());
-					break;
-				case ASAPModuleType.SAP_S:
+			this.writeExecutable(false, info, module, moduleLen);
+			switch (info.type) {
+			case ASAPModuleType.SAP_D:
+			case ASAPModuleType.MD1:
+			case ASAPModuleType.MD2:
+				if (info.getPlayerRateScanlines() != 312)
 					throw new ASAPConversionException("Impossible conversion");
-				default:
-					this.writeBytes(Fu.xexb_obx, 2, 183);
-					this.writeWord(initAndPlayer[0]);
-					this.writeByte(76);
-					this.writeWord(initAndPlayer[1]);
-					this.writeByte(info.getDefaultSong());
-					let fastplay = info.getPlayerRateScanlines();
-					this.writeByte(fastplay & 1);
-					this.writeByte((fastplay >> 1) % 156);
-					this.writeByte((fastplay >> 1) % 131);
-					this.writeByte(fastplay / 312 | 0);
-					this.writeByte(fastplay / 262 | 0);
-					break;
+				this.writeBytes(Fu.xexd_obx, 2, 114);
+				this.writeWord(this.init);
+				if (this.player < 0) {
+					this.writeByte(96);
+					this.writeByte(96);
+					this.writeByte(96);
 				}
-				if (tag)
-					this.#writeXexInfo(info);
-				this.writeWord(736);
-				this.writeWord(737);
-				this.writeWord(tag ? 256 : 292);
-				const flashPack = new FlashPack();
-				flashPack.compress(this);
-				return this.outputOffset;
+				else {
+					this.writeByte(76);
+					this.writeWord(this.player);
+				}
+				this.writeByte(info.getDefaultSong());
+				break;
+			case ASAPModuleType.SAP_S:
+				throw new ASAPConversionException("Impossible conversion");
+			default:
+				this.writeBytes(Fu.xexb_obx, 2, 183);
+				this.writeWord(this.init);
+				this.writeByte(76);
+				this.writeWord(this.player);
+				this.writeByte(info.getDefaultSong());
+				let fastplay = info.getPlayerRateScanlines();
+				this.writeByte(fastplay & 1);
+				this.writeByte((fastplay >> 1) % 156);
+				this.writeByte((fastplay >> 1) % 131);
+				this.writeByte(fastplay / 312 | 0);
+				this.writeByte(fastplay / 262 | 0);
+				break;
 			}
+			if (tag)
+				this.#writeXexInfo(info);
+			this.writeWord(736);
+			this.writeWord(737);
+			this.writeWord(tag ? 256 : 292);
+			const flashPack = new FlashPack();
+			flashPack.compress(this);
+			this.save(targetFilename, this.#output, 0, this.#outputLen);
+			return;
 		default:
-			let possibleExt = info.getOriginalModuleExt(module, moduleLen);
+			let possibleExt = info.getOriginalModuleExt();
 			if (possibleExt != null) {
 				let packedPossibleExt = ASAPInfo.packExt(possibleExt);
 				if (destExt == packedPossibleExt || (destExt == 3698036 && packedPossibleExt == 6516084)) {
-					this.#writeNative(info, module, moduleLen);
-					return this.outputOffset;
+					this.writeNative(info, module, moduleLen);
+					this.save(targetFilename, this.#output, 0, this.#outputLen);
+					if (info.type == ASAPModuleType.SAP_D) {
+						switch (info.originalType) {
+						case ASAPModuleType.MD1:
+							switch (module[moduleLen - 2230]) {
+							case 0:
+								this.#writeMptSamples(targetFilename, info, module, moduleLen, 8);
+								break;
+							case 1:
+								this.#writeMptSamples(targetFilename, info, module, moduleLen, 15);
+								break;
+							default:
+								throw new ASAPConversionException("Unknown MD1 samples");
+							}
+							break;
+						case ASAPModuleType.MD2:
+							this.#writeMptSamples(targetFilename, info, module, moduleLen, 8);
+							break;
+						default:
+							break;
+						}
+					}
+					return;
 				}
 			}
 			throw new ASAPConversionException("Impossible conversion");
@@ -4669,20 +4959,22 @@ class FlashPack
 	{
 		for (let i = 0; i < 65536; i++)
 			this.#memory[i] = -1;
-		for (let i = 0; i + 5 <= w.outputOffset;) {
-			let startAddress = w.output[i] + (w.output[i + 1] << 8);
+		let input = w.getOutput();
+		let inputLen = w.getOutputLength();
+		for (let i = 0; i + 5 <= inputLen;) {
+			let startAddress = input[i] + (input[i + 1] << 8);
 			if (startAddress == 65535) {
 				i += 2;
-				startAddress = w.output[i] + (w.output[i + 1] << 8);
+				startAddress = input[i] + (input[i + 1] << 8);
 			}
-			let endAddress = w.output[i + 2] + (w.output[i + 3] << 8);
+			let endAddress = input[i + 2] + (input[i + 3] << 8);
 			if (startAddress > endAddress)
 				throw new ASAPConversionException("Start address greater than end address");
 			i += 4;
-			if (i + endAddress - startAddress >= w.outputOffset)
+			if (i + endAddress - startAddress >= inputLen)
 				throw new ASAPConversionException("Truncated block");
 			while (startAddress <= endAddress)
-				this.#memory[startAddress++] = w.output[i++];
+				this.#memory[startAddress++] = input[i++];
 		}
 		if (this.#memory[736] < 0 || this.#memory[737] < 0)
 			throw new ASAPConversionException("Missing run address");
@@ -4706,7 +4998,7 @@ class FlashPack
 		let compressedStartAddress = depackerStartAddress - this.#compressedLength;
 		if (compressedStartAddress < 8192)
 			throw new ASAPConversionException("Too much compressed data");
-		w.outputOffset = 0;
+		w.clearOutput();
 		w.writeWord(65535);
 		w.writeWord(54017);
 		w.writeWord(54017);
@@ -4845,10 +5137,15 @@ class PokeyChannel
 		this.delta = 0;
 	}
 
-	slope(pokey, pokeys, cycle)
+	#addDelta(pokey, pokeys, cycle, delta)
+	{
+		pokey.addDelta(pokeys, cycle, delta, (this.mute & 2) != 0);
+	}
+
+	#slope(pokey, pokeys, cycle)
 	{
 		this.delta = -this.delta;
-		pokey.addDelta(pokeys, cycle, this.delta);
+		this.#addDelta(pokey, pokeys, cycle, this.delta);
 	}
 
 	doTick(pokey, pokeys, cycle, ch)
@@ -4881,13 +5178,23 @@ class PokeyChannel
 				this.#out = newOut;
 			}
 		}
-		this.slope(pokey, pokeys, cycle);
+		this.#slope(pokey, pokeys, cycle);
 	}
 
-	doStimer(cycle)
+	slopeDown(pokey, pokeys, cycle)
+	{
+		if (this.delta > 0 && this.mute == 0)
+			this.#slope(pokey, pokeys, cycle);
+	}
+
+	doStimer(pokey, pokeys, cycle, reload)
 	{
 		if (this.tickCycle != 8388608)
-			this.tickCycle = cycle + this.periodCycles;
+			this.tickCycle = cycle + reload;
+		if (this.#out != 0) {
+			this.#out = 0;
+			this.#slope(pokey, pokeys, cycle);
+		}
 	}
 
 	setMute(enable, mask, cycle)
@@ -4911,15 +5218,13 @@ class PokeyChannel
 		this.audc = data;
 		if ((data & 16) != 0) {
 			data &= 15;
-			if ((this.mute & 2) == 0)
-				pokey.addDelta(pokeys, cycle, this.delta > 0 ? data - this.delta : data);
+			this.#addDelta(pokey, pokeys, cycle, this.delta > 0 ? data - this.delta : data);
 			this.delta = data;
 		}
 		else {
 			data &= 15;
 			if (this.delta > 0) {
-				if ((this.mute & 2) == 0)
-					pokey.addDelta(pokeys, cycle, data - this.delta);
+				this.#addDelta(pokey, pokeys, cycle, data - this.delta);
 				this.delta = data;
 			}
 			else
@@ -5001,9 +5306,11 @@ class Pokey
 		this.startFrame();
 	}
 
-	addDelta(pokeys, cycle, delta)
+	addDelta(pokeys, cycle, delta, muted)
 	{
 		this.#sumDACInputs += delta;
+		if (muted)
+			return;
 		let newOutput = Pokey.#COMPRESSED_SUMS[this.#sumDACInputs] << 16;
 		this.addExternalDelta(pokeys, cycle, newOutput - this.#sumDACOutputs);
 		this.#sumDACOutputs = newOutput;
@@ -5036,15 +5343,15 @@ class Pokey
 			if (cycle == cycleLimit)
 				break;
 			if (cycle == this.channels[2].tickCycle) {
-				if ((this.audctl & 4) != 0 && this.channels[0].delta > 0 && this.channels[0].mute == 0)
-					this.channels[0].slope(this, pokeys, cycle);
+				if ((this.audctl & 4) != 0)
+					this.channels[0].slopeDown(this, pokeys, cycle);
 				this.channels[2].doTick(this, pokeys, cycle, 2);
 			}
 			if (cycle == this.channels[3].tickCycle) {
 				if ((this.audctl & 8) != 0)
 					this.channels[2].tickCycle = cycle + this.#reloadCycles3;
-				if ((this.audctl & 2) != 0 && this.channels[1].delta > 0 && this.channels[1].mute == 0)
-					this.channels[1].slope(this, pokeys, cycle);
+				if ((this.audctl & 2) != 0)
+					this.channels[1].slopeDown(this, pokeys, cycle);
 				this.channels[3].doTick(this, pokeys, cycle, 3);
 			}
 			if (cycle == this.channels[0].tickCycle) {
@@ -5257,8 +5564,11 @@ class Pokey
 			this.#initMute(cycle);
 			break;
 		case 9:
-			for (const c of this.channels)
-				c.doStimer(cycle);
+			this.generateUntilCycle(pokeys, cycle);
+			this.channels[0].doStimer(this, pokeys, cycle, (this.audctl & 16) == 0 ? this.channels[0].periodCycles : this.#reloadCycles1);
+			this.channels[1].doStimer(this, pokeys, cycle, this.channels[1].periodCycles);
+			this.channels[2].doStimer(this, pokeys, cycle, (this.audctl & 8) == 0 ? this.channels[2].periodCycles : this.#reloadCycles3);
+			this.channels[3].doStimer(this, pokeys, cycle, this.channels[3].periodCycles);
 			break;
 		case 14:
 			this.irqst |= data ^ 255;
@@ -7079,8 +7389,8 @@ class Fu
 		157, 100, 8, 157, 108, 8, 157, 148, 8, 169, 1, 157, 188, 7, 96 ]);
 	static xexb_obx = new Uint8Array([
 		255, 255, 36, 1, 223, 1, 120, 160, 0, 140, 14, 212, 173, 11, 212, 208,
-		251, 141, 0, 212, 162, 29, 157, 0, 208, 202, 16, 250, 162, 8, 157, 16,
-		210, 157, 0, 210, 202, 16, 247, 169, 3, 141, 31, 210, 141, 0, 210, 169,
+		251, 141, 0, 212, 162, 29, 157, 0, 208, 202, 16, 250, 162, 15, 157, 16,
+		210, 157, 0, 210, 202, 16, 247, 169, 3, 141, 31, 210, 141, 15, 210, 169,
 		130, 205, 11, 212, 208, 251, 141, 10, 212, 141, 10, 212, 141, 10, 212, 173,
 		11, 212, 208, 3, 238, 145, 1, 173, 218, 1, 32, 212, 1, 169, 254, 141,
 		1, 211, 169, 206, 174, 53, 1, 240, 2, 169, 194, 141, 250, 255, 169, 1,
@@ -7091,14 +7401,14 @@ class Fu
 		162, 1, 176, 198, 72, 138, 72, 174, 145, 1, 32, 152, 252, 104, 170, 104,
 		238, 186, 1, 64, 156, 131, 76 ]);
 	static xexd_obx = new Uint8Array([
-		255, 255, 36, 1, 152, 1, 120, 160, 0, 140, 14, 212, 173, 11, 212, 208,
-		251, 141, 0, 212, 162, 29, 157, 0, 208, 202, 16, 250, 141, 14, 210, 162,
-		8, 157, 16, 210, 157, 0, 210, 202, 16, 247, 169, 3, 141, 31, 210, 141,
-		0, 210, 169, 254, 141, 1, 211, 173, 149, 1, 201, 96, 240, 15, 169, 114,
-		141, 250, 255, 169, 1, 141, 251, 255, 169, 64, 141, 14, 212, 173, 152, 1,
-		88, 76, 146, 1, 40, 8, 72, 138, 72, 152, 72, 32, 149, 1, 174, 53,
-		1, 240, 11, 174, 20, 208, 202, 240, 2, 162, 1, 32, 152, 252, 104, 168,
-		104, 170, 104, 64, 76 ]);
+		255, 255, 36, 1, 149, 1, 120, 160, 0, 140, 14, 212, 173, 11, 212, 208,
+		251, 141, 0, 212, 162, 29, 157, 0, 208, 202, 16, 250, 162, 15, 157, 16,
+		210, 157, 0, 210, 202, 16, 247, 169, 3, 141, 31, 210, 141, 15, 210, 169,
+		254, 141, 1, 211, 173, 146, 1, 201, 96, 240, 15, 169, 111, 141, 250, 255,
+		169, 1, 141, 251, 255, 169, 64, 141, 14, 212, 173, 149, 1, 88, 76, 143,
+		1, 40, 8, 72, 138, 72, 152, 72, 32, 146, 1, 174, 53, 1, 240, 11,
+		174, 20, 208, 202, 240, 2, 162, 1, 32, 152, 252, 104, 168, 104, 170, 104,
+		64, 76 ]);
 	static xexinfo_obx = new Uint8Array([
 		255, 255, 112, 252, 221, 252, 65, 80, 252, 173, 11, 212, 208, 251, 141, 5,
 		212, 162, 38, 142, 22, 208, 162, 10, 142, 23, 208, 162, 33, 142, 0, 212,
