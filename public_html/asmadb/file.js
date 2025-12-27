@@ -16,7 +16,7 @@ class FileInfo {
 	getFileSizeText() {
 		return this.fileSize + " (" + Util.getBytesString(this.fileSize) + ") Bytes";
 	}
-	getOriginalModuleExt(){
+	getOriginalModuleExt() {
 		return this.originalModuleExt;
 	}
 	getOriginalModuleFormatText() {
@@ -57,13 +57,13 @@ class FileInfo {
 	getComposerProxies() {
 		return this.composerProxies;
 	}
-	getContent(){
+	getContent() {
 		return this.content;
 	}
-	getASAPInfo(){
+	getASAPInfo() {
 		return this.asapInfo;
 	}
-	setASAPInfo(asapInfo){
+	setASAPInfo(asapInfo) {
 		this.asapInfo = asapInfo;
 	}
 }
