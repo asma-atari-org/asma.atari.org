@@ -990,6 +990,7 @@ class ASMA {
 			fileInfo.author = "Unknown";
 		}
 		fileInfo.date = asapInfo.getDate();
+		fileInfo.channels = asapInfo.getChannels();
 		fileInfo.fileSize = fileInfo.getContent().length;
 		fileInfo.originalModuleExt = asapInfo.getOriginalModuleExt(fileInfo.getContent(), fileInfo.getContent().length);
 		if (fileInfo.originalModuleExt != null) {
