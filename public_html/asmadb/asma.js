@@ -992,7 +992,7 @@ class ASMA {
 		}
 		fileInfo.date = asapInfo.getDate();
 		fileInfo.fileSize = fileInfo.getContent().length;
-		fileInfo.originalModuleExt = asapInfo.getOriginalModuleExt(fileInfo.getContent(), fileInfo.getContent().length);
+		fileInfo.originalModuleExt = asapInfo.getOriginalModuleExt();
 		if (fileInfo.originalModuleExt != null) {
 			fileInfo.originalModuleExtDescription = ASAPInfo.getExtDescription(fileInfo.getOriginalModuleExt());
 		} else {
