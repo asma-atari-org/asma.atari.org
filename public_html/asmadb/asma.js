@@ -1192,7 +1192,8 @@ class ASMA {
 	displayAboutDialog() {
 
 		let aboutDialogGeneralContent = UI.getElementById("aboutDialogGeneralContent");
-		aboutDialogGeneralContent.innerHTML = "<a href=\"javascript:asmaInstance.checkDemozoo()\">Retrieve Demozoo Productions</a><br>\n" + this.demozooCheckResult;
+		aboutDialogGeneralContent.innerHTML = "This website is using <a href=\"https://asap.sourceforge.net/\">ASAP version " + ASAPInfo.VERSION + "</a>.<br>\n"
+			+ "<a href=\"javascript:asmaInstance.checkDemozoo()\">Retrieve the Demozoo Productions</a><br>\n" + "Demozoo check result: " + this.demozooCheckResult;
 
 
 		let resultHTML;
