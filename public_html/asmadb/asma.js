@@ -425,7 +425,7 @@ class ASMA {
 
 		let resultHTML;
 		resultHTML = "<p>" + foundIndex + " of " + this.fileInfos.length + " matching files. Click to play.";
-		//if (this.detailsMode){
+		//if (this.detailsMode) {
 		//  resultHTML+= " If something recent is missing, try clearing the browser cache (CTRL-F5).";
 		//}
 		resultHTML += "</p>";
