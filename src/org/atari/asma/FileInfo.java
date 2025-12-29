@@ -46,7 +46,7 @@ public final class FileInfo {
 		// Determine the original file type in the container.
 		// Only if it cannot be determined, the file extension is used.
 		this.typeLetter = String.valueOf((char) asap.getInfo().getTypeLetter());
-		this.originalModuleExt = asap.getInfo().getOriginalModuleExt(module, module.length);
+		this.originalModuleExt = asap.getInfo().getOriginalModuleExt();
 		if (this.originalModuleExt == null) {
 			this.originalModuleExt = filePath.substring(filePath.lastIndexOf('.') + 1);
 		}
