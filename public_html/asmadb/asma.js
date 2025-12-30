@@ -640,7 +640,15 @@ class ASMA {
 			UI.getElementById("details").innerHTML = UI.encodeHTML(comment);
 			UI.getElementById("hardware").innerHTML = UI.encodeHTML(hardware);
 
-			UI.getElementById("filePath").innerHTML = fileInfo.getFilePath();
+			// Download URL with "#<songNumber>" addition for Demozoo and other references.
+			let filePath = fileInfo.getFilePath();
+			if (this.currentFileInfo.songs > 1) {
+				filePath += "#" + (this.currentSongIndex + 1)
+			}
+			let sapURL = "https://asma.atari.org/asma/" + filePath;
+
+
+			UI.getElementById("filePath").innerHTML = "<a href=\"" + sapURL + "\">" + filePath + "</a>";
 			UI.getElementById("fileSize").innerHTML = fileInfo.getFileSizeText();
 			UI.getElementById("demozooID").innerHTML = this.demozoo.getMusicHTMLForFilePath(fileInfo.getFilePath(), this.currentSongIndex);
 
