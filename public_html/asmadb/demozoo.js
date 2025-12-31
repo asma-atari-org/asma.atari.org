@@ -8,7 +8,7 @@
 		"authorIDs": [
 			31134
 		],
-		"filePath": "Composers/Karwacki_Jakub/Lanos.sap"
+		"urlFilePath": "Composers/Karwacki_Jakub/Lanos.sap#2"
 	}
 */
 
@@ -84,17 +84,20 @@ class Fetcher {
 class Demozoo {
 	constructor(productions) {
 		this.productions = productions;
-		this.productionsByFilePathAndSongIndexMap = new Map();
+		this.productionsByIDMap = new Map();
+		this.productionsByURLFilePathMap = new Map();
 	}
 
 	initProductions(fileInfoList, summary) {
-		this.productionsByFilePathAndSongIndexMap.clear();
+		this.productionsByIDMap.clear();
+		this.productionsByURLFilePathMap.clear();
 
 		// For all productions on Demozoo...
 		let result = "";
 		let linkCount = 0;
 		let missingLinkCount = 0;
 		for (let production of this.productions) {
+			this.productionsByIDMap.set(production.id, production);
 			if (production.filePath == null) {
 				missingLinkCount++;
 				let candidatesHTML = "";
@@ -114,8 +117,7 @@ class Demozoo {
 
 				result += " Try " + candidatesHTML + this.getFindInASMAByTitleHTML(production) + "<br>\n";
 			} else {
-				let key = this.getFilePathAndSongIndexKey(production.filePath, production.songIndex);
-				this.productionsByFilePathAndSongIndexMap.set(key, production);
+				this.productionsByURLFilePathMap.set(production.urlFilePath, production);
 				linkCount++;
 			}
 		}
@@ -128,14 +130,18 @@ class Demozoo {
 		// For all productions on ASMA...
 		result = "";
 		linkCount = 0;
+		let brokenLinkCount = 0;
 		missingLinkCount = 0;
 
 		for (let fileIndex = 0; fileIndex < fileInfoList.length; fileIndex++) {
 			let fileInfo = fileInfoList[fileIndex];
-			let production = this.getProductionByFilePathAndSongIndex(fileInfo.filePath, fileInfo.defaultSongIndex);
-			if (production != undefined) {
-				linkCount += 1;
-				fileInfo.setDemozooID(production.id);
+			if (fileInfo.getDemozooID() != undefined) {
+				let production = this.getProductionByID(fileInfo.getDemozooID());
+				if (production != undefined) {
+					linkCount += 1;
+				} else {
+					brokenLinkCount += 1;
+				}
 			} else {
 				missingLinkCount += 1;
 				result += this.getASMAMusicHTML(fileInfo) + " of type '" + this.getFileExtension(fileInfo.filePath) + "' has no Demozoo link.";
@@ -144,29 +150,18 @@ class Demozoo {
 
 		}
 
-		result = linkCount + " ASMA productions with Demozoo link found.<br>\n" + missingLinkCount +
+		result = linkCount + " ASMA productions with Demozoo link found.<br>\n" +
+			brokenLinkCount + " ASMA productions with broken Demozoo link found.<br>\n" + missingLinkCount +
 			" ASMA productions with missing Demozoo link found.<br>\n<br>\n" + result;
 		summary.asma = result;
 	}
 
-	getProductionsByFilePathAndSongIndexMap() {
-		return this.productionsByFilePathAndSongIndexMap;
+	getProductionByID(id) {
+		return this.productionsByIDMap.get(id);
 	}
 
-	getFilePathAndSongIndexKey(filePath, songIndex) {
-		let key = filePath;
-		if (songIndex >= 0) {
-			key += "?songIndex=" + songIndex;
-		}
-		return key;
-	}
-
-	getProductionByFilePathAndSongIndex(filePath, songIndex) {
-		let production = this.productionsByFilePathAndSongIndexMap.get(this.getFilePathAndSongIndexKey(filePath, songIndex));
-		if (production == undefined) {
-			production = this.productionsByFilePathAndSongIndexMap.get(this.getFilePathAndSongIndexKey(filePath, -1));
-		}
-		return production;
+	getProductionByURLFilePath(urlFilePath) {
+		return this.productionsByURLFilePathMap.get(urlFilePath);;
 	}
 
 	getMusicHTMLForDemozooID(demozooID) {
@@ -213,13 +208,13 @@ class Demozoo {
 		}
 
 		const prefix = "https://asma.atari.org/asma/";
-		let filePath = null;
+		let urlFilePath = null;
 		let fileExtensions = new Set;
 		for (let downloadLink of data.download_links) {
 			if (downloadLink.link_class == "BaseUrl") {
 
-				if (filePath == "" && downloadLink.url.startsWith(prefix)) {
-					filePath = downloadLink.url.substring(prefix.length);
+				if (urlFilePath == "" && downloadLink.url.startsWith(prefix)) {
+					urlFilePath = downloadLink.url.substring(prefix.length);
 				}
 
 				// Collect file extensions from all download links.
@@ -231,7 +226,7 @@ class Demozoo {
 			}
 		}
 		fileExtensions = Array.from(fileExtensions).join(',');
-		let production = { id: data.id, title: data.title, authorIDs: authorIDs, filePath: filePath, fileExtensions: fileExtensions };
+		let production = { id: data.id, title: data.title, authorIDs: authorIDs, urlFilePath: urlFilePath, fileExtensions: fileExtensions };
 		this.productions[productionsIndex] = production;
 	}
 };
