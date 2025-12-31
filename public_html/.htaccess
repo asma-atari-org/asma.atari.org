@@ -6,10 +6,9 @@ ExpiresActive On
 ExpiresDefault "now plus 1 hour"
 </IfModule>
 
-
-# Referrer-Policy
+# Referrer-Policy: New, allow external players to use the files directly.
 <IfModule mod_headers.c>
-Header set Referrer-Policy "origin-when-cross-origin"
+Header set Access-Control-Allow-Origin "*"
 </IfModule>
 
 <FilesMatch ".(ttt|sap)$">
