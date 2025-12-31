@@ -143,7 +143,7 @@ class ASMA {
 		this.demozoo.initProductions(this.fileInfos, this.demozooSummary);
 
 		this.composerList = new ComposerList(asma.composerInfos);
-		this.composerList.initFileInfos(this.fileInfos, this.demozoo.getProductionsByFilePathAndSongIndexMap());
+		this.composerList.initFileInfos(this.fileInfos, this.demozoo);
 
 		this.detailsMode = false;
 		this.shuffleMode = false;
@@ -642,7 +642,7 @@ class ASMA {
 
 			// Download URL with "#<songNumber>" addition for Demozoo and other references.
 			let filePath = fileInfo.getFilePath();
-			if (this.currentFileInfo.songs > 1) {
+			if ((this.currentFileInfo.songs > 1) && (this.currentSongIndex != this.currentFileInfo.defaultSongIndex)) {
 				filePath += "#" + (this.currentSongIndex + 1)
 			}
 			let sapURL = "https://asma.atari.org/asma/" + filePath;
