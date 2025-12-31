@@ -6,13 +6,16 @@ public final class Production {
 	public String title = "";
 	public int[] authorIDs = new int[0];
 	public String filePath = "";
-	public int songIndex = -1;
 
 	public Production() {
 	}
 
+	public String getURL() {
+		return "https://demozoo.org/music/" + id;
+	}
+
 	@Override
 	public String toString() {
-		return id + " - " + title;
+		return id + " - " + title + "( " + getURL() + " )";
 	}
 }

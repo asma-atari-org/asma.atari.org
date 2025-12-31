@@ -25,6 +25,26 @@ public final class FileInfo {
 	public int songs;
 	public int defaultSongIndex; // Zero-based
 	// TODO Duration and details from STIL per Song
+	private int demozooID;
+
+	// The file path format in URLs is:
+	// - "filePath" if the file has only one song or if the song is the default song
+	// - "filePath#songNumber" if the file more than one song and if the song is not
+	// the default song
+	public String getURLFilePath(int songNumber) {
+		if ((songs > 0) && (songNumber - 1 != defaultSongIndex)) {
+			return filePath + "#" + songNumber;
+		}
+		return filePath;
+	}
+
+	public int getDemozooID() {
+		return demozooID;
+	}
+
+	public void setDemozooID(int demozooID) {
+		this.demozooID = demozooID;
+	}
 
 	FileInfo() {
 	}
@@ -61,6 +81,8 @@ public final class FileInfo {
 		this.channels = asapInfo.getChannels();
 		this.songs = asapInfo.getSongs();
 		this.defaultSongIndex = asapInfo.getDefaultSong();
+
+		this.demozooID = 0;
 	}
 
 	public void write(JSONWriter writer) throws IOException {
@@ -108,6 +130,12 @@ public final class FileInfo {
 				throw new IllegalArgumentException("Invalid default song index " + defaultSongIndex);
 			}
 		}
+
+		if (demozooID != 0) {
+			writer.writeSeparator();
+			writer.writeJSONLong("demozooID", demozooID);
+		}
+
 		writer.endObject();
 	}
 }

@@ -17,14 +17,14 @@ public class ProductionList {
 
 	private String jsonString;
 	private List<Production> productionList;
-	private Map<String, Production> productionByFilePath;
+	private Map<String, Production> productionByURLFilePath;
 	private Map<Integer, Production> productionByID;
 
 	private ProductionList(String jsonString) {
 		this.jsonString = jsonString;
 		productionList = new ArrayList<>();
 		productionByID = new TreeMap<>();
-		productionByFilePath = new TreeMap<>();
+		productionByURLFilePath = new TreeMap<>();
 	}
 
 	public static ProductionList load(File file) {
@@ -50,7 +50,7 @@ public class ProductionList {
 
 		for (Production production : productionList) {
 			if (production.filePath != null && !production.filePath.isEmpty()) {
-				Production previousProduction = productionByFilePath.put(production.filePath, production);
+				Production previousProduction = productionByURLFilePath.put(production.filePath, production);
 				if (previousProduction != null) {
 					String message = "PRD-001: Production " + previousProduction.toString()
 							+ " already registered for file path " + previousProduction.filePath + " of production "
@@ -84,8 +84,8 @@ public class ProductionList {
 		return productionList;
 	}
 
-	public Production getByFilePath(String folderName) {
-		return productionByFilePath.get(folderName);
+	public Production getByURLFilePath(String urlFilePath) {
+		return productionByURLFilePath.get(urlFilePath);
 
 	}
 

@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.atari.asma.ASMAExporter.FileExtension;
 import org.atari.asma.STIL.STILEntry;
+import org.atari.asma.demozoo.Production;
 import org.atari.asma.demozoo.ProductionList;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.JSONWriter;
@@ -71,14 +72,14 @@ public class FileInfoList {
 		System.out.println(fileList.size() + " matching files found.");
 
 		int index = sourceFolder.getAbsolutePath().length() + 1;
-		var  count = new AtomicInteger();
+		var count = new AtomicInteger();
 
 		final int blockSize = 100;
 		for (int i = 0; i < fileList.size() / blockSize; i++) {
 			System.out.print("=");
 		}
 		System.out.println();
-		
+
 		fileList.parallelStream().forEach(file -> {
 			if (count.incrementAndGet() % blockSize == 0) {
 				System.out.print("^");
@@ -90,10 +91,9 @@ public class FileInfoList {
 				fileInfoList.add(songInfo);
 			}
 		});
-		
+
 		// Parallel process destroyed the order, so sort again.
 		fileInfoList.sort(new Comparator<FileInfo>() {
-
 
 			@Override
 			public int compare(FileInfo o1, FileInfo o2) {
@@ -115,11 +115,11 @@ public class FileInfoList {
 		if (filePath.toLowerCase().endsWith(FileExtension.SAP)) {
 			fileInfo.hardware = FileInfo.ATARI800;
 			fileInfo.readFromSAPFile(filePath, module);
-			
-			STILEntry stilEntry = stil.getSTILEntry("/"+filePath);
+
+			STILEntry stilEntry = stil.getSTILEntry("/" + filePath);
 			if (stilEntry != null) {
 				// "TODO";
-				// fileInfo.comment = stilEntry.getComment(); 
+				// fileInfo.comment = stilEntry.getComment();
 			}
 		} else if (filePath.toLowerCase().endsWith(FileExtension.TTT)) {
 			fileInfo.hardware = FileInfo.ATARI2600;
@@ -181,7 +181,7 @@ public class FileInfoList {
 			if (filePath.startsWith(COMPOSERS)) {
 
 				int index = filePath.indexOf("/", startIndex);
-				String folderName = filePath.substring(startIndex, index);
+				var folderName = filePath.substring(startIndex, index);
 				var composer = composerList.getByFolderName(folderName);
 				if (composer != null) {
 					List<String> authors = composer.getAuthors();
@@ -209,6 +209,23 @@ public class FileInfoList {
 					messageQueue.sendError("SAP-105: File " + fileInfo.filePath + " has unknown composer path");
 				}
 			}
+
+			for (int songIndex = 0; songIndex < fileInfo.songs; songIndex++) {
+				int songNumber = songIndex + 1;
+				var urlFilePath = fileInfo.getURLFilePath(songNumber);
+				Production production = productionList.getByURLFilePath(urlFilePath);
+				if (production != null) {
+					fileInfo.setDemozooID(production.id);
+				} else {
+					if (fileInfo.songs == 1) {
+						messageQueue.sendError("SAP-106: File " + fileInfo.filePath + " has no Demozoo ID.");
+					} else {
+						messageQueue.sendError("SAP-107: Song number " + songNumber + " in File " + fileInfo.filePath
+								+ " has no Demozoo ID.");
+					}
+				}
+			}
+
 			// TODO Groups
 		}
 
