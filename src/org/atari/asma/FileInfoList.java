@@ -11,8 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.atari.asma.ASMAExporter.FileExtension;
 import org.atari.asma.STIL.STILEntry;
-import org.atari.asma.demozoo.Production;
-import org.atari.asma.demozoo.ProductionList;
+import org.atari.asma.demozoo.ASMAProduction;
+import org.atari.asma.demozoo.ASMAProductionList;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.JSONWriter;
 import org.atari.asma.util.MessageQueue;
@@ -142,7 +142,7 @@ public class FileInfoList {
 		return fileInfo;
 	}
 
-	public void checkFiles(ComposerList composerList, ProductionList productionList, MessageQueue messageQueue) {
+	public void checkFiles(ComposerList composerList, ASMAProductionList productionList, MessageQueue messageQueue) {
 		// From "Sap.txt" specification.
 		final int MAX_FILE_NAME_LENGTH = 26;
 		final String FILE_NAME_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
@@ -213,7 +213,7 @@ public class FileInfoList {
 			for (int songIndex = 0; songIndex < fileInfo.songs; songIndex++) {
 				int songNumber = songIndex + 1;
 				var urlFilePath = fileInfo.getURLFilePath(songNumber);
-				Production production = productionList.getByURLFilePath(urlFilePath);
+				ASMAProduction production = productionList.getByURLFilePath(urlFilePath);
 				if (production != null) {
 					fileInfo.setDemozooID(production.id);
 				} else {

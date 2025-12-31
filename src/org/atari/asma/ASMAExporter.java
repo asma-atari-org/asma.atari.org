@@ -5,8 +5,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import org.atari.asma.demozoo.ProductionList;
+import org.atari.asma.demozoo.ASMAProductionList;
+import org.atari.asma.demozoo.Demozoo;
+import org.atari.asma.util.ConsoleMessageQueue;
 import org.atari.asma.util.JSONWriter;
+import org.atari.asma.util.MemoryUtility;
 import org.atari.asma.util.MessageQueue;
 
 // TODO: Read the initial file revision from the SVN SQLLite database file using from https://github.com/xerial/sqlite-jdbc
@@ -26,12 +29,13 @@ public class ASMAExporter {
 
 	@SuppressWarnings("static-method")
 	private void run(String[] args) {
-		MessageQueue messageQueue = new MessageQueue(System.out, System.err);
+		MessageQueue messageQueue = ConsoleMessageQueue.createInstance();
 
 		if (args.length != 2) {
 			messageQueue.sendMessage("Usage: ASMAExporter <trunk/asma folder> <asmadb.js file>");
 			return;
 		}
+
 		var sourceFolderPath = args[0];
 		File sourceFolder = new File(sourceFolderPath);
 
@@ -54,7 +58,7 @@ public class ASMAExporter {
 		messageQueue.sendMessage(composerList.getEntries().size() + " composers loaded.");
 		composerList.checkFolders(sourceFolder, messageQueue);
 
-		File groupsFile = new File(sourceFolder, "Docs/ASMA-Groups.json");
+		var groupsFile = new File(sourceFolder, "Docs/ASMA-Groups.json");
 		messageQueue.sendMessage("Loading groups from '" + composersFile.getPath() + "'.");
 		GroupList groupList = GroupList.load(groupsFile);
 		groupList.deserialize();
@@ -65,11 +69,13 @@ public class ASMAExporter {
 
 		composerList.checkGroups(groupList, messageQueue);
 
-		File productionsFile = new File(sourceFolder, "Docs/Demozoo-Productions.json");
-		messageQueue.sendMessage("Loading Demozoo productions from '" + composersFile.getPath() + "'.");
-		ProductionList productionList = ProductionList.load(productionsFile);
-		productionList.deserialize();
-		messageQueue.sendMessage(productionList.getEntries().size() + " productions loaded.");
+		var databaseFile = new File(sourceFolder, ASMAPaths.DEMOZOO_DATABASE_JSON);
+		messageQueue.sendMessage("Loading Demozoo database from '" + databaseFile.getPath() + "'.");
+		var demozoo = new Demozoo();
+		var database = demozoo.loadDatabase(databaseFile, messageQueue);
+		messageQueue.sendMessage(database.productions.length + " productions loaded.");
+
+		var productionList = new ASMAProductionList(database.productions);
 
 		productionList.init(messageQueue);
 
@@ -120,7 +126,7 @@ public class ASMAExporter {
 			}
 		}
 		messageQueue.sendMessage("ASMA exported to " + exportFile.getAbsolutePath() + " completed with "
-				+ exportFile.length() + " bytes.");
+				+ MemoryUtility.getRoundedMemorySize(exportFile.length()) + ".");
 		messageQueue.printSummary();
 
 	}
