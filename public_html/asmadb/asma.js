@@ -650,7 +650,7 @@ class ASMA {
 
 			UI.getElementById("filePath").innerHTML = "<a href=\"" + sapURL + "\">" + filePath + "</a>";
 			UI.getElementById("fileSize").innerHTML = fileInfo.getFileSizeText();
-			UI.getElementById("demozooID").innerHTML = this.demozoo.getMusicHTMLForFilePath(fileInfo.getFilePath(), this.currentSongIndex);
+			UI.getElementById("demozooID").innerHTML = this.demozoo.getMusicHTMLForDemozooID(fileInfo.getDemozooID());
 
 			let saveExtensionsString = "";
 			for (let i = 0; i < fileInfo.saveExtensions.length; i++) {

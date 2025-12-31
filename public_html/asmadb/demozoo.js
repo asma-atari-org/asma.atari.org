@@ -135,6 +135,7 @@ class Demozoo {
 			let production = this.getProductionByFilePathAndSongIndex(fileInfo.filePath, fileInfo.defaultSongIndex);
 			if (production != undefined) {
 				linkCount += 1;
+				fileInfo.setDemozooID(production.id);
 			} else {
 				missingLinkCount += 1;
 				result += this.getASMAMusicHTML(fileInfo) + " of type '" + this.getFileExtension(fileInfo.filePath) + "' has no Demozoo link.";
@@ -168,10 +169,9 @@ class Demozoo {
 		return production;
 	}
 
-	getMusicHTMLForFilePath(filePath, songIndex) {
-		let production = this.getProductionByFilePathAndSongIndex(filePath, songIndex);
-		if (production != undefined) {
-			return "<a href=\"https://demozoo.org/music/" + production.id + "\" target=\"blank\">" + production.id + "</a>";
+	getMusicHTMLForDemozooID(demozooID) {
+		if (demozooID) {
+			return "<a href=\"https://demozoo.org/music/" + demozooID + "\" target=\"blank\">" + demozooID + "</a>";
 		}
 		return "None";
 	}

@@ -31,7 +31,7 @@ class FileInfo {
 		}
 		throw "Unsupported hardware " + this.hardware;
 	}
-	
+
 	// Zero-based defaut song index.
 	getDefaultSongIndex() {
 		return this.defaultSongIndex;
@@ -60,11 +60,19 @@ class FileInfo {
 	getContent() {
 		return this.content;
 	}
+
 	getASAPInfo() {
 		return this.asapInfo;
 	}
 	setASAPInfo(asapInfo) {
 		this.asapInfo = asapInfo;
+	}
+
+	getDemozooID() {
+		return this.demozooID;
+	}
+	setDemozooID(demozooID) {
+		this.demozooID = demozooID;
 	}
 }
 
