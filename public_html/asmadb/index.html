@@ -1,288 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
- <head>
-  <title>Atari SAP Music Archive</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <link href="../img/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon">
-  <link rel="stylesheet" href="asma.css" type="text/css">
+<head>
+<title>Atari SAP Music Archive</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="../img/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon">
+<link rel="stylesheet" href="asma.css" type="text/css">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <script src="sorttable.js"></script>
-  <script src="FileSaver.js"></script>
-  <!-- from http://asap.sourceforge.net/asap-with-asapwriter.js -->
-  <script src="util.js?version=2022-10-30"></script>
-  <script src="ui.js"></script>
-  <script src="composer.js"></script>
-  <script src="demozoo.js?version=2023-01-29"></script>
-  <script src="file.js"></script>
-  <script src="asmadb.js"></script>
-  <script src="asma.js?version=2023-09-25" type="module"></script>
- </head>
+<script src="sorttable.js"></script>
+<script src="FileSaver.js"></script>
+<!-- from http://asap.sourceforge.net/asap-with-asapwriter.js -->
+<script src="util.js?version=2022-10-30"></script>
+<script src="ui.js"></script>
+<script src="composer.js"></script>
+<script src="demozoo.js?version=2025-12-30"></script>
+<script src="file.js"></script>
+<script src="asmadb.js"></script>
+<script src="asma.js?version=2025-12-30" type="module"></script>
+</head>
 
- <body style="background-color: #c6def7; margin: 0px;" onload="asmaInstance.init();">
- 
-  <!-- Display Author Song Dialog -->
-  <dialog id="displayAuthorDialog" class="modal">
-   <div class="modal-content">
-    <div class="modal-header">
-     <span id="displayAuthorDialogTitle"></span>
-     <span id="displayAuthorDialogCloseIcon"></span>
-    </div>
-    <div class="modal-body">
+<body style="background-color: #c6def7; margin: 0px;" onload="asmaInstance.init();">
+
+ <!-- Display Author Song Dialog -->
+ <dialog id="displayAuthorDialog" class="modal">
+ <div class="modal-content">
+  <div class="modal-header">
+   <span id="displayAuthorDialogTitle"></span> <span id="displayAuthorDialogCloseIcon"></span>
+  </div>
+  <div class="modal-body">
+   <table style="background-color: #eeeeff; width: 100%; border-collapse: collapse;">
+    <tr>
+     <td class="player_label">Full Name</td>
+     <td id="authorFullNameUnicode" class="player_value"></td>
+    </tr>
+    <tr>
+     <td class="player_label">Handles</td>
+     <td id="authorHandles" class="player_value"></td>
+    </tr>
+    <tr>
+     <td class="player_label">Country</td>
+     <td id="authorCountry" class="player_value"></td>
+    </tr>
+    <tr>
+     <td class="player_label">Demozoo ID</td>
+     <td id="authorDemozooID" class="player_value"></td>
+    </tr>
+    <tr class="clickable" onclick="asmaInstance.displayAuthorSongs()">
+     <td class="player_label">File Count</td>
+     <td id="authorFileCount" class="player_value"></td>
+    </tr>
+    <tr>
+     <td class="player_label">Folder</td>
+     <td id="authorFolderPath" class="player_value"></td>
+    </tr>
+   </table>
+  </div>
+ </div>
+ </dialog>
+
+ <!-- About Dialog -->
+ <dialog id="aboutDialog" class="modal">
+ <div class="modal-content">
+  <div class="modal-header">
+   About <span id="aboutDialogCloseIcon"></span>
+  </div>
+  <div class="modal-body">
+
+   <div>
+    <button class="tab aboutDialogTabbedPane_tab tab_active" onclick="UI.openTabbedPaneTab('aboutDialogTabbedPane', event,'aboutDialogGeneral')">General</button>
+    <button class="tab aboutDialogTabbedPane_tab" onclick="UI.openTabbedPaneTab('aboutDialogTabbedPane', event,'aboutDialogASMA')">ASMA</button>
+    <button class="tab aboutDialogTabbedPane_tab" onclick="UI.openTabbedPaneTab('aboutDialogTabbedPane', event,'aboutDialogDemozoo')">Demozoo</button>
+    <button class="tab aboutDialogTabbedPane_tab" onclick="UI.openTabbedPaneTab('aboutDialogTabbedPane', event,'composersByName')">Composers</button>
+    <button class="tab aboutDialogTabbedPane_tab" onclick="UI.openTabbedPaneTab('aboutDialogTabbedPane', event,'composersByCountry')">Countries</button>
+   </div>
+   <div id="aboutDialogGeneral" class="w3-container w3-border aboutDialogTabbedPane_content">
+    <div id="aboutDialogGeneralContent"></div>
+   </div>
+   <div id="aboutDialogASMA" class="w3-container w3-border aboutDialogTabbedPane_content" style="display: none">
+    <div id="aboutDialogASMAContent"></div>
+   </div>
+   <div id="aboutDialogDemozoo" class="w3-container w3-border aboutDialogTabbedPane_content" style="display: none">
+    <div id="aboutDialogDemozooContent"></div>
+   </div>
+   <div id="composersByName" class="w3-container w3-border aboutDialogTabbedPane_content" style="display: none">
+    <div id="composersByNameResult"></div>
+   </div>
+   <div id="composersByCountry" class="w3-container w3-border aboutDialogTabbedPane_content" style="display: none">
+    <div id="composersByCountryResult"></div>
+   </div>
+  </div>
+ </div>
+ </dialog>
+
+ <!-- Edit Song Dialog -->
+ <dialog id="editSongDialog" class="modal">
+ <div class="modal-content">
+  <div class="modal-header">
+   Edit Song Details <span id="editSongDialogCloseIcon" class="close">&times;</span>
+  </div>
+  <div class="modal-body">
+   <p>Enter the new values click "Submit" to send the changes to the ASMA team. Or click "Download" to test locally first.</p>
+   <table style="background-color: #eeeeff; width: 100%; border-collapse: collapse;">
+    <tr>
+     <td id="editFilePathLabel" class="boxedt" style="width: 10em">File Path</td>
+     <td id="editFilePath" class="player_value"></td>
+    </tr>
+    <tr>
+     <td id="editTitleLabel" class="boxedt">Title</td>
+     <td class="player_value"><input id="editTitle" type="text" style="width: 80%"></td>
+    </tr>
+    <tr>
+     <td id="editAuthorLabel" class="boxedt">Author</td>
+     <td class="player_value"><input id="editAuthor" type="text" placeholder="First name Last Name (Handle)" style="width: 80%"></td>
+    </tr>
+    <tr>
+     <td id="editDateLabel" class="boxedt">Date</td>
+     <td class="player_value"><input id="editDate" type="text" placeholder="DD/MM/YYYY" style="width: 80%"></td>
+    </tr>
+    <tr>
+     <td id="editNTSCLabel" class="boxedt">NTSC/PAL</td>
+     <td class="player_value"><select id="editNTSC">
+       <option value="NTSC">NTSC (60 Hz)</option>
+       <option value="PAL">PAL (50 Hz)</option>
+     </select></td>
+    </tr>
+   </table>
+  </div>
+  <div class="modal-footer align-right">
+   <button onclick="asmaInstance.submitEditSongDialog(true);">Submit</button>
+   <button onclick="asmaInstance.submitEditSongDialog(false);">Download</button>
+   <button onclick="asmaInstance.cancelEditSongDialog();">Cancel</button>
+  </div>
+ </div>
+ </dialog>
+
+ <!-- Player -->
+ <table style="background-color: white; margin: 0px; border-spacing: 0px;">
+  <tr>
+   <td style="text-align: left; padding: 0px;">
+    <div id="player">
      <table style="background-color: #eeeeff; width: 100%; border-collapse: collapse;">
-       <tr>
-        <td class="player_label">Full Name</td>
-        <td id="authorFullNameUnicode" class="player_value"></td>
-       </tr>
-       <tr>
-        <td class="player_label">Handles</td>
-        <td id="authorHandles" class="player_value"></td>
-       </tr>
-       <tr>
-        <td class="player_label">Country</td>
-        <td id="authorCountry" class="player_value"></td>
-       </tr>
-       <tr>
-        <td class="player_label">Demozoo ID</td>
-        <td id="authorDemozooID" class="player_value"></td>
-       </tr>
-       <tr class="clickable" onclick="asmaInstance.displayAuthorSongs()">
-        <td class="player_label">File Count</td>
-        <td id="authorFileCount" class="player_value"></td>
-       </tr>
-       <tr>
-        <td class="player_label">Folder</td>
-        <td id="authorFolderPath" class="player_value"></td>
-       </tr>
-     </table>
-    </div>
-   </div>
-  </dialog>
-
-  <!-- About Dialog -->
-  <dialog id="aboutDialog" class="modal">
-   <div class="modal-content">
-    <div class="modal-header">
-     About
-     <span id="aboutDialogCloseIcon"></span>
-    </div>
-    <div class="modal-body">
-
-     <div >
-      <button class="tab composersTabbedPane_tab tab_active" onclick="UI.openTabbedPaneTab('composersTabbedPane', event,'aboutDialogGeneral')">General</button>
-      <button class="tab composersTabbedPane_tab" onclick="UI.openTabbedPaneTab('composersTabbedPane', event,'composersByName')">Composers</button>
-      <button class="tab composersTabbedPane_tab" onclick="UI.openTabbedPaneTab('composersTabbedPane', event,'composersByCountry')">Countries</button>
-     </div>
-     <div id="aboutDialogGeneral" class="w3-container w3-border composersTabbedPane_content">
-      <div id="aboutDialogGeneralContent"></div>
-     </div>
-     <div id="composersByName" class="w3-container w3-border composersTabbedPane_content" style="display:none">
-      <div id="composersByNameResult"></div>
-     </div>
-     <div id="composersByCountry" class="w3-container w3-border composersTabbedPane_content" style="display:none">
-      <div id="composersByCountryResult"></div>
-     </div>
-    </div>
-   </div>
-  </dialog>
-
-  <!-- Edit Song Dialog -->
-  <dialog id="editSongDialog" class="modal">
-   <div class="modal-content">
-    <div class="modal-header">
-     Edit Song Details
-     <span id="editSongDialogCloseIcon" class="close">&times;</span>
-    </div>
-    <div class="modal-body">
-     <p>Enter the new values click "Submit" to send the changes to the ASMA team. Or click "Download" to test locally first.</p>
-     <table style="background-color: #eeeeff; width: 100%; border-collapse: collapse;">
-       <tr>
-        <td id="editFilePathLabel" class="boxedt" style="width:10em">File Path</td>
-        <td id="editFilePath" class="player_value"></td>
-       </tr>
-       <tr>
-        <td id="editTitleLabel" class="boxedt">Title</td>
-        <td class="player_value"><input id="editTitle" type="text" style="width:80%"></td>
-       </tr>
-       <tr>
-        <td id="editAuthorLabel" class="boxedt">Author</td>
-        <td class="player_value"><input id="editAuthor" type="text" placeholder="First name Last Name (Handle)" style="width:80%"></td>
-       </tr>
-       <tr>
-        <td id="editDateLabel" class="boxedt">Date</td>
-        <td class="player_value"><input id="editDate" type="text" placeholder="DD/MM/YYYY" style="width:80%"></td>
-       </tr>
-       <tr>
-        <td id="editNTSCLabel" class="boxedt">NTSC/PAL</td>
-        <td class="player_value">
-        <select id="editNTSC">
-         <option value="NTSC">NTSC (60 Hz)</option>
-         <option value="PAL">PAL (50 Hz)</option>
-        </select>
-        </td>
-       </tr>
-     </table>
-    </div>
-    <div class="modal-footer align-right">
-     <button onclick="asmaInstance.submitEditSongDialog(true);">Submit</button>
-     <button onclick="asmaInstance.submitEditSongDialog(false);">Download</button>
-     <button onclick="asmaInstance.cancelEditSongDialog();">Cancel</button>
-    </div>
-   </div>
-  </dialog>
-
-  <!-- Player -->
-  <table style="background-color: white; margin: 0px; border-spacing: 0px;">
-   <tr>
-    <td style="text-align: left; padding: 0px;">
-     <div id="player">
-      <table style="background-color: #eeeeff; width: 100%; border-collapse: collapse;">
-       <tr>
-        <td id="titleLabel" class="player_label" style="width:10em">Title</td>
-        <td id="title" class="player_value"></td>
-       </tr>
-       <tr>
-        <td id="authorLabel" class="player_label">Author</td>
-        <td id="author" class="player_value"></td>
-       </tr>
-       <tr>
-        <td id="dateLabel" class="player_label">Date</td>
-        <td id="date" class="player_value"></td>
-       </tr>
-       <tr>
-        <td class="player_label">Channels</td>
-        <td id="channels" class="player_value"></td>
-       </tr>
-       <tr>
-        <td class="player_label">Play Song</td>
-        <td id="songList" class="player_value"></td>
-       </tr>
-       <tr>
-        <td class="player_label">Playing Time</td>
-        <td class="player_value">
-          <span id="playingTime" style="vertical-align: top;"></span>
-          <input id="playingTimeSlider" type="range" min="0" max="0" value="0" style="vertical-align: top; display:none" oninput="asmaInstance.seekPlayingTime();">
-         </td>
-       </tr>
-       <tr>
-        <td id="detailsLabel" class="player_label">Details</td>
-        <td id="details" class="player_value"></td>
-       </tr>
-       <tr>
-        <td id="hardwareLabel" class="player_label">Hardware</td>
-        <td id="hardware" class="player_value"></td>
-       </tr>
-       <tr>
-        <td id="originalModuleFormatLabel" class="player_label">Format</td>
-        <td id="originalModuleFormat" class="player_value"></td>
-       </tr>
-       <tr>
-        <td id="replayFrequencyLabel" class="player_label">Replay Frequency</td>
-        <td id="replayFrequency" class="player_value"></td>
-       </tr>
-       <tr>
-        <td id="addressesLabel" class="player_label">Init </td>
-        <td id="addresses" class="player_value"></td>
-       </tr>
-       <tr>
-        <td id="filePathLabel" class="player_label">File Path</td>
-        <td id="filePath" class="player_value"></td>
+      <tr>
+       <td id="titleLabel" class="player_label" style="width: 10em">Title</td>
+       <td id="title" class="player_value"></td>
       </tr>
-       <tr>
-        <td id="fileSizeLabel" class="player_label">File Size</td>
-        <td id="fileSize" class="player_value"></td>
-       </tr>
-       <tr>
-        <td id="demozooIDLabel" class="player_label">Demozoo ID</td>
-        <td id="demozooID" class="player_value"></td>
+      <tr>
+       <td id="authorLabel" class="player_label">Author</td>
+       <td id="author" class="player_value"></td>
       </tr>
-       <tr>
-        <td id="saveExtensionsLabel" class="player_label">Export As</td>
-        <td id="saveExtensions" class="player_value"></td>
-       </tr>
-       <tr>
-        <td colspan="2">
-         <button id="playButton"  class="playerButton" title="Play the current song from the start" onclick="asmaInstance.playCurrentSong()" disabled>&#x25b6; Play</button>
-         <button id="pauseButton" class="playerButton" title="Pause or resume the current song" onclick="asmaInstance.togglePauseCurrentSong()" disabled>Pause </button>
-         <button id="stopButton"  class="playerButton" title="Stop playing the current song" onclick="asmaInstance.stopCurrentSongAndShuffleMode()" disabled>&#x25a0; Stop</button>
-         <button id="editButton" class="playerButton" disabled title="Edit song information and submit changes" onclick="asmaInstance.editCurrentSong()">Edit...</button>
-         <button id="shuffleModeButton" class="playerButton" title="Play random songs until you press stop" onclick="asmaInstance.toggleShuffleMode()">Shuffle</button>
-         <button id="detailsModeButton" class="playerButton" title="Show or hide song details" onclick="asmaInstance.toggleDetailsMode()">Show details</button>
-         <button id="aboutButton" class="playerButton" title="Display information about ASMA" onclick="asmaInstance.displayAboutDialog()">About</button>
-         <input id="fileInputButton" type="file" class="playerButton" multiple title="Select load files for replay" onchange="asmaInstance.openFiles(this.files)" accept=".sap,.cmc,.cm3,.cmr,.cms,.dmc,.dlt,.mpt,.mpd,.rmt,.tmc,.tm8,.tm2,.fc">
-        </td>
-       </tr>
-      </table>
+      <tr>
+       <td id="dateLabel" class="player_label">Date</td>
+       <td id="date" class="player_value"></td>
+      </tr>
+      <tr>
+       <td class="player_label">Channels</td>
+       <td id="channels" class="player_value"></td>
+      </tr>
+      <tr>
+       <td class="player_label">Play Song</td>
+       <td id="songList" class="player_value"></td>
+      </tr>
+      <tr>
+       <td class="player_label">Playing Time</td>
+       <td class="player_value"><span id="playingTime" style="vertical-align: top;"></span> <input id="playingTimeSlider" type="range" min="0" max="0" value="0" style="vertical-align: top; display: none" oninput="asmaInstance.seekPlayingTime();"></td>
+      </tr>
+      <tr>
+       <td id="detailsLabel" class="player_label">Details</td>
+       <td id="details" class="player_value"></td>
+      </tr>
+      <tr>
+       <td id="hardwareLabel" class="player_label">Hardware</td>
+       <td id="hardware" class="player_value"></td>
+      </tr>
+      <tr>
+       <td id="originalModuleFormatLabel" class="player_label">Format</td>
+       <td id="originalModuleFormat" class="player_value"></td>
+      </tr>
+      <tr>
+       <td id="replayFrequencyLabel" class="player_label">Replay Frequency</td>
+       <td id="replayFrequency" class="player_value"></td>
+      </tr>
+      <tr>
+       <td id="addressesLabel" class="player_label">Init</td>
+       <td id="addresses" class="player_value"></td>
+      </tr>
+      <tr>
+       <td id="filePathLabel" class="player_label">File Path</td>
+       <td id="filePath" class="player_value"></td>
+      </tr>
+      <tr>
+       <td id="fileSizeLabel" class="player_label">File Size</td>
+       <td id="fileSize" class="player_value"></td>
+      </tr>
+      <tr>
+       <td id="demozooIDLabel" class="player_label">Demozoo ID</td>
+       <td id="demozooID" class="player_value"></td>
+      </tr>
+      <tr>
+       <td id="saveExtensionsLabel" class="player_label">Export As</td>
+       <td id="saveExtensions" class="player_value"></td>
+      </tr>
+      <tr>
+       <td colspan="2">
+        <button id="playButton" class="playerButton" title="Play the current song from the start" onclick="asmaInstance.playCurrentSong()" disabled>&#x25b6; Play</button>
+        <button id="pauseButton" class="playerButton" title="Pause or resume the current song" onclick="asmaInstance.togglePauseCurrentSong()" disabled>Pause</button>
+        <button id="stopButton" class="playerButton" title="Stop playing the current song" onclick="asmaInstance.stopCurrentSongAndShuffleMode()" disabled>&#x25a0; Stop</button>
+        <button id="editButton" class="playerButton" disabled title="Edit song information and submit changes" onclick="asmaInstance.editCurrentSong()">Edit...</button>
+        <button id="shuffleModeButton" class="playerButton" title="Play random songs until you press stop" onclick="asmaInstance.toggleShuffleMode()">Shuffle</button>
+        <button id="detailsModeButton" class="playerButton" title="Show or hide song details" onclick="asmaInstance.toggleDetailsMode()">Show details</button>
+        <button id="aboutButton" class="playerButton" title="Display information about ASMA" onclick="asmaInstance.displayAboutDialog()">About</button> <input id="fileInputButton" type="file" class="playerButton" multiple title="Select load files for replay" onchange="asmaInstance.openFiles(this.files)" accept=".sap,.cmc,.cm3,.cmr,.cms,.dmc,.dlt,.mpt,.mpd,.rmt,.tmc,.tm8,.tm2,.fc">
+       </td>
+      </tr>
+     </table>
+    </div> <br>
+
+    <form id="search" autocomplete="on" action="javascript:asmaInstance.search()">
+     <div class="search_parameter">
+      <label id="searchKeywordLabel" for="searchKeyword" class="search_label">Keyword</label> <input id="searchKeyword" type="search" autocomplete="on" placeholder="" value="">
      </div>
-     <br>
-     
-     <form id="search" autocomplete="on" action="javascript:asmaInstance.search()">
-      <div class="search_parameter">
-       <label id="searchKeywordLabel" for="searchKeyword" class="search_label">Keyword</label>
-       <input id="searchKeyword" type="search" autocomplete="on" placeholder="" value="">
-      </div>
-      <div class="search_parameter">
-       <label id="searchFilePathLabel" for="searchFilePath" class="search_label">File Path</label>
-       <input id="searchFilePath" type="search" autocomplete="on" placeholder="" value="">
-      </div>
-      <div class="search_parameter">
-       <label id="searchTitleLabel" for="searchTitle" class="search_label">Title</label>
-       <input type="search" id="searchTitle" autocomplete="on" value="">
-      </div>
-      <div class="search_parameter">
-       <label id="searchAuthorLabel" for="searchAuthor" class="search_label">Author</label>
-       <input type="search" id="searchAuthor" autocomplete="on" value=""></div>
-      <div class="search_parameter">
-       <label id="searchDateLabel" for="searchDate" class="search_label">Date</label>
-       <input type="search" id="searchDate" autocomplete="on" placeholder="DD/MM/YYYY" value="">
-      </div>     
-      <div class="search_parameter">
-       <label id="searchChannelsLabel" for="searchChannels" class="search_label">Channels</label>
-       <select id="searchChannels">
-        <option value="1" selected>All</option>
-        <option value="2">Mono (4)</option>
-        <option value="3">Stereo (8)</option>
-       </select>
-      </div>
-      <div class="search_parameter">
-       <label id="searchHardwareLabel" for="searchHardware" class="search_label">Hardware</label>
-       <select id="searchHardware">
-        <option value="1" selected>All</option>
-        <option value="2">Atari 2600</option>
-        <option value="3">Atari 800</option>
-       </select>
-      </div>
-      <div class="search_parameter">
-       <label id="searchFormatLabel" for="searchFormat" class="search_label">Format</label>
-       <input type="search" id="searchFormat" autocomplete="on" size="3" value="">
-      </div>
-      <div class="search_parameter">
-       <label id="searchButtonLabel" for="searchButton" class="search_label">&nbsp;</label>
-       <input id="searchButton" type=submit value="Search">
-      </div>   
-     </form>
-    </td>
-   </tr>
-   <tr>
-    <td style="padding: 0px;">
-     <div id="searchResult"></div>
-    </td>
-   </tr>
-  </table>
-
-  <table class="footer" style="background-color:#eeeeff; width: 100%;">
-   <tr>
-    <td>
-     <div class="flex-container">
-      <div class="flex-item-left">Web design and page contents</div>
-      <div class="flex-item-right">(c) 1999-2026 by PG and JAC!.</div>
+     <div class="search_parameter">
+      <label id="searchFilePathLabel" for="searchFilePath" class="search_label">File Path</label> <input id="searchFilePath" type="search" autocomplete="on" placeholder="" value="">
      </div>
-    </td>
-   </tr>
-  </table>
+     <div class="search_parameter">
+      <label id="searchTitleLabel" for="searchTitle" class="search_label">Title</label> <input type="search" id="searchTitle" autocomplete="on" value="">
+     </div>
+     <div class="search_parameter">
+      <label id="searchAuthorLabel" for="searchAuthor" class="search_label">Author</label> <input type="search" id="searchAuthor" autocomplete="on" value="">
+     </div>
+     <div class="search_parameter">
+      <label id="searchDateLabel" for="searchDate" class="search_label">Date</label> <input type="search" id="searchDate" autocomplete="on" placeholder="DD/MM/YYYY" value="">
+     </div>
+     <div class="search_parameter">
+      <label id="searchChannelsLabel" for="searchChannels" class="search_label">Channels</label> <select id="searchChannels">
+       <option value="1" selected>All</option>
+       <option value="2">Mono (4)</option>
+       <option value="3">Stereo (8)</option>
+      </select>
+     </div>
+     <div class="search_parameter">
+      <label id="searchHardwareLabel" for="searchHardware" class="search_label">Hardware</label> <select id="searchHardware">
+       <option value="1" selected>All</option>
+       <option value="2">Atari 2600</option>
+       <option value="3">Atari 800</option>
+      </select>
+     </div>
+     <div class="search_parameter">
+      <label id="searchFormatLabel" for="searchFormat" class="search_label">Format</label> <input type="search" id="searchFormat" autocomplete="on" size="3" value="">
+     </div>
+     <div class="search_parameter">
+      <label id="searchButtonLabel" for="searchButton" class="search_label">&nbsp;</label> <input id="searchButton" type=submit value="Search">
+     </div>
+    </form>
+   </td>
+  </tr>
+  <tr>
+   <td style="padding: 0px;">
+    <div id="searchResult"></div>
+   </td>
+  </tr>
+ </table>
 
-  <div id="consoleLog" style="display:none"></div>
+ <table class="footer" style="background-color: #eeeeff; width: 100%;">
+  <tr>
+   <td>
+    <div class="flex-container">
+     <div class="flex-item-left">Web design and page contents</div>
+     <div class="flex-item-right">(c) 1999-2026 by PG and JAC!.</div>
+    </div>
+   </td>
+  </tr>
+ </table>
 
- </body>
+ <div id="consoleLog" style="display: none"></div>
+
+</body>
 </html>

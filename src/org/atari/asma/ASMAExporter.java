@@ -1,7 +1,6 @@
 package org.atari.asma;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -10,6 +9,7 @@ import org.atari.asma.demozoo.ProductionList;
 import org.atari.asma.util.JSONWriter;
 import org.atari.asma.util.MessageQueue;
 
+// TODO: Read the initial file revision from the SVN SQLLite database file using from https://github.com/xerial/sqlite-jdbc
 public class ASMAExporter {
 
 	public static final class FileExtension {

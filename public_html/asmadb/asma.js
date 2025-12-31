@@ -139,8 +139,8 @@ class ASMA {
 		this.initFileInfos();
 
 		this.demozoo = new Demozoo(asma.demozoo.productions);
-		this.demozooCheckResult = "";
-		this.demozooCheckResult = this.demozoo.initProductions(this.fileInfos);
+		this.demozooSummary = {};
+		this.demozoo.initProductions(this.fileInfos, this.demozooSummary);
 
 		this.composerList = new ComposerList(asma.composerInfos);
 		this.composerList.initFileInfos(this.fileInfos, this.demozoo.getProductionsByFilePathAndSongIndexMap());
@@ -1200,8 +1200,15 @@ class ASMA {
 	displayAboutDialog() {
 
 		let aboutDialogGeneralContent = UI.getElementById("aboutDialogGeneralContent");
-		aboutDialogGeneralContent.innerHTML = "This website is using <a href=\"https://asap.sourceforge.net/\">ASAP version " + ASAPInfo.VERSION + "</a>.<br>\n"
-			+ "<a href=\"javascript:asmaInstance.checkDemozoo()\">Retrieve the Demozoo Productions</a><br>\n" + "Demozoo check result: " + this.demozooCheckResult;
+		aboutDialogGeneralContent.innerHTML = "<iframe id=\"aboutDialogGeneralContentFrame\" src=\"../asma/asma.txt\" height=\"90px\" style=\"border:none;\"></iframe>" +
+			"<div><pre> <a href=\"https://asap.sourceforge.net/\">ASAP version " + ASAPInfo.VERSION + "</a>.</pre></div>";
+
+		let aboutDialogASMAContent = UI.getElementById("aboutDialogASMAContent");
+		aboutDialogASMAContent.innerHTML = this.demozooSummary.asma;
+
+		let aboutDialogDemozooContent = UI.getElementById("aboutDialogDemozooContent");
+		aboutDialogDemozooContent.innerHTML = this.demozooSummary.demozoo;
+		this.demozooSummary.demozoo;
 
 
 		let resultHTML;
@@ -1265,8 +1272,8 @@ class ASMA {
 		UI.showModalDialog(aboutDialog);
 	}
 
-	checkDemozoo() {
-		this.demozoo.checkDemozoo();
+	fetchDemozoo() {
+		this.demozoo.fetchDemozoo();
 	}
 }
 
