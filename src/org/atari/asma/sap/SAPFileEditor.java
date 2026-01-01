@@ -1,11 +1,20 @@
 package org.atari.asma.sap;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.atari.asma.ASMAExporter.FileExtension;
+import org.atari.asma.util.BufferedMessageQueue;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MessageQueue;
+import org.atari.asma.util.MessageQueueFactory;
 
 import net.sf.asap.ASAP;
 import net.sf.asap.ASAPInfo;
@@ -18,7 +27,7 @@ public class SAPFileEditor {
 	private SAPFileDialog sapFileDialog;
 
 	private SAPFileEditor() {
-		messageQueue = new MessageQueue(System.out, System.err);
+		messageQueue =  MessageQueueFactory.createSystemInstance();
 		sapFileLogic = new SAPFileLogic();
 		sapFileDialog = new SAPFileDialog(this);
 	}
@@ -50,7 +59,10 @@ public class SAPFileEditor {
 					scanFolder(file);
 				} else {
 					messageQueue.sendInfo("Reading '" + file.getAbsolutePath() + "'.");
-					checkSAPFile(file, true);
+					var sapFile = checkSAPFile(file, messageQueue);
+					if (sapFile != null) {
+						sapFileDialog.show(file, sapFile);
+					}
 				}
 
 			} catch (Exception ex) {
@@ -78,28 +90,31 @@ public class SAPFileEditor {
 		int totalCount = fileList.size();
 		messageQueue.sendInfo(totalCount + " files found.");
 
-		int count = 0;
-		for (File file : fileList) {
-			checkSAPFile(file, false);
-			count++;
-			if (count % 100 == 0) {
-				messageQueue.sendInfo(count + " files processed.");
+		var count = new AtomicInteger();
+		final var blockSize = 100;
+		fileList.parallelStream().forEach(file -> {
+			if (count.incrementAndGet() % blockSize == 0) {
+				synchronized (messageQueue) {
+					messageQueue.sendInfo(count + " files processed.");
+				}
 			}
-		}
+
+	
+			var localMessageQueue = new BufferedMessageQueue(messageQueue);
+			checkSAPFile(file, localMessageQueue);
+			localMessageQueue.flush();
+		});
+
 		messageQueue.sendInfo("All " + fileList.size() + " files processed.");
 
 	}
 
-	private void checkSAPFile(File file, boolean details) {
+	private SAPFile checkSAPFile(File file, MessageQueue messageQueue) {
 		var sapFile = sapFileLogic.readSAPFile(file, messageQueue);
-		if (sapFile != null) {
-			if (details) {
-				sapFileDialog.show(file, sapFile);
-			}
-		} else {
+		if (sapFile == null) {
 			messageQueue.sendInfo("Error reading '" + file.getAbsolutePath() + "'. See above.");
-
 		}
+		return sapFile;
 	}
 
 }
