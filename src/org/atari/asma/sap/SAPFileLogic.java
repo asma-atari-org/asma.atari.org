@@ -9,14 +9,21 @@ import org.atari.asma.util.MessageQueue;
 
 import net.sf.asap.ASAP;
 import net.sf.asap.ASAPFormatException;
+
 /**
- * See https://asap.sourceforge.net/sap-format.html
- * See https://sourceforge.net/p/asap/code/ci/master/tree/chksap.pl
+ * See https://asap.sourceforge.net/sap-format.html See
+ * https://sourceforge.net/p/asap/code/ci/master/tree/chksap.pl
  * 
  * @author Peter Dell
  *
  */
 public class SAPFileLogic {
+
+	private SegmentListLogic segmentListLogic;
+
+	public SAPFileLogic() {
+		segmentListLogic = new SegmentListLogic();
+	}
 
 	public SAPFile readSAPFile(File file, MessageQueue messageQueue) {
 		var sapFile = new SAPFile();
@@ -125,38 +132,7 @@ public class SAPFileLogic {
 		}
 
 		sapFile.segmentsStartIndex = index;
-		int segmentCount = 0;
-		while (index + 4 < content.length) {
-			var segmentStartIndex = index;
-			Segment segment = new Segment();
-			int w = ByteUtility.getWord(content, index);
-			index += 2;
-			if (w == 0xffff) {
-				w = ByteUtility.getWord(content, index);
-				index += 2;
-			}
-			segment.startAddress = w;
-			w = ByteUtility.getWord(content, index);
-			index += 2;
-			segment.endAddress = w;
-			if (segment.startAddress > segment.endAddress) {
-				messageQueue.sendError("Invalid segment " + segmentCount + " at index "
-						+ ByteUtility.getIndexString(segmentStartIndex) + " has start address "
-						+ ByteUtility.getWordHexString(segment.startAddress) + " greater than end address "
-						+ ByteUtility.getWordHexString(segment.endAddress) + ".");
-				return null;
-			}
-			var binaryStartIndex = index;
-			sapFile.segmentList.add(segment);
-			segment.content = new byte[segment.getLength()];
-			System.arraycopy(content, binaryStartIndex, segment.content, 0, segment.getLength());
-			index += segment.getLength();
-
-			segmentCount++;
-		}
-		if (index != content.length) {
-			messageQueue.sendError("Invalid additional data after last segment " + segmentCount + " at index "
-					+ ByteUtility.getIndexString(index) + ".");
+		if (!segmentListLogic.readSegmentList(sapFile.segmentList, content, index, messageQueue)) {
 			return null;
 		}
 		var asap = new ASAP();

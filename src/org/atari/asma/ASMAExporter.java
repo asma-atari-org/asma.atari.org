@@ -32,6 +32,7 @@ public class ASMAExporter {
 	private ASMAExporter() {
 	}
 
+	@SuppressWarnings("static-method")
 	private void exportJS(ASMADatabase asmaDatabase, File asmaDatabaseFile, MessageQueue messageQueue) {
 		messageQueue.sendInfo("Exporting " + asmaDatabase.fileInfoList.getEntries().size() + " file infos to "
 				+ asmaDatabaseFile.getPath() + ".");

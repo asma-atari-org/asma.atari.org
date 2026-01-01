@@ -1,8 +1,5 @@
 package org.atari.asma.sap;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sf.asap.ASAPInfo;
 
 public class SAPFile {
@@ -14,14 +11,14 @@ public class SAPFile {
 	final static String ATASCII_CHARACTERS = UPPPER_LETTERS + LOWER_LETTERS + NUMBERS + SPECICAL_CHARACTERS + "|";
 
 	public SAPFile() {
-		segmentList = new ArrayList<Segment>();
+		segmentList = new SegmentList();
 	}
 
 	public byte[] content;
 	public int segmentsStartIndex;
 
 	public String header;
-	public List<Segment> segmentList;
+	public SegmentList segmentList;
 	public ASAPInfo asapInfo;
 
 	public String toString() {
@@ -31,7 +28,7 @@ public class SAPFile {
 	public String getSegmentsString() {
 		StringBuilder sb = new StringBuilder();
 		int segmentCount = 0;
-		for (var segment : segmentList) {
+		for (var segment : segmentList.getEntries()) {
 			sb.append("LOAD ");
 			sb.append(ByteUtility.getByteHexString(segmentCount));
 			sb.append(": ");

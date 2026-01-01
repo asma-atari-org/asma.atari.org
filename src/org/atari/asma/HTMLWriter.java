@@ -6,12 +6,10 @@ import java.io.Writer;
 public class HTMLWriter {
 
 	private Writer writer;
-	private int id;
 	private int headingLevel;
 
 	public HTMLWriter(Writer writer) {
 		this.writer = writer;
-		id = 0;
 		headingLevel = 0;
 	}
 
@@ -37,10 +35,6 @@ public class HTMLWriter {
 			builder.append("</a>");
 		}
 		return builder.toString();
-	}
-
-	private String getNextID() {
-		return "id" + id++;
 	}
 
 	public void write(String html) {

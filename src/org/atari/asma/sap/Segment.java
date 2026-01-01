@@ -4,7 +4,7 @@ import java.util.zip.CRC32;
 
 import org.atari.asma.RMTFile;
 
-class Segment {
+public class Segment {
 	public int startAddress;
 	public int endAddress;
 	public byte[] content;

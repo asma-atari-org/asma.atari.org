@@ -9,8 +9,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
 
-import com.google.gson.GsonBuilder;
-
 public class RestClient {
 
 	public static class HttpRequest {

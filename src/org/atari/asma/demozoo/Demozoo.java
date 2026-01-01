@@ -3,7 +3,6 @@ package org.atari.asma.demozoo;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.System.Logger;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -11,7 +10,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.atari.asma.util.StringUtility;
 import org.atari.asma.demozoo.RestClient.HttpRequest;
 import org.atari.asma.demozoo.RestClient.HttpRequest.ParameterValue;
 import org.atari.asma.demozoo.model.Database;
@@ -21,6 +19,7 @@ import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MemoryUtility;
 import org.atari.asma.util.MessageQueue;
 import org.atari.asma.util.Serializer;
+import org.atari.asma.util.StringUtility;
 
 public class Demozoo {
 
