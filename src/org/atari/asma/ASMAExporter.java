@@ -3,16 +3,18 @@ package org.atari.asma;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.charset.Charset;
 
 import org.atari.asma.demozoo.ASMAProductionList;
 import org.atari.asma.demozoo.Demozoo;
 import org.atari.asma.sap.SAPFileLogic;
-import org.atari.asma.util.MessageQueueFactory;
-import org.atari.asma.util.JSONWriter;
+import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MemoryUtility;
 import org.atari.asma.util.MessageQueue;
+import org.atari.asma.util.MessageQueueFactory;
 
+// Read, check and export all relevant data as "asmadb.js" file.
 // TODO: Read the initial file revision from the SVN SQLLite database file using from https://github.com/xerial/sqlite-jdbc
 public class ASMAExporter {
 
@@ -29,18 +31,46 @@ public class ASMAExporter {
 	}
 
 	@SuppressWarnings("static-method")
+	private void saveFileInfoList(ASMADatabase asmaDatabase, File htmlFile, MessageQueue messageQueue) {
+		Writer writer = null;
+		try {
+			writer = new FileWriter(htmlFile, Charset.forName("UTF8"));
+
+			for (var fileInfo : asmaDatabase.fileInfoList.getEntries()) {
+				writer.write(fileInfo.filePath + "<br>");
+			}
+			writer.close();
+
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		} finally {
+			if (writer != null) {
+				try {
+					writer.close();
+				} catch (IOException ex) {
+					throw new RuntimeException(ex);
+				}
+			}
+		}
+
+		messageQueue.sendInfo("ASMA database exported as HTML to " + htmlFile.getAbsolutePath() + " with "
+				+ MemoryUtility.getRoundedMemorySize(htmlFile.length()) + ".");
+
+	}
+
+	@SuppressWarnings("static-method")
 	private void run(String[] args) {
 		MessageQueue messageQueue = MessageQueueFactory.createSystemInstance();
 
 		if (args.length != 2) {
-			messageQueue.sendMessage("Usage: ASMAExporter <trunk/asma folder> <asmadb.js file>");
+			messageQueue.sendInfo("Usage: ASMAExporter <trunk/asma folder> <asmadb.js file>");
 			return;
 		}
 
 		var sourceFolderPath = args[0];
 		File sourceFolder = new File(sourceFolderPath);
 
-		File stilFile = new File(sourceFolder, "Docs/STIL.txt");
+		File stilFile = new File(sourceFolder, ASMAPaths.STIL_TXT);
 		messageQueue.sendInfo("Loading STIL information '" + stilFile.getPath() + "'.");
 		STIL stil = new STIL();
 		try {
@@ -51,17 +81,21 @@ public class ASMAExporter {
 		}
 		messageQueue.sendInfo(stil.getSize() + " STIL entries loaded.");
 
-		File composersFile = new File(sourceFolder, "Docs/ASMA-Composers.json");
+		var asmaDatabase = new ASMADatabase();
+
+		var composersFile = new File(sourceFolder, ASMAPaths.ASMA_COMPOSERS_JSON);
 		messageQueue.sendInfo("Loading composers from '" + composersFile.getPath() + "'.");
-		ComposerList composerList = ComposerList.load(composersFile);
+		var composerList = ComposerList.load(composersFile);
 		composerList.deserialize();
 		composerList.init(messageQueue);
 		messageQueue.sendInfo(composerList.getEntries().size() + " composers loaded.");
 		composerList.checkFolders(sourceFolder, messageQueue);
 
-		var groupsFile = new File(sourceFolder, "Docs/ASMA-Groups.json");
+		asmaDatabase.composerList = composerList;
+
+		var groupsFile = new File(sourceFolder, ASMAPaths.ASMA_GROUPS_JSON);
 		messageQueue.sendInfo("Loading groups from '" + composersFile.getPath() + "'.");
-		GroupList groupList = GroupList.load(groupsFile);
+		var groupList = GroupList.load(groupsFile);
 		groupList.deserialize();
 
 		messageQueue.sendInfo(groupList.getEntries().size() + " groups loaded.");
@@ -69,6 +103,8 @@ public class ASMAExporter {
 		groupList.checkFolders(sourceFolder, messageQueue);
 
 		composerList.checkGroups(groupList, messageQueue);
+
+		asmaDatabase.groupList = groupList;
 
 		var databaseFile = new File(sourceFolder, ASMAPaths.DEMOZOO_DATABASE_JSON);
 		messageQueue.sendInfo("Loading Demozoo database from '" + databaseFile.getPath() + "'.");
@@ -79,55 +115,41 @@ public class ASMAExporter {
 		var productionList = new ASMAProductionList(database.productions);
 
 		productionList.init(messageQueue);
+		asmaDatabase.productionList = productionList;
 
 		FileInfoList fileInfoList = new FileInfoList(stil, new SAPFileLogic());
 		fileInfoList.scanFolder(sourceFolder, messageQueue);
-		fileInfoList.checkFiles(composerList, productionList, messageQueue);
+		fileInfoList.checkFiles(composerList, productionList);
 
-		var exportFile = new File(args[1]);
+		asmaDatabase.fileInfoList = fileInfoList;
+
+		var asmaDatabaseFile = new File(args[1]);
 
 		messageQueue.sendInfo(
-				"Exporting " + fileInfoList.getEntries().size() + " song infos to " + exportFile.getPath() + ".");
+				"Exporting " + fileInfoList.getEntries().size() + " file infos to " + asmaDatabaseFile.getPath() + ".");
 
-		FileWriter fileWriter = null;
+		Writer writer = null;
 		try {
-			fileWriter = new FileWriter(exportFile, Charset.forName("UTF8"));
-			fileWriter.write("const asma = ");
-			JSONWriter writer = new JSONWriter(fileWriter);
-			writer.beginObject();
-			writer.writeAttribute("composerInfos");
-			fileWriter.write(composerList.getJSONString());
-			writer.writeSeparator();
-
-			writer.writeAttribute("groupInfos");
-			fileWriter.write(groupList.getJSONString());
-			writer.writeSeparator();
-
-			writer.writeAttribute("fileInfos");
-			fileInfoList.exportToJSON(writer);
-			writer.writeSeparator();
-
-			writer.writeAttribute("demozoo");
-			writer.beginObject();
-			writer.writeAttribute("productions");
-			fileWriter.write(productionList.getJSONString());
-			writer.endObject();
-
-			writer.endObject();
+			writer = new FileWriter(asmaDatabaseFile, Charset.forName("UTF8"));
+			asmaDatabase.write(writer);
 
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		} finally {
-			if (fileWriter != null) {
+			if (writer != null) {
 				try {
-					fileWriter.close();
+					writer.close();
 				} catch (IOException ex) {
 					throw new RuntimeException(ex);
 				}
 			}
 		}
-		messageQueue.sendMessage("ASMA exported to " + exportFile.getAbsolutePath() + " completed with "
-				+ MemoryUtility.getRoundedMemorySize(exportFile.length()) + ".");
+		messageQueue.sendInfo("ASMA database exported as JS to " + asmaDatabaseFile.getAbsolutePath() + " with "
+				+ MemoryUtility.getRoundedMemorySize(asmaDatabaseFile.length()) + ".");
+
+		var htmlFile = FileUtility.changeFileExtension(asmaDatabaseFile, ".html");
+		saveFileInfoList(asmaDatabase, htmlFile, messageQueue);
+
 		messageQueue.printSummary();
 
 	}
