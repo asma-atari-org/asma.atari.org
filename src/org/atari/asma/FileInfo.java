@@ -28,7 +28,7 @@ public final class FileInfo {
 	public int defaultSongIndex; // Zero-based
 	
 	
-	public MessageQueue messageQueue;
+	private MessageQueue messageQueue;
 	
 	// TODO Duration and details from STIL per Song
 	private int demozooID;
@@ -51,8 +51,13 @@ public final class FileInfo {
 	public void setDemozooID(int demozooID) {
 		this.demozooID = demozooID;
 	}
+	
+	public MessageQueue getMessageQueue() {
+		return messageQueue;
+	}
 
 	FileInfo() {
+		messageQueue=new MessageQueue();
 	}
 
 	public void readFromSAPFile(SAPFile sapFile) {

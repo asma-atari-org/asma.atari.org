@@ -20,7 +20,7 @@ public class DemozooImporter {
 		MessageQueue messageQueue = MessageQueueFactory.createSystemInstance();
 
 		if (args.length != 1) {
-			messageQueue.sendMessage("Usage: DemozooImporter <trunk/asma folder>");
+			messageQueue.sendInfo("Usage: DemozooImporter <trunk/asma folder>");
 			return 0;
 		}
 
@@ -30,7 +30,7 @@ public class DemozooImporter {
 		var databaseFile = new File(sourceFolder, ASMAPaths.DEMOZOO_DATABASE_JSON);
 
 		var demozoo = new Demozoo();
-		messageQueue.sendMessage("Fetching Demozoo database to '" + databaseFile.getPath() + "'.");
+		messageQueue.sendInfo("Fetching Demozoo database to '" + databaseFile.getPath() + "'.");
 
 		if (!databaseFile.exists()) {
 			messageQueue.sendError("Output file '" + databaseFile.getPath() + "' does not exist.");

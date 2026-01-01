@@ -86,6 +86,9 @@ public class FileInfoList {
 		}
 		System.out.println();
 
+		// During parallel execution we need to decouple from the streams and
+		// synchronize.
+		var fileListMessageQueue = new MessageQueue();
 		fileList.parallelStream().forEach(file -> {
 			if (count.incrementAndGet() % blockSize == 0) {
 				System.out.print("^");
@@ -93,14 +96,16 @@ public class FileInfoList {
 			String filePath = file.getAbsolutePath().substring(index);
 			filePath = filePath.replace(File.separator, "/");
 
-			var localMessageQueue = new BufferedMessageQueue(messageQueue);
-			var fileInfo = readFile(file, filePath, localMessageQueue);
+			var fileMessageQueue = new MessageQueue();
+			var fileInfo = readFile(file, filePath, fileMessageQueue);
+			synchronized (messageQueue) {
+				fileListMessageQueue.addEntries(fileMessageQueue);
 
+			}
 			synchronized (fileInfoList) {
 				if (fileInfo != null) {
 					fileInfoList.add(fileInfo);
 				}
-				localMessageQueue.flush();
 			}
 		});
 
@@ -112,7 +117,9 @@ public class FileInfoList {
 				return o1.filePath.compareTo(o2.filePath);
 			}
 		});
-		System.out.println();
+
+		// Issue which result in broken SAP file files, are reported right away.
+		messageQueue.addEntries(fileListMessageQueue);
 	}
 
 	private FileInfo readFile(File file, String filePath, MessageQueue messageQueue) {
@@ -159,7 +166,7 @@ public class FileInfoList {
 		return fileInfo;
 	}
 
-	public void checkFiles(ComposerList composerList, ASMAProductionList productionList, MessageQueue messageQueue) {
+	public void checkFiles(ComposerList composerList, ASMAProductionList productionList) {
 		// From "Sap.txt" specification.
 		final int MAX_FILE_NAME_LENGTH = 26;
 		final String FILE_NAME_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
@@ -168,7 +175,8 @@ public class FileInfoList {
 		int startIndex = COMPOSERS.length();
 
 		for (var fileInfo : fileInfoList) {
-			String filePath = fileInfo.filePath;
+			final var filePath = fileInfo.filePath;
+			final var messageQueue = fileInfo.getMessageQueue();
 			if (filePath.toLowerCase().endsWith(FileExtension.SAP)) {
 				if (!filePath.endsWith(FileExtension.SAP)) {
 					messageQueue.sendError("SAP-101: File " + fileInfo.filePath
