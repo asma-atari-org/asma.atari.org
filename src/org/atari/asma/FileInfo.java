@@ -25,12 +25,15 @@ public final class FileInfo {
 	public int channels;
 	public int songs;
 	public int defaultSongIndex; // Zero-based
-	
-	
-	private MessageQueue messageQueue;
-	
+
+	private transient MessageQueue messageQueue;
+
 	// TODO Duration and details from STIL per Song
 	private int demozooID;
+
+	public FileInfo() {
+		messageQueue = new MessageQueue();
+	}
 
 	// The file path format in URLs is:
 	// - "filePath" if the file has only one song or if the song is the default song
@@ -51,13 +54,9 @@ public final class FileInfo {
 	public void setDemozooID(int demozooID) {
 		this.demozooID = demozooID;
 	}
-	
+
 	public MessageQueue getMessageQueue() {
 		return messageQueue;
-	}
-
-	FileInfo() {
-		messageQueue=new MessageQueue();
 	}
 
 	public void readFromSAPFile(SAPFile sapFile) {

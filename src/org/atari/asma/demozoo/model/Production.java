@@ -9,6 +9,7 @@ import java.util.TreeSet;
 
 import org.atari.asma.demozoo.Demozoo.PlatformDefinition;
 import org.atari.asma.util.FileUtility;
+import org.atari.asma.util.MessageQueue;
 import org.atari.asma.util.StringUtility;
 
 public final class Production {
@@ -25,7 +26,17 @@ public final class Production {
 	public Link[] download_links;
 	public String[] tags;
 
+	private transient MessageQueue messageQueue; // transient
+
 	private final static String ASMA_URL_PREFIX = "https://asma.atari.org/asma/";
+
+	public Production() {
+		messageQueue = new MessageQueue();
+	}
+
+	public MessageQueue getMessageQueue() {
+		return messageQueue;
+	}
 
 	public List<String> getASMAURLFilePaths() {
 		List<String> result = new ArrayList<String>(2);

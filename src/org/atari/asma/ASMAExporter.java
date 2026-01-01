@@ -25,7 +25,7 @@ public class ASMAExporter {
 	}
 
 	public static void main(String[] args) {
-		
+
 		new ASMAExporter().run(args);
 	}
 
@@ -63,7 +63,7 @@ public class ASMAExporter {
 			writer = new FileWriter(htmlFile, Charset.forName("UTF8"));
 			var htmlWriter = new HTMLWriter(writer);
 			var htmlExporter = new ASMAHTMLExporter(htmlWriter);
-			htmlExporter.write(asmaDatabase, database);
+			htmlExporter.write(asmaDatabase, database, true);
 			writer.close();
 
 		} catch (IOException ex) {
@@ -139,7 +139,7 @@ public class ASMAExporter {
 
 		var productionList = new ASMAProductionList(database.productions);
 
-		productionList.init(messageQueue);
+		productionList.init();
 		asmaDatabase.productionList = productionList;
 
 		FileInfoList fileInfoList = new FileInfoList(stil, new SAPFileLogic());

@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.atari.asma.Utils;
+import org.atari.asma.util.StringUtility;
 import org.atari.asma.demozoo.RestClient.HttpRequest;
 import org.atari.asma.demozoo.RestClient.HttpRequest.ParameterValue;
 import org.atari.asma.demozoo.model.Database;
@@ -53,8 +53,9 @@ public class Demozoo {
 
 			if (productionNumber % 10 == 0) {
 				messageQueue.sendInfo("Fetching production " + (productionNumber) + " of " + productionsPage.count
-						+ " from " + productionsPageResult.url + " (" + Utils.getDurationString(milliSecondsSinceStart)
-						+ " until now, " + Utils.getDurationString(milliSecondsToGo) + " to go)");
+						+ " from " + productionsPageResult.url + " ("
+						+ StringUtility.getDurationString(milliSecondsSinceStart) + " until now, "
+						+ StringUtility.getDurationString(milliSecondsToGo) + " to go)");
 			}
 			try {
 				var response = RestClient.sendGetRequest(productionsPageResult.url);

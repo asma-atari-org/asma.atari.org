@@ -73,6 +73,18 @@ public class MessageQueue {
 
 	}
 
+	public long getInfoCount() {
+		return infoCount;
+	}
+
+	public long getWarningCount() {
+		return warningCount;
+	}
+
+	public long getErrorCount() {
+		return errorCount;
+	}
+
 	public void printSummary() {
 		if (out != null) {
 			out.println(errorCount + " errors, " + warningCount + " warnings, " + infoCount + " infos");

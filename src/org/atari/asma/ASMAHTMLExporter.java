@@ -67,7 +67,7 @@ public class ASMAHTMLExporter {
 		html.write(htmlBuilder.toString());
 	}
 
-	private void writeASMA(ASMADatabase asmaDatabase) {
+	private void writeASMA(ASMADatabase asmaDatabase, boolean onlyIssues) {
 		html.beginTable();
 		html.beginRow();
 		html.writeHeaderTextCell("Line");
@@ -87,6 +87,9 @@ public class ASMAHTMLExporter {
 
 		var line = 1;
 		for (var fileInfo : asmaDatabase.fileInfoList.getEntries()) {
+			if (onlyIssues && !hasIssues(fileInfo.getMessageQueue())) {
+				continue;
+			}
 			html.beginRow();
 			html.writeLongCell(line);
 			html.writeHTMLCell(getASMAPlayerHTML(fileInfo.filePath));
@@ -129,7 +132,7 @@ public class ASMAHTMLExporter {
 		html.endTable();
 	}
 
-	private void writeDemozoo(Database database) {
+	private void writeDemozoo(Database database, boolean onlyIssues) {
 		html.beginTable();
 		html.beginRow();
 		html.writeHeaderTextCell("Line");
@@ -147,10 +150,8 @@ public class ASMAHTMLExporter {
 
 		var line = 1;
 		for (var production : database.productions) {
-			var messageQueue = new MessageQueue();
-
-			if (production.id == 125123) {
-				var a = 1;
+			if (onlyIssues && !hasIssues(production.getMessageQueue())) {
+				continue;
 			}
 			html.beginRow();
 			html.writeLongCell(line);
@@ -175,43 +176,18 @@ public class ASMAHTMLExporter {
 			}
 			html.writeHTMLCell(urlFilePathsHTMLBuilder.toString());
 
-			if (production.download_links.length == 0) {
-				messageQueue.sendWarning("DMO-001 - Music has no download link.");
-			} else {
-				switch (urlFilePaths.size()) {
-				case 0:
-					if (production.getHardware().equals("ATARI2600") && !fileExtensions.contains("ttt")) {
-						messageQueue.sendInfo("DMO-004 - Atari 2600 is currently not supported by ASMA.");
-
-					} else {
-						messageQueue.sendError("DMO-002 - Music has no ASMA download link.");
-					}
-					break;
-
-				case 1:
-					break;
-
-				default:
-					messageQueue.sendError("DMO-003 - Music has more than one ASMA download link.");
-					break;
-				}
-			}
-
-			if (fileExtensions.contains("sap") && !production.hasTag("sap")) {
-				messageQueue.sendWarning("DMO-005 - Music has file extension \".sap\", but no tag \"sap\".");
-			}
-			if (production.hasTag("sap") && !fileExtensions.contains("sap")) {
-				messageQueue.sendWarning("DMO-006 - Music has tag \"sap\", but not file extension \".sap\".");
-			}
-
-			writeMessageQueueCell(messageQueue);
+			writeMessageQueueCell(production.getMessageQueue());
 			html.endRow();
 			line++;
 		}
 		html.endTable();
 	}
 
-	public void write(ASMADatabase asmaDatabase, Database database) {
+	private static boolean hasIssues(MessageQueue messageQueue) {
+		return (messageQueue.getErrorCount() > 0 || messageQueue.getWarningCount() > 0);
+	}
+
+	public void write(ASMADatabase asmaDatabase, Database database, boolean onlyIssues) {
 
 		writeHeader();
 
@@ -228,12 +204,12 @@ public class ASMAHTMLExporter {
 		html.beginHeading("asma");
 		html.writeText("ASMA");
 		html.endHeading();
-		writeASMA(asmaDatabase);
+		writeASMA(asmaDatabase, onlyIssues);
 
 		html.beginHeading("demozoo");
 		html.writeText("Demozoo");
 		html.endHeading();
-		writeDemozoo(database);
+		writeDemozoo(database, onlyIssues);
 
 	}
 
