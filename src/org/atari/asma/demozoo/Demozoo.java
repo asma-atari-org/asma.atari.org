@@ -51,9 +51,11 @@ public class Demozoo {
 			var milliSecondsToGo = (milliSecondsSinceStart / (productionNumber)
 					* (productionsPage.count - productionNumber));
 
-			messageQueue.sendInfo("Fetching production " + (productionNumber) + " of " + productionsPage.count
-					+ " from " + productionsPageResult.url + " (" + Utils.getDurationString(milliSecondsSinceStart)
-					+ " until now, " + Utils.getDurationString(milliSecondsToGo) + " to go)");
+			if (productionNumber % 10 == 0) {
+				messageQueue.sendInfo("Fetching production " + (productionNumber) + " of " + productionsPage.count
+						+ " from " + productionsPageResult.url + " (" + Utils.getDurationString(milliSecondsSinceStart)
+						+ " until now, " + Utils.getDurationString(milliSecondsToGo) + " to go)");
+			}
 			try {
 				var response = RestClient.sendGetRequest(productionsPageResult.url);
 
@@ -110,9 +112,9 @@ public class Demozoo {
 						url = page.next;
 					}
 				} else {
-					url = "";
+					url = null;
 				}
-			} while (!url.isEmpty());
+			} while (url != null && !url.isEmpty());
 			return productionList;
 		}
 
@@ -146,7 +148,7 @@ public class Demozoo {
 			messageQueue.sendInfo("Demozoo database file written with "
 					+ MemoryUtility.getRoundedMemorySize(outputFile.length()) + ".");
 
-		} catch ( IOException ex) {
+		} catch (IOException ex) {
 			messageQueue.sendError(ex.getMessage());
 		}
 	}
