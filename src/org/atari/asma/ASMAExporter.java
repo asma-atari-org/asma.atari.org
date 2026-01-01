@@ -7,7 +7,8 @@ import java.nio.charset.Charset;
 
 import org.atari.asma.demozoo.ASMAProductionList;
 import org.atari.asma.demozoo.Demozoo;
-import org.atari.asma.util.ConsoleMessageQueue;
+import org.atari.asma.sap.SAPFileLogic;
+import org.atari.asma.util.MessageQueueFactory;
 import org.atari.asma.util.JSONWriter;
 import org.atari.asma.util.MemoryUtility;
 import org.atari.asma.util.MessageQueue;
@@ -29,7 +30,7 @@ public class ASMAExporter {
 
 	@SuppressWarnings("static-method")
 	private void run(String[] args) {
-		MessageQueue messageQueue = ConsoleMessageQueue.createInstance();
+		MessageQueue messageQueue = MessageQueueFactory.createSystemInstance();
 
 		if (args.length != 2) {
 			messageQueue.sendMessage("Usage: ASMAExporter <trunk/asma folder> <asmadb.js file>");
@@ -40,7 +41,7 @@ public class ASMAExporter {
 		File sourceFolder = new File(sourceFolderPath);
 
 		File stilFile = new File(sourceFolder, "Docs/STIL.txt");
-		messageQueue.sendMessage("Loading STIL information '" + stilFile.getPath() + "'.");
+		messageQueue.sendInfo("Loading STIL information '" + stilFile.getPath() + "'.");
 		STIL stil = new STIL();
 		try {
 			stil.load(stilFile);
@@ -48,44 +49,44 @@ public class ASMAExporter {
 			messageQueue.sendError("Cannot read STIL file: " + ex.getMessage());
 			return;
 		}
-		messageQueue.sendMessage(stil.getSize() + " STIL entries loaded.");
+		messageQueue.sendInfo(stil.getSize() + " STIL entries loaded.");
 
 		File composersFile = new File(sourceFolder, "Docs/ASMA-Composers.json");
-		messageQueue.sendMessage("Loading composers from '" + composersFile.getPath() + "'.");
+		messageQueue.sendInfo("Loading composers from '" + composersFile.getPath() + "'.");
 		ComposerList composerList = ComposerList.load(composersFile);
 		composerList.deserialize();
 		composerList.init(messageQueue);
-		messageQueue.sendMessage(composerList.getEntries().size() + " composers loaded.");
+		messageQueue.sendInfo(composerList.getEntries().size() + " composers loaded.");
 		composerList.checkFolders(sourceFolder, messageQueue);
 
 		var groupsFile = new File(sourceFolder, "Docs/ASMA-Groups.json");
-		messageQueue.sendMessage("Loading groups from '" + composersFile.getPath() + "'.");
+		messageQueue.sendInfo("Loading groups from '" + composersFile.getPath() + "'.");
 		GroupList groupList = GroupList.load(groupsFile);
 		groupList.deserialize();
 
-		messageQueue.sendMessage(groupList.getEntries().size() + " groups loaded.");
+		messageQueue.sendInfo(groupList.getEntries().size() + " groups loaded.");
 		groupList.init(messageQueue);
 		groupList.checkFolders(sourceFolder, messageQueue);
 
 		composerList.checkGroups(groupList, messageQueue);
 
 		var databaseFile = new File(sourceFolder, ASMAPaths.DEMOZOO_DATABASE_JSON);
-		messageQueue.sendMessage("Loading Demozoo database from '" + databaseFile.getPath() + "'.");
+		messageQueue.sendInfo("Loading Demozoo database from '" + databaseFile.getPath() + "'.");
 		var demozoo = new Demozoo();
 		var database = demozoo.loadDatabase(databaseFile, messageQueue);
-		messageQueue.sendMessage(database.productions.length + " productions loaded.");
+		messageQueue.sendInfo(database.productions.length + " productions loaded.");
 
 		var productionList = new ASMAProductionList(database.productions);
 
 		productionList.init(messageQueue);
 
-		FileInfoList fileInfoList = new FileInfoList(stil);
-		fileInfoList.scanFolder(sourceFolder);
+		FileInfoList fileInfoList = new FileInfoList(stil, new SAPFileLogic());
+		fileInfoList.scanFolder(sourceFolder, messageQueue);
 		fileInfoList.checkFiles(composerList, productionList, messageQueue);
 
 		var exportFile = new File(args[1]);
 
-		messageQueue.sendMessage(
+		messageQueue.sendInfo(
 				"Exporting " + fileInfoList.getEntries().size() + " song infos to " + exportFile.getPath() + ".");
 
 		FileWriter fileWriter = null;
