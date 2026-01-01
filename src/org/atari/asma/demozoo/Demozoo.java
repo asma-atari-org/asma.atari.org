@@ -25,8 +25,8 @@ import org.atari.asma.util.Serializer;
 public class Demozoo {
 
 	public class PlatformDefinition {
-		public static final String ATARI_8BIT = "16";
-		public static final String ATARI_2600 = "54";
+		public static final int ATARI_800 = 16;
+		public static final int ATARI_2600 = 54;
 	};
 
 	private static class ProductionsFetcher {
@@ -125,7 +125,7 @@ public class Demozoo {
 		var parameters = new ArrayList<ParameterValue>();
 		parameters.add(new ParameterValue("format", "json"));
 		parameters.add(new ParameterValue("supertype", "music"));
-		parameters.add(new ParameterValue("platform", PlatformDefinition.ATARI_8BIT));
+		parameters.add(new ParameterValue("platform", PlatformDefinition.ATARI_800));
 		parameters.add(new ParameterValue("platform", PlatformDefinition.ATARI_2600));
 
 		var fetcher = new ProductionsFetcher(messageQueue);

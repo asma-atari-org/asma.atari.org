@@ -21,7 +21,7 @@ public class Utils {
 		long minutes = seconds / 60;
 		long hours = minutes / 60;
 
-		var durationString = hours + ":" + getTwoDigiNumber(minutes) + ":" + getTwoDigiNumber(seconds);
+		var durationString = hours + ":" + getTwoDigiNumber(minutes % 60) + ":" + getTwoDigiNumber(seconds % 60);
 		return durationString;
 	}
 }

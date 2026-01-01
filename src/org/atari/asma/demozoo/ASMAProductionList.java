@@ -26,17 +26,18 @@ public class ASMAProductionList {
 	public void init(MessageQueue messageQueue) {
 
 		for (Production production : productions) {
-			final var urlFilePath = production.getURLFilePath();
-			if (!urlFilePath.isEmpty()) {
+			final var urlFilePaths = production.getASMAURLFilePaths();
+			if (!urlFilePaths.isEmpty()) {
+				var urlFilePath = urlFilePaths.get(0);
 				var asmaProduction = new ASMAProduction(production);
 				productionList.add(asmaProduction);
 				productionByIDMap.put(asmaProduction.id, asmaProduction);
 
 				ASMAProduction previousProduction = productionByURLFilePathMap.put(urlFilePath, asmaProduction);
 				if (previousProduction != null) {
-					String message = "PRD-001: Production " + previousProduction.toString()
+					String message = "DMO-004: Production " + previousProduction.toString()
 							+ " already registered for file path " + previousProduction.urlFilePath + " of production "
-							+ production.toString();
+							+ asmaProduction.toString();
 					messageQueue.sendError(message);
 //					throw new RuntimeException(message);
 				} else {

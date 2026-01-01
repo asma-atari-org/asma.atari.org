@@ -30,7 +30,7 @@ class Demozoo {
 		let missingLinkCount = 0;
 		for (let production of this.productions) {
 			this.productionsByIDMap.set(production.id, production);
-			if (production.filePath == null) {
+			if (production.urlFilePath == null) {
 				missingLinkCount++;
 				let candidatesHTML = "";
 				for (let fileIndex = 0; fileIndex < fileInfoList.length; fileIndex++) {

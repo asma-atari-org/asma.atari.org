@@ -120,6 +120,20 @@ public class FileUtility {
 		}
 	}
 
+	public static String getFileExtension(String fileName) {
+		int index = fileName.lastIndexOf('/');
+		if (index >= 0) {
+			fileName = fileName.substring(index+1);
+
+		}
+		index = fileName.lastIndexOf('.');
+		if (index >= 0) {
+			return fileName.substring(index);
+
+		}
+		return "";
+	}
+
 	public static File changeFileExtension(File file, String extension) {
 		var fileName = file.getName();
 		int index = fileName.lastIndexOf('.');

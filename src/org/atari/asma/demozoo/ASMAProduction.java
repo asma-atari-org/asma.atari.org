@@ -30,7 +30,8 @@ public final class ASMAProduction {
 		for (int i = 0; it.hasNext(); i++) {
 			this.authorIDs[i] = it.next().intValue();
 		}
-		this.urlFilePath = production.getURLFilePath();
+		// TODO
+		this.urlFilePath = production.getASMADefaultURLFilePath();
 	}
 
 	public String getURL() {

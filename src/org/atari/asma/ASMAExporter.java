@@ -25,6 +25,7 @@ public class ASMAExporter {
 	}
 
 	public static void main(String[] args) {
+		
 		new ASMAExporter().run(args);
 	}
 
@@ -60,53 +61,9 @@ public class ASMAExporter {
 		Writer writer = null;
 		try {
 			writer = new FileWriter(htmlFile, Charset.forName("UTF8"));
-			var table = new HTMLTable(writer);
-			table.beginTable();
-			table.beginRow();
-			table.writeHeaderTextCell("FilePath");
-			table.writeHeaderTextCell("Title");
-			table.writeHeaderTextCell("Author");
-			table.writeHeaderTextCell("Date");
-			table.writeHeaderTextCell("Channels");
-			table.writeHeaderTextCell("Format");
-			table.writeHeaderTextCell("Songs");
-			table.writeHeaderTextCell("Demozoo ID");
-			table.writeHeaderTextCell("Demozoo Title");
-			table.writeHeaderTextCell("Demozoo Author");
-			table.writeHeaderTextCell("Messages");
-			table.endRow();
-
-			for (var fileInfo : asmaDatabase.fileInfoList.getEntries()) {
-				table.beginRow();
-				table.writeTextCell(fileInfo.filePath);
-				table.writeTextCell(fileInfo.title);
-				table.writeTextCell(fileInfo.author);
-				table.writeTextCell(fileInfo.date);
-				table.writeLongCell(fileInfo.channels);
-				table.writeTextCell(fileInfo.originalModuleExt);
-				table.writeLongCell(fileInfo.songs);
-				if (fileInfo.getDemozooID() > 0) {
-					final var link = "https://demozoo.org/music/" + fileInfo.getDemozooID();
-					final var demozooID = fileInfo.getDemozooID();
-					table.writeLongCell(demozooID, link);
-
-					final var asmaProduction = asmaDatabase.productionList.getByID(demozooID);
-					table.writeTextCell(asmaProduction.title);
-
-				} else {
-					table.writeTextCell("TODO: Missing");
-					table.writeTextCell("");
-				}
-				var htmlBuilder = new StringBuffer();
-				var entries = fileInfo.getMessageQueue().getEntries();
-				for (var entry : entries) {
-					htmlBuilder.append(entry.getType().toString() + ":" + entry.getMessage() + "<br>");
-
-				}
-				table.writeHTMLCell(htmlBuilder.toString());
-				table.endRow();
-			}
-			table.endTable();
+			var htmlWriter = new HTMLWriter(writer);
+			var htmlExporter = new ASMAHTMLExporter(htmlWriter);
+			htmlExporter.write(asmaDatabase, database);
 			writer.close();
 
 		} catch (IOException ex) {
@@ -186,7 +143,8 @@ public class ASMAExporter {
 		asmaDatabase.productionList = productionList;
 
 		FileInfoList fileInfoList = new FileInfoList(stil, new SAPFileLogic());
-		var maxFiles = 1000;
+		var maxFiles = Integer.MAX_VALUE;
+		maxFiles = 10;
 		fileInfoList.scanFolder(sourceFolder, messageQueue, maxFiles);
 		fileInfoList.checkFiles(composerList, productionList);
 

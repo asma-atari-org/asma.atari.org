@@ -27,6 +27,9 @@ public class RestClient {
 				this.value = value;
 			}
 
+			public ParameterValue(String key, long value) {
+				this(key, String.valueOf(value));
+			}
 			public String getKey() {
 				return key;
 			}

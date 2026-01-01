@@ -1,13 +1,7 @@
 package org.atari.asma.sap;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.atari.asma.ASMAExporter.FileExtension;
@@ -15,10 +9,6 @@ import org.atari.asma.util.BufferedMessageQueue;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MessageQueue;
 import org.atari.asma.util.MessageQueueFactory;
-
-import net.sf.asap.ASAP;
-import net.sf.asap.ASAPInfo;
-import net.sf.asap.ASAPWriter;
 
 public class SAPFileEditor {
 

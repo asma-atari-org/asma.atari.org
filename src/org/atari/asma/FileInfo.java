@@ -6,7 +6,6 @@ import org.atari.asma.sap.SAPFile;
 import org.atari.asma.util.JSONWriter;
 import org.atari.asma.util.MessageQueue;
 
-import net.sf.asap.ASAP;
 import net.sf.asap.ASAPFormatException;
 import net.sf.asap.ASAPInfo;
 

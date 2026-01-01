@@ -1,10 +1,8 @@
 package org.atari.asma;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -14,10 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.atari.asma.ASMAExporter.FileExtension;
 import org.atari.asma.STIL.STILEntry;
-import org.atari.asma.demozoo.ASMAProduction;
 import org.atari.asma.demozoo.ASMAProductionList;
 import org.atari.asma.sap.SAPFileLogic;
-import org.atari.asma.util.BufferedMessageQueue;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.JSONWriter;
 import org.atari.asma.util.MessageQueue;
