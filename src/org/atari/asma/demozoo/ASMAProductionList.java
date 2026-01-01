@@ -18,7 +18,7 @@ public class ASMAProductionList {
 
 	public ASMAProductionList(Production[] productions) {
 		this.productions = productions;
-		productionList=new ArrayList<ASMAProduction>();
+		productionList = new ArrayList<ASMAProduction>();
 		productionByIDMap = new TreeMap<>();
 		productionByURLFilePathMap = new TreeMap<>();
 	}
@@ -30,7 +30,8 @@ public class ASMAProductionList {
 			if (!urlFilePath.isEmpty()) {
 				var asmaProduction = new ASMAProduction(production);
 				productionList.add(asmaProduction);
-				
+				productionByIDMap.put(asmaProduction.id, asmaProduction);
+
 				ASMAProduction previousProduction = productionByURLFilePathMap.put(urlFilePath, asmaProduction);
 				if (previousProduction != null) {
 					String message = "PRD-001: Production " + previousProduction.toString()
@@ -38,6 +39,8 @@ public class ASMAProductionList {
 							+ production.toString();
 					messageQueue.sendError(message);
 //					throw new RuntimeException(message);
+				} else {
+					productionByURLFilePathMap.put(urlFilePath, asmaProduction);
 				}
 //				String defaultFolderName = production.getDefaultFolderName();
 //				if (!production.folderName.equals(defaultFolderName)) {

@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 
 import org.atari.asma.demozoo.ASMAProductionList;
 import org.atari.asma.demozoo.Demozoo;
+import org.atari.asma.demozoo.model.Database;
 import org.atari.asma.sap.SAPFileLogic;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MemoryUtility;
@@ -30,15 +31,82 @@ public class ASMAExporter {
 	private ASMAExporter() {
 	}
 
+	private void exportJS(ASMADatabase asmaDatabase, File asmaDatabaseFile, MessageQueue messageQueue) {
+		messageQueue.sendInfo("Exporting " + asmaDatabase.fileInfoList.getEntries().size() + " file infos to "
+				+ asmaDatabaseFile.getPath() + ".");
+
+		Writer writer = null;
+		try {
+			writer = new FileWriter(asmaDatabaseFile, Charset.forName("UTF8"));
+			asmaDatabase.write(writer);
+
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		} finally {
+			if (writer != null) {
+				try {
+					writer.close();
+				} catch (IOException ex) {
+					throw new RuntimeException(ex);
+				}
+			}
+		}
+		messageQueue.sendInfo("ASMA database exported as JS to " + asmaDatabaseFile.getAbsolutePath() + " with "
+				+ MemoryUtility.getRoundedMemorySize(asmaDatabaseFile.length()) + ".");
+	}
+
 	@SuppressWarnings("static-method")
-	private void saveFileInfoList(ASMADatabase asmaDatabase, File htmlFile, MessageQueue messageQueue) {
+	private void exportHTML(ASMADatabase asmaDatabase, Database database, File htmlFile, MessageQueue messageQueue) {
 		Writer writer = null;
 		try {
 			writer = new FileWriter(htmlFile, Charset.forName("UTF8"));
+			var table = new HTMLTable(writer);
+			table.beginTable();
+			table.beginRow();
+			table.writeHeaderTextCell("FilePath");
+			table.writeHeaderTextCell("Title");
+			table.writeHeaderTextCell("Author");
+			table.writeHeaderTextCell("Date");
+			table.writeHeaderTextCell("Channels");
+			table.writeHeaderTextCell("Format");
+			table.writeHeaderTextCell("Songs");
+			table.writeHeaderTextCell("Demozoo ID");
+			table.writeHeaderTextCell("Demozoo Title");
+			table.writeHeaderTextCell("Demozoo Author");
+			table.writeHeaderTextCell("Messages");
+			table.endRow();
 
 			for (var fileInfo : asmaDatabase.fileInfoList.getEntries()) {
-				writer.write(fileInfo.filePath + "<br>");
+				table.beginRow();
+				table.writeTextCell(fileInfo.filePath);
+				table.writeTextCell(fileInfo.title);
+				table.writeTextCell(fileInfo.author);
+				table.writeTextCell(fileInfo.date);
+				table.writeLongCell(fileInfo.channels);
+				table.writeTextCell(fileInfo.originalModuleExt);
+				table.writeLongCell(fileInfo.songs);
+				if (fileInfo.getDemozooID() > 0) {
+					final var link = "https://demozoo.org/music/" + fileInfo.getDemozooID();
+					final var demozooID = fileInfo.getDemozooID();
+					table.writeLongCell(demozooID, link);
+
+					final var asmaProduction = asmaDatabase.productionList.getByID(demozooID);
+					table.writeTextCell(asmaProduction.title);
+
+				} else {
+					table.writeTextCell("TODO: Missing");
+					table.writeTextCell("");
+				}
+				var htmlBuilder = new StringBuffer();
+				var entries = fileInfo.getMessageQueue().getEntries();
+				for (var entry : entries) {
+					htmlBuilder.append(entry.getType().toString() + ":" + entry.getMessage() + "<br>");
+
+				}
+				table.writeHTMLCell(htmlBuilder.toString());
+				table.endRow();
 			}
+			table.endTable();
 			writer.close();
 
 		} catch (IOException ex) {
@@ -118,37 +186,17 @@ public class ASMAExporter {
 		asmaDatabase.productionList = productionList;
 
 		FileInfoList fileInfoList = new FileInfoList(stil, new SAPFileLogic());
-		fileInfoList.scanFolder(sourceFolder, messageQueue);
+		var maxFiles = 1000;
+		fileInfoList.scanFolder(sourceFolder, messageQueue, maxFiles);
 		fileInfoList.checkFiles(composerList, productionList);
 
 		asmaDatabase.fileInfoList = fileInfoList;
 
 		var asmaDatabaseFile = new File(args[1]);
-
-		messageQueue.sendInfo(
-				"Exporting " + fileInfoList.getEntries().size() + " file infos to " + asmaDatabaseFile.getPath() + ".");
-
-		Writer writer = null;
-		try {
-			writer = new FileWriter(asmaDatabaseFile, Charset.forName("UTF8"));
-			asmaDatabase.write(writer);
-
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
-		} finally {
-			if (writer != null) {
-				try {
-					writer.close();
-				} catch (IOException ex) {
-					throw new RuntimeException(ex);
-				}
-			}
-		}
-		messageQueue.sendInfo("ASMA database exported as JS to " + asmaDatabaseFile.getAbsolutePath() + " with "
-				+ MemoryUtility.getRoundedMemorySize(asmaDatabaseFile.length()) + ".");
+		exportJS(asmaDatabase, asmaDatabaseFile, messageQueue);
 
 		var htmlFile = FileUtility.changeFileExtension(asmaDatabaseFile, ".html");
-		saveFileInfoList(asmaDatabase, htmlFile, messageQueue);
+		exportHTML(asmaDatabase, database, htmlFile, messageQueue);
 
 		messageQueue.printSummary();
 

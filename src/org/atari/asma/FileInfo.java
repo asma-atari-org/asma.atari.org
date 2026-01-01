@@ -44,6 +44,7 @@ public final class FileInfo {
 		return filePath;
 	}
 
+	// TODO: DemozooID must be array, one value per song
 	public int getDemozooID() {
 		return demozooID;
 	}

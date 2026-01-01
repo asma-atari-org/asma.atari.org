@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.atari.asma.ASMAExporter.FileExtension;
@@ -60,7 +61,7 @@ public class FileInfoList {
 		writer.endArray();
 	}
 
-	public void scanFolder(File sourceFolder, MessageQueue messageQueue) {
+	public void scanFolder(File sourceFolder, MessageQueue messageQueue, int maxFiles) {
 		messageQueue.sendInfo("Scanning " + sourceFolder.getAbsolutePath());
 
 		var fileList = FileUtility.getRecursiveFileList(sourceFolder, new FileFilter() {
@@ -89,25 +90,33 @@ public class FileInfoList {
 		// During parallel execution we need to decouple from the streams and
 		// synchronize.
 		var fileListMessageQueue = new MessageQueue();
+		var cancelled = new AtomicBoolean();
 		fileList.parallelStream().forEach(file -> {
-			if (count.incrementAndGet() % blockSize == 0) {
-				System.out.print("^");
-			}
-			String filePath = file.getAbsolutePath().substring(index);
-			filePath = filePath.replace(File.separator, "/");
 
-			var fileMessageQueue = new MessageQueue();
-			var fileInfo = readFile(file, filePath, fileMessageQueue);
-			synchronized (messageQueue) {
-				fileListMessageQueue.addEntries(fileMessageQueue);
+			if (!cancelled.get()) {
+				if (count.incrementAndGet() % blockSize == 0) {
+					System.out.print("^");
+				}
+				String filePath = file.getAbsolutePath().substring(index);
+				filePath = filePath.replace(File.separator, "/");
 
-			}
-			synchronized (fileInfoList) {
-				if (fileInfo != null) {
-					fileInfoList.add(fileInfo);
+				var fileMessageQueue = new MessageQueue();
+				var fileInfo = readFile(file, filePath, fileMessageQueue);
+				synchronized (messageQueue) {
+					fileListMessageQueue.addEntries(fileMessageQueue);
+
+				}
+				synchronized (fileInfoList) {
+					if (fileInfo != null) {
+						fileInfoList.add(fileInfo);
+						if (fileInfoList.size() >= maxFiles) {
+							cancelled.set(true);
+						}
+					}
 				}
 			}
 		});
+		System.out.println();
 
 		// Parallel process destroyed the order, so sort again.
 		fileInfoList.sort(new Comparator<FileInfo>() {
@@ -238,7 +247,7 @@ public class FileInfoList {
 			for (int songIndex = 0; songIndex < fileInfo.songs; songIndex++) {
 				int songNumber = songIndex + 1;
 				var urlFilePath = fileInfo.getURLFilePath(songNumber);
-				ASMAProduction production = productionList.getByURLFilePath(urlFilePath);
+				var production = productionList.getByURLFilePath(urlFilePath);
 				if (production != null) {
 					fileInfo.setDemozooID(production.id);
 				} else {
