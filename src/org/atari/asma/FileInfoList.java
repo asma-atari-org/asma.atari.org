@@ -171,8 +171,8 @@ public class FileInfoList {
 		return fileInfo;
 	}
 
-	public void checkFiles(ComposerList composerList, ASMAProductionList productionList) {
-		// From "Sap.txt" specification.
+	public void checkFileInfos(ComposerList composerList, ASMAProductionList productionList) {
+		// From the ASMA "Sap.txt" specification.
 		final int MAX_FILE_NAME_LENGTH = 26;
 		final String FILE_NAME_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
 

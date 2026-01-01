@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.atari.asma.FileInfo;
+import org.atari.asma.FileInfoList;
 import org.atari.asma.demozoo.model.Production;
 import org.atari.asma.util.MessageQueue;
 import org.atari.asma.util.Serializer;
@@ -60,6 +62,7 @@ public class ASMAProductionList {
 						productionByURLFilePathMap.put(urlFilePath, asmaProduction);
 
 					}
+
 					break;
 
 				default:
@@ -75,14 +78,35 @@ public class ASMAProductionList {
 				messageQueue.sendWarning("DMO-006 - Music has tag \"sap\", but not file extension \".sap\".");
 			}
 
-
 //				String defaultFolderName = production.getDefaultFolderName();
 //				if (!production.folderName.equals(defaultFolderName)) {
 //					messageQueue.sendError("PRD-004: "+production.folderName + " of " + production.toString()
 //							+ " is different from default folder name " + defaultFolderName);
 //
 //				}
-	
+
+		}
+	}
+
+	public void checkReferences(FileInfoList fileInfoList) {
+		Map<String, FileInfo> fileInfoMap = new TreeMap<String, FileInfo>();
+		for (var fileInfo : fileInfoList.getEntries()) {
+			fileInfoMap.put(fileInfo.filePath, fileInfo);
+		}
+		for (Production production : productions) {
+			final var messageQueue = production.getMessageQueue();
+			final var urlFilePaths = production.getASMAURLFilePaths();
+			if (urlFilePaths.size() == 1) {
+				var urlFilePath = urlFilePaths.get(0);
+				var index = urlFilePath.indexOf('#');
+				if (index > 0) {
+					urlFilePath = urlFilePath.substring(0, index);
+				}
+				if (!fileInfoMap.containsKey(urlFilePath)) {
+					messageQueue.sendError("DMO-006 - Music download URL contains non-existing file path \""
+							+ urlFilePath + "\". Check if ASMA path has changed.");
+				}
+			}
 		}
 	}
 

@@ -144,9 +144,11 @@ public class ASMAExporter {
 
 		FileInfoList fileInfoList = new FileInfoList(stil, new SAPFileLogic());
 		var maxFiles = Integer.MAX_VALUE;
-		maxFiles = 10;
+		// maxFiles = 10;
 		fileInfoList.scanFolder(sourceFolder, messageQueue, maxFiles);
-		fileInfoList.checkFiles(composerList, productionList);
+		fileInfoList.checkFileInfos(composerList, productionList);
+
+		productionList.checkReferences(fileInfoList);
 
 		asmaDatabase.fileInfoList = fileInfoList;
 

@@ -32,34 +32,17 @@ class Demozoo {
 			this.productionsByIDMap.set(production.id, production);
 			if (production.urlFilePath == null) {
 				missingLinkCount++;
-				let candidatesHTML = "";
-				for (let fileIndex = 0; fileIndex < fileInfoList.length; fileIndex++) {
-					let fileInfo = fileInfoList[fileIndex];
-					if (fileInfo.title.includes(production.title)) {
-						if (candidatesHTML != "") {
-							candidatesHTML += ", ";
-						}
-						candidatesHTML += "https://asma.atari.org/asma/" + fileInfo.getFilePath();
-					}
-				}
-				if (candidatesHTML != "") {
-					candidatesHTML += " or ";
-				}
-				result += this.getMusicHTML(production) + " with file extensions '" + production.fileExtensions + "' has no ASMA link.";
-
-				result += " Try " + candidatesHTML + this.getFindInASMAByTitleHTML(production) + "<br>\n";
 			} else {
 				this.productionsByURLFilePathMap.set(production.urlFilePath, production);
 				linkCount++;
 			}
 		}
 		result = linkCount + " Demozoo productions with ASMA link found.<br>\n" + missingLinkCount +
-			" Demozoo productions with missing ASMA link found.<br>\n<br>\n" + result;
+			" Demozoo productions with missing ASMA link found.<br>\n<br>\n";
 		summary.demozoo = result;
 
 
 		// For all productions on ASMA...
-		result = "";
 		linkCount = 0;
 		let brokenLinkCount = 0;
 		missingLinkCount = 0;
@@ -75,15 +58,13 @@ class Demozoo {
 				}
 			} else {
 				missingLinkCount += 1;
-				result += this.getASMAMusicHTML(fileInfo) + " of type '" + this.getFileExtension(fileInfo.filePath) + "' has no Demozoo link.";
-				result += (" Try " + this.getFindByTitleHTML(fileInfo.title) + "<br>\n");
 			}
 
 		}
 
 		result = linkCount + " ASMA productions with Demozoo link found.<br>\n" +
 			brokenLinkCount + " ASMA productions with broken Demozoo link found.<br>\n" + missingLinkCount +
-			" ASMA productions with missing Demozoo link found.<br>\n<br>\n" + result;
+			" ASMA productions with missing Demozoo link found.<br>\n<br>\n";
 		summary.asma = result;
 	}
 

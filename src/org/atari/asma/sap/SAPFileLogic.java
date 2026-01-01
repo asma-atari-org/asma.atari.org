@@ -9,7 +9,13 @@ import org.atari.asma.util.MessageQueue;
 
 import net.sf.asap.ASAP;
 import net.sf.asap.ASAPFormatException;
-
+/**
+ * See https://asap.sourceforge.net/sap-format.html
+ * See https://sourceforge.net/p/asap/code/ci/master/tree/chksap.pl
+ * 
+ * @author Peter Dell
+ *
+ */
 public class SAPFileLogic {
 
 	public SAPFile readSAPFile(File file, MessageQueue messageQueue) {
