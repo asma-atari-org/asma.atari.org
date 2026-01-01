@@ -5,7 +5,7 @@ import java.util.List;
 
 import net.sf.asap.ASAPInfo;
 
-class SAPFile {
+public class SAPFile {
 	// https://asap.sourceforge.net/sap-format.html
 	final static String UPPPER_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	final static String LOWER_LETTERS = "abcdefghijklmnopqrstuvwxyz";

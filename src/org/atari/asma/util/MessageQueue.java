@@ -2,7 +2,7 @@ package org.atari.asma.util;
 
 import java.io.PrintStream;
 
-public final class MessageQueue {
+public class MessageQueue {
 
 	private PrintStream out;
 	private PrintStream err;
@@ -11,7 +11,12 @@ public final class MessageQueue {
 	private int warningCount;
 	private int errorCount;
 
-	public MessageQueue(PrintStream out, PrintStream err) {
+	public MessageQueue() {
+
+		clear();
+	}
+
+	public void bind(PrintStream out, PrintStream err) {
 		if (out == null) {
 			throw new IllegalArgumentException("Parameter 'out' must not be null.");
 		}
@@ -20,7 +25,6 @@ public final class MessageQueue {
 		}
 		this.out = out;
 		this.err = err;
-		clear();
 	}
 
 	public void clear() {

@@ -1,8 +1,10 @@
 package org.atari.asma;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -13,6 +15,8 @@ import org.atari.asma.ASMAExporter.FileExtension;
 import org.atari.asma.STIL.STILEntry;
 import org.atari.asma.demozoo.ASMAProduction;
 import org.atari.asma.demozoo.ASMAProductionList;
+import org.atari.asma.sap.SAPFileLogic;
+import org.atari.asma.util.BufferedMessageQueue;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.JSONWriter;
 import org.atari.asma.util.MessageQueue;
@@ -23,11 +27,13 @@ import com.google.gson.GsonBuilder;
 public class FileInfoList {
 
 	private STIL stil;
+	private SAPFileLogic sapFileLogic;
 	private List<FileInfo> fileInfoList;
 	private Gson gson;
 
-	public FileInfoList(STIL stil) {
+	public FileInfoList(STIL stil, SAPFileLogic sapFileLogic) {
 		this.stil = stil;
+		this.sapFileLogic = sapFileLogic;
 
 		fileInfoList = new ArrayList<FileInfo>();
 		gson = new GsonBuilder().create();
@@ -54,8 +60,8 @@ public class FileInfoList {
 		writer.endArray();
 	}
 
-	public void scanFolder(File sourceFolder) {
-		System.out.println("Scanning " + sourceFolder.getAbsolutePath());
+	public void scanFolder(File sourceFolder, MessageQueue messageQueue) {
+		messageQueue.sendInfo("Scanning " + sourceFolder.getAbsolutePath());
 
 		var fileList = FileUtility.getRecursiveFileList(sourceFolder, new FileFilter() {
 
@@ -69,7 +75,7 @@ public class FileInfoList {
 			}
 		});
 
-		System.out.println(fileList.size() + " matching files found.");
+		messageQueue.sendInfo(fileList.size() + " matching files found.");
 
 		int index = sourceFolder.getAbsolutePath().length() + 1;
 		var count = new AtomicInteger();
@@ -86,9 +92,15 @@ public class FileInfoList {
 			}
 			String filePath = file.getAbsolutePath().substring(index);
 			filePath = filePath.replace(File.separator, "/");
-			var songInfo = readFile(file, filePath);
+
+			var localMessageQueue = new BufferedMessageQueue(messageQueue);
+			var fileInfo = readFile(file, filePath, localMessageQueue);
+
 			synchronized (fileInfoList) {
-				fileInfoList.add(songInfo);
+				if (fileInfo != null) {
+					fileInfoList.add(fileInfo);
+				}
+				localMessageQueue.flush();
 			}
 		});
 
@@ -103,7 +115,7 @@ public class FileInfoList {
 		System.out.println();
 	}
 
-	private FileInfo readFile(File file, String filePath) {
+	private FileInfo readFile(File file, String filePath, MessageQueue messageQueue) {
 
 		// Read binary from the input stream.
 		byte[] module = FileUtility.readAsByteArray(file);
@@ -114,7 +126,12 @@ public class FileInfoList {
 
 		if (filePath.toLowerCase().endsWith(FileExtension.SAP)) {
 			fileInfo.hardware = FileInfo.ATARI800;
-			fileInfo.readFromSAPFile(filePath, module);
+			var sapFile = sapFileLogic.readSAPFile(file, messageQueue);
+			if (sapFile == null) {
+				messageQueue.sendInfo("Error reading '" + file.getAbsolutePath() + "'. See above.");
+				return null;
+			}
+			fileInfo.readFromSAPFile(sapFile);
 
 			STILEntry stilEntry = stil.getSTILEntry("/" + filePath);
 			if (stilEntry != null) {

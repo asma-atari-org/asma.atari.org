@@ -10,12 +10,12 @@ import org.atari.asma.util.MessageQueue;
 import net.sf.asap.ASAP;
 import net.sf.asap.ASAPFormatException;
 
-class SAPFileLogic {
+public class SAPFileLogic {
 
 	public SAPFile readSAPFile(File file, MessageQueue messageQueue) {
 		var sapFile = new SAPFile();
 		var content = FileUtility.readAsByteArray(file);
-		sapFile.content=content;
+		sapFile.content = content;
 		int index = 0;
 		boolean endOfHeader = false;
 		var header = new StringBuilder();
@@ -118,7 +118,7 @@ class SAPFileLogic {
 			return null;
 		}
 
-		sapFile.segmentsStartIndex=index;
+		sapFile.segmentsStartIndex = index;
 		int segmentCount = 0;
 		while (index + 4 < content.length) {
 			var segmentStartIndex = index;

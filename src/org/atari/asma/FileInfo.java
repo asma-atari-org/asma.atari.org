@@ -2,7 +2,9 @@ package org.atari.asma;
 
 import java.io.IOException;
 
+import org.atari.asma.sap.SAPFile;
 import org.atari.asma.util.JSONWriter;
+import org.atari.asma.util.MessageQueue;
 
 import net.sf.asap.ASAP;
 import net.sf.asap.ASAPFormatException;
@@ -24,6 +26,10 @@ public final class FileInfo {
 	public int channels;
 	public int songs;
 	public int defaultSongIndex; // Zero-based
+	
+	
+	public MessageQueue messageQueue;
+	
 	// TODO Duration and details from STIL per Song
 	private int demozooID;
 
@@ -49,24 +55,17 @@ public final class FileInfo {
 	FileInfo() {
 	}
 
-	public void readFromSAPFile(String filePath, byte[] module) {
-		// Parse binary.
-		ASAP asap = new ASAP();
-		try {
-			asap.load(filePath, module, module.length);
-		} catch (ASAPFormatException ex) {
-			// ERROR: Cannot load sound file '{0}'. {1}
-			throw new RuntimeException(ex);
-		}
-		ASAPInfo asapInfo = asap.getInfo();
+	public void readFromSAPFile(SAPFile sapFile) {
+
+		ASAPInfo asapInfo = sapFile.asapInfo;
 		this.title = asapInfo.getTitleOrFilename();
 		this.author = asapInfo.getAuthor();
 		this.date = asapInfo.getDate();
 
 		// Determine the original file type in the container.
 		// Only if it cannot be determined, the file extension is used.
-		this.typeLetter = String.valueOf((char) asap.getInfo().getTypeLetter());
-		this.originalModuleExt = asap.getInfo().getOriginalModuleExt(module, module.length);
+		this.typeLetter = String.valueOf((char) asapInfo.getTypeLetter());
+		this.originalModuleExt = asapInfo.getOriginalModuleExt(sapFile.content, sapFile.content.length);
 		if (this.originalModuleExt == null) {
 			this.originalModuleExt = filePath.substring(filePath.lastIndexOf('.') + 1);
 		}

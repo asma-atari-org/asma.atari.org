@@ -3,7 +3,7 @@ package org.atari.asma.demozoo;
 import java.io.File;
 
 import org.atari.asma.ASMAPaths;
-import org.atari.asma.util.ConsoleMessageQueue;
+import org.atari.asma.util.MessageQueueFactory;
 import org.atari.asma.util.MessageQueue;
 
 public class DemozooImporter {
@@ -17,7 +17,7 @@ public class DemozooImporter {
 
 	@SuppressWarnings("static-method")
 	private int run(String[] args) {
-		MessageQueue messageQueue = ConsoleMessageQueue.createInstance();
+		MessageQueue messageQueue = MessageQueueFactory.createSystemInstance();
 
 		if (args.length != 1) {
 			messageQueue.sendMessage("Usage: DemozooImporter <trunk/asma folder>");
