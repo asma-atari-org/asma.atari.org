@@ -64,4 +64,13 @@ public final class StringUtility {
 		}
 		return false;
 	}
+	
+	public static String condense(String s) {
+		while (s.contains("  ")) {
+			s = s.replace("  ", " ");
+		}
+		s = s.trim();
+		return s;
+	}
+
 }

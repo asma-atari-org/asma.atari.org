@@ -17,30 +17,33 @@ import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MessageQueue;
 
 import net.sf.asap.ASAP;
+import net.sf.asap.ASAPArgumentException;
 import net.sf.asap.ASAPConversionException;
 import net.sf.asap.ASAPFormatException;
 import net.sf.asap.ASAPWriter;
 
 /**
- * See https://asap.sourceforge.net/sap-format.html See
- * https://sourceforge.net/p/asap/code/ci/master/tree/chksap.pl
+ * See the <a href="https://asap.sourceforge.net/sap-format.html">SAP Format
+ * Specification</a>. <br>
+ * See also <a href=
+ * "https://sourceforge.net/p/asap/code/ci/master/tree/chksap.pl">chksap.pl</a>.
  * 
  * @author Peter Dell
  *
  */
-public class SAPFileLogic {
+public class ASAPFileLogic {
 
 	private SegmentListLogic segmentListLogic;
 
-	public SAPFileLogic() {
+	public ASAPFileLogic() {
 		segmentListLogic = new SegmentListLogic();
 	}
 
-	public SAPFile loadSAPFile(File file, MessageQueue messageQueue) {
+	public ASAPFile loadSAPFile(File file, MessageQueue messageQueue) {
 		return loadSAPFile(file.getName(), FileUtility.readAsByteArray(file), messageQueue);
 	}
 
-	public SAPFile loadSAPFile(String fileName, byte[] content, MessageQueue messageQueue) {
+	public ASAPFile loadSAPFile(String fileName, byte[] content, MessageQueue messageQueue) {
 
 		int index = 0;
 		boolean endOfHeader = false;
@@ -68,7 +71,7 @@ public class SAPFileLogic {
 				}
 			} else {
 				char c = (char) (b & 0xff);
-				if (SAPFile.ATASCII_CHARACTERS.indexOf(c) == -1) {
+				if (ASAPFile.ATASCII_CHARACTERS.indexOf(c) == -1) {
 					messageQueue.sendError("Invalid non-ATASCII character " + ByteUtility.getCharForByte(b)
 							+ " at index " + ByteUtility.getIndexString(index) + ".");
 					return null;
@@ -144,7 +147,7 @@ public class SAPFileLogic {
 			return null;
 		}
 
-		var sapFile = new SAPFile();
+		var sapFile = new ASAPFile();
 		sapFile.content = content;
 		if (!segmentListLogic.loadSegmentList(sapFile.segmentList, content, index, messageQueue)) {
 			return null;
@@ -156,16 +159,16 @@ public class SAPFileLogic {
 			messageQueue.sendError("Invalid SAP file. " + ex.getMessage());
 			return null;
 		}
-		sapFile.asapInfo = asap.getInfo();
+		sapFile.setASAPInfo(asap.getInfo());
 		return sapFile;
 	}
 
-	public SAPFile loadOriginalModuleFile(File file, MessageQueue messageQueue) {
+	public ASAPFile loadOriginalModuleFile(File file, MessageQueue messageQueue) {
 
 		return loadOriginalModuleFile(file.getName(), FileUtility.readAsByteArray(file), messageQueue);
 	}
 
-	public SAPFile loadOriginalModuleFile(String fileName, byte[] content, MessageQueue messageQueue) {
+	public ASAPFile loadOriginalModuleFile(String fileName, byte[] content, MessageQueue messageQueue) {
 		var asap = new ASAP();
 		try {
 			asap.load(fileName, content, content.length);
@@ -173,9 +176,9 @@ public class SAPFileLogic {
 			messageQueue.sendError("Invalid ASAP file. " + ex.getMessage());
 			return null;
 		}
-		var sapFile = new SAPFile();
+		var sapFile = new ASAPFile();
 		sapFile.content = content;
-		sapFile.asapInfo = asap.getInfo();
+		sapFile.setASAPInfo( asap.getInfo());
 
 		var os = new ByteArrayOutputStream();
 		var sapFileName = FileUtility.changeFileExtension(new File(fileName), ".sap").getName();
@@ -186,7 +189,7 @@ public class SAPFileLogic {
 		return sapFile;
 	}
 
-	public boolean saveSAPFile(File file, SAPFile sapFile, MessageQueue messageQueue) {
+	public boolean saveSAPFile(File file, ASAPFile sapFile, MessageQueue messageQueue) {
 
 		OutputStream os = null;
 		try {
@@ -209,13 +212,34 @@ public class SAPFileLogic {
 		return true;
 	}
 
-	public boolean saveSAPFile(OutputStream os, String fileName, SAPFile sapFile, MessageQueue messageQueue) {
+	public boolean saveSAPFile(OutputStream os, String fileName, ASAPFile asapFile, MessageQueue messageQueue) {
 		var output = new byte[128 * 1024 * 1024];
 		var length = 0;
 		var asapWriter = new ASAPWriter();
 		asapWriter.setOutput(output, 0, output.length);
+
+		var asapInfo = asapFile.getASAPInfo();
 		try {
-			length = asapWriter.write(fileName, sapFile.asapInfo, sapFile.content, sapFile.content.length, false);
+			asapInfo.setAuthor(asapFile.getAuthor());
+		} catch (ASAPArgumentException ex) {
+			messageQueue.sendError("Cannot set author. " + ex.getMessage());
+		}
+		try {
+			asapInfo.setTitle(asapFile.getTitle());
+		} catch (ASAPArgumentException ex) {
+			messageQueue.sendError("Cannot set title. " + ex.getMessage());
+		}
+		try {
+			asapInfo.setDate(asapFile.getDate());
+		} catch (ASAPArgumentException ex) {
+			messageQueue.sendError("Cannot set date. " + ex.getMessage());
+		}
+		if (messageQueue.getErrorCount() > 0) {
+			return false;
+		}
+
+		try {
+			length = asapWriter.write(fileName, asapInfo, asapFile.content, asapFile.content.length, false);
 
 		} catch (ASAPConversionException ex) {
 			messageQueue.sendError("Cannot save SAP file. " + ex.getMessage());
@@ -230,7 +254,7 @@ public class SAPFileLogic {
 		return true;
 	}
 
-	public SAPFile loadXEXFile(File inputFile, PrintWriter header, MessageQueue messageQueue) {
+	public ASAPFile loadXEXFile(File inputFile, PrintWriter header, MessageQueue messageQueue) {
 
 		var segmentList = new SegmentList();
 		if (!segmentListLogic.loadSegmentList(segmentList, inputFile, messageQueue)) {
@@ -244,7 +268,7 @@ public class SAPFileLogic {
 			header.println("PLAYER UNKNOWN");
 		} else {
 			for (var player : players) {
-				header.println("PLAYER \"" + player.getName());
+				header.println("PLAYER \"" + player.getName() + "\"");
 
 				header.println();
 				List<String> texts = new ArrayList<String>();
@@ -255,17 +279,17 @@ public class SAPFileLogic {
 			}
 		}
 
-		var sapFile = new SAPFile();
-		sapFile.segmentList.getEntries().addAll(segmentList.getEntries());
+		var asapFile = new ASAPFile();
+		asapFile.segmentList.getEntries().addAll(segmentList.getEntries());
 
 		if (players.size() == 1) {
 			var player = players.get(0);
-			if (player.fillSAPFile(sapFile, segmentList, messageQueue)) {
+			if (player.fillSAPFile(asapFile, segmentList, messageQueue)) {
 				messageQueue.sendInfo("Convertered " + player.getName() + " file to SAP format.");
 			}
 			;
 		}
 
-		return sapFile;
+		return asapFile;
 	}
 }

@@ -12,6 +12,8 @@ public class PlayerFactory {
 		players = new ArrayList<Player>();
 		players.add(new RMT128MonoPlayer());
 		players.add(new RMT128StereoPlayer());
+		players.add(new RMT134PlayerV1());
+
 	}
 
 	public List<Player> getMatchingPlayers(SegmentList segmentList) {

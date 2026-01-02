@@ -2,6 +2,8 @@ package org.atari.asma.sap;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.atari.asma.ASMAExporter.FileExtension;
@@ -13,13 +15,13 @@ import org.atari.asma.util.MessageQueueFactory;
 public class SAPFileEditor {
 
 	private MessageQueue messageQueue;
-	private SAPFileLogic sapFileLogic;
-	private SAPFileDialog sapFileDialog;
+	private ASAPFileLogic sapFileLogic;
+	private Map<String, SAPFileDialog> sapFileDialogMap;
 
 	private SAPFileEditor() {
 		messageQueue = MessageQueueFactory.createSystemInstance();
-		sapFileLogic = new SAPFileLogic();
-		sapFileDialog = new SAPFileDialog(this, sapFileLogic, messageQueue);
+		sapFileLogic = new ASAPFileLogic();
+		sapFileDialogMap = new TreeMap<String, SAPFileDialog>();
 	}
 
 	public static void main(String[] args) {
@@ -57,7 +59,24 @@ public class SAPFileEditor {
 
 	public void processFile(File inputFile) {
 
-		sapFileDialog.show(inputFile);
+		var path = inputFile.getAbsolutePath();
+		var dialog = sapFileDialogMap.get(path);
+		if (dialog == null) {
+			dialog = new SAPFileDialog(this);
+			sapFileDialogMap.put(path, dialog);
+		}
+		dialog.show(inputFile);
+	}
+
+	public void closeFile(File inputFile) {
+		var path = inputFile.getAbsolutePath();
+
+		sapFileDialogMap.remove(path);
+
+		if (sapFileDialogMap.isEmpty()) {
+			System.exit(0);
+		}
+
 	}
 
 	private void processFolder(File folder) {
@@ -97,4 +116,5 @@ public class SAPFileEditor {
 		messageQueue.sendInfo("All " + fileList.size() + " files processed.");
 
 	}
+
 }

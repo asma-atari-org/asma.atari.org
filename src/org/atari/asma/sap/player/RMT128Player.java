@@ -2,15 +2,17 @@ package org.atari.asma.sap.player;
 
 import java.util.List;
 
-import org.atari.asma.sap.SAPFile;
-import org.atari.asma.sap.SAPFileLogic;
+import org.atari.asma.sap.ASAPFile;
+import org.atari.asma.sap.ASAPFileLogic;
 import org.atari.asma.sap.SegmentList;
 import org.atari.asma.util.MessageQueue;
 
-public abstract class RMT128Player extends Player {
+public abstract class RMT128Player extends RMTPlayer {
 
 	protected static final int MONO_ENDADDRESS = 0x3958;
 	protected static final int STEREO_ENDADDRESS = 0x3A64;
+
+	private static final int TEXT_SEGMENT = 2;
 
 	private static final int RMT_SEGMENT = 3;
 
@@ -26,7 +28,7 @@ public abstract class RMT128Player extends Player {
 		 * 
 		 * $4000-any $2e0-$2e1
 		 */
-		if (segmentMatches(segmentList, 0, true, 0x3182, segment0EndAddres)
+		if (segmentList.size() == 5 && segmentMatches(segmentList, 0, true, 0x3182, segment0EndAddres)
 				&& segmentMatches(segmentList, 1, false, 0x3e00, 0x3ed5)
 				&& segmentMatches(segmentList, 2, false, 0x3f00, 0x3fc9)
 				&& segmentMatches(segmentList, 4, false, 0x02e0, 0x02e1)) {
@@ -38,23 +40,21 @@ public abstract class RMT128Player extends Player {
 		return false;
 	}
 
-	protected void getTextsInternal(SegmentList segmentList, List<String> texts) {
-		final int WIDTH = 40;
-		for (int i = 0; i < 5; i++) {
-			texts.add(segmentList.get(2).getContentScreenCodeString(i * WIDTH, WIDTH));
-		}
+	public final void getTexts(SegmentList segmentList, List<String> texts) {
+		getScreenCodeTexts(segmentList.get(TEXT_SEGMENT), 0, texts);
+
 	}
 
-	public boolean fillSAPFile(SAPFile sapFile, SegmentList segmentList, MessageQueue messageQueue) {
-		var sapFileLogic = new SAPFileLogic();
+	public boolean fillSAPFile(ASAPFile asapFile, SegmentList segmentList, MessageQueue messageQueue) {
+		var sapFileLogic = new ASAPFileLogic();
 		var rmtContent = segmentList.get(RMT_SEGMENT).toByteArray(true);
 		var rmtFile = sapFileLogic.loadOriginalModuleFile("Converted.rmt", rmtContent, messageQueue);
 		if (rmtFile == null) {
 			return false;
 		}
-		sapFile.content = rmtFile.content;
-		sapFile.asapInfo = rmtFile.asapInfo;
-		return true;
+		asapFile.content = rmtFile.content;
+		asapFile.setASAPInfo(rmtFile.getASAPInfo());
+		return fillSAPFile(asapFile, segmentList, messageQueue);
 	}
 
 }

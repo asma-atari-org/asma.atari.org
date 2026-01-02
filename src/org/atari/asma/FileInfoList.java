@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.atari.asma.ASMAExporter.FileExtension;
 import org.atari.asma.STIL.STILEntry;
 import org.atari.asma.demozoo.ASMAProductionList;
-import org.atari.asma.sap.SAPFileLogic;
+import org.atari.asma.sap.ASAPFileLogic;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.JSONWriter;
 import org.atari.asma.util.MessageQueue;
@@ -24,11 +24,11 @@ import com.google.gson.GsonBuilder;
 public class FileInfoList {
 
 	private STIL stil;
-	private SAPFileLogic sapFileLogic;
+	private ASAPFileLogic sapFileLogic;
 	private List<FileInfo> fileInfoList;
 	private Gson gson;
 
-	public FileInfoList(STIL stil, SAPFileLogic sapFileLogic) {
+	public FileInfoList(STIL stil, ASAPFileLogic sapFileLogic) {
 		this.stil = stil;
 		this.sapFileLogic = sapFileLogic;
 

@@ -9,7 +9,7 @@ import java.nio.charset.Charset;
 import org.atari.asma.demozoo.ASMAProductionList;
 import org.atari.asma.demozoo.Demozoo;
 import org.atari.asma.demozoo.model.Database;
-import org.atari.asma.sap.SAPFileLogic;
+import org.atari.asma.sap.ASAPFileLogic;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MemoryUtility;
 import org.atari.asma.util.MessageQueue;
@@ -143,7 +143,7 @@ public class ASMAExporter {
 		productionList.init();
 		asmaDatabase.productionList = productionList;
 
-		FileInfoList fileInfoList = new FileInfoList(stil, new SAPFileLogic());
+		FileInfoList fileInfoList = new FileInfoList(stil, new ASAPFileLogic());
 		var maxFiles = Integer.MAX_VALUE;
 		// maxFiles = 10;
 		fileInfoList.scanFolder(sourceFolder, messageQueue, maxFiles);

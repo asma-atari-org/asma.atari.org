@@ -2,7 +2,7 @@ package org.atari.asma;
 
 import java.io.IOException;
 
-import org.atari.asma.sap.SAPFile;
+import org.atari.asma.sap.ASAPFile;
 import org.atari.asma.util.JSONWriter;
 import org.atari.asma.util.MessageQueue;
 
@@ -59,9 +59,9 @@ public final class FileInfo {
 		return messageQueue;
 	}
 
-	public void readFromSAPFile(SAPFile sapFile) {
+	public void readFromSAPFile(ASAPFile sapFile) {
 
-		ASAPInfo asapInfo = sapFile.asapInfo;
+		var asapInfo = sapFile.getASAPInfo();
 		this.title = asapInfo.getTitleOrFilename();
 		this.author = asapInfo.getAuthor();
 		this.date = asapInfo.getDate();

@@ -2,7 +2,8 @@ package org.atari.asma.sap.player;
 
 import java.util.List;
 
-import org.atari.asma.sap.SAPFile;
+import org.atari.asma.sap.ASAPFile;
+import org.atari.asma.sap.Segment;
 import org.atari.asma.sap.SegmentList;
 import org.atari.asma.util.MessageQueue;
 
@@ -15,7 +16,7 @@ public abstract class Player {
 	public void getTexts(SegmentList segmentList, List<String> texts) {
 	}
 
-	public boolean fillSAPFile(SAPFile sapFile, SegmentList segmentList, MessageQueue messageQueue) {
+	public boolean fillSAPFile(ASAPFile asapFile, SegmentList segmentList, MessageQueue messageQueue) {
 		return false;
 	}
 
@@ -36,5 +37,14 @@ public abstract class Player {
 		}
 		return true;
 	}
+	
+	protected static void getScreenCodeTexts(Segment segment, int offset, List<String> texts) {
+		final int LINES = 5;
+		final int WIDTH = 40;
+		for (int i = 0; i < LINES; i++) {
+			texts.add(segment.getContentScreenCodeString(offset + i * WIDTH, WIDTH));
+		}
+	}
+
 
 }

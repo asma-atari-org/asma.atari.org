@@ -5,7 +5,7 @@ import java.util.TreeSet;
 
 import net.sf.asap.ASAPInfo;
 
-public class SAPFile {
+public class ASAPFile {
 	// https://asap.sourceforge.net/sap-format.html
 	public final static String UPPPER_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	public final static String LOWER_LETTERS = "abcdefghijklmnopqrstuvwxyz";
@@ -28,13 +28,68 @@ public class SAPFile {
 
 	}
 
-	public SAPFile() {
+	public static boolean isStringEmpty(String s) {
+		return s.trim().isEmpty() || s.trim().equals("<?>");
+	}
+
+	public ASAPFile() {
 		segmentList = new SegmentList();
+		author = "";
+		title = "";
+		date = "";
 	}
 
 	public byte[] content;
 
 	public SegmentList segmentList;
-	public ASAPInfo asapInfo;
+	private ASAPInfo asapInfo;
+
+	private String author;
+	private String title;
+	private String date;
+
+	private static String getString(String s) {
+		if (s==null || s.isBlank()) {
+			return "<?>";
+		}
+		return s;
+	}
+
+	public ASAPInfo getASAPInfo() {
+		return asapInfo;
+	}
+
+	public void setASAPInfo(ASAPInfo asapInfo) {
+		this.asapInfo = asapInfo;
+		author = getString(asapInfo.getAuthor());
+		title = getString(asapInfo.getTitle());
+		date = getString(asapInfo.getDate());
+	}
+
+	public String getAuthor() {
+
+		return author;
+	}
+
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+
+	public String getTitle() {
+
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
 
 }
