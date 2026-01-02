@@ -6,16 +6,19 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.atari.asma.sap.player.PlayerFactory;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MessageQueue;
 
 import net.sf.asap.ASAP;
 import net.sf.asap.ASAPConversionException;
 import net.sf.asap.ASAPFormatException;
-import net.sf.asap.ASAPInfo;
 import net.sf.asap.ASAPWriter;
 
 /**
@@ -38,11 +41,10 @@ public class SAPFileLogic {
 	}
 
 	public SAPFile loadSAPFile(String fileName, byte[] content, MessageQueue messageQueue) {
-		var sapFile = new SAPFile();
-		sapFile.content = content;
+
 		int index = 0;
 		boolean endOfHeader = false;
-		var header = new StringBuilder();
+		var headerBuilder = new StringBuilder();
 		while (index < content.length && !endOfHeader) {
 			int b = content[index] & 0xff;
 			if (b == 0xff) {
@@ -52,7 +54,7 @@ public class SAPFileLogic {
 				if (index < content.length - 1) {
 					b = content[index + 1];
 					if (b == 0x0a) {
-						header.append("\n");
+						headerBuilder.append("\n");
 						index++;
 
 					} else {
@@ -71,7 +73,7 @@ public class SAPFileLogic {
 							+ " at index " + ByteUtility.getIndexString(index) + ".");
 					return null;
 				}
-				header.append(c);
+				headerBuilder.append(c);
 			}
 			index++;
 		}
@@ -79,12 +81,12 @@ public class SAPFileLogic {
 			messageQueue.sendError("Invalid file structure.");
 			return null;
 		}
-		sapFile.header = header.toString();
-		if (!sapFile.header.startsWith("SAP\n")) {
+		var header = headerBuilder.toString();
+		if (!header.startsWith("SAP\n")) {
 			messageQueue.sendError("Header does not start with 'SAP' line.");
 			return null;
 		}
-		var lines = sapFile.header.split("\n");
+		var lines = header.split("\n");
 		var tags = SAPTags.getTags();
 		Set<String> foundTagSet = new TreeSet<String>();
 		int tagIndex = 0;
@@ -142,7 +144,8 @@ public class SAPFileLogic {
 			return null;
 		}
 
-		sapFile.segmentsStartIndex = index;
+		var sapFile = new SAPFile();
+		sapFile.content = content;
 		if (!segmentListLogic.loadSegmentList(sapFile.segmentList, content, index, messageQueue)) {
 			return null;
 		}
@@ -171,7 +174,6 @@ public class SAPFileLogic {
 			return null;
 		}
 		var sapFile = new SAPFile();
-		sapFile.header = "";
 		sapFile.content = content;
 		sapFile.asapInfo = asap.getInfo();
 
@@ -228,31 +230,42 @@ public class SAPFileLogic {
 		return true;
 	}
 
-	public SAPFile loadXEXFile(File inputFile, MessageQueue messageQueue) {
-		var sapFile = new SAPFile();
+	public SAPFile loadXEXFile(File inputFile, PrintWriter header, MessageQueue messageQueue) {
 
-		if (!segmentListLogic.loadSegmentList(sapFile.segmentList, inputFile, messageQueue)) {
+		var segmentList = new SegmentList();
+		if (!segmentListLogic.loadSegmentList(segmentList, inputFile, messageQueue)) {
 			return null;
 		}
-		if (sapFile.segmentList.size() == 3) {
 
-		}
-
-		var headerBuilder = new StringBuilder();
-		headerBuilder.append("XEX\n");
+		header.println("XEX");
 		var playerFactory = new PlayerFactory();
-		var players = playerFactory.getMatchingPlayers(sapFile.segmentList);
+		var players = playerFactory.getMatchingPlayers(segmentList);
 		if (players.isEmpty()) {
-			headerBuilder.append("PLAYER UNKNOWN\n");
+			header.println("PLAYER UNKNOWN");
 		} else {
 			for (var player : players) {
-				headerBuilder.append("PLAYER \"" + player.getName() + "\"\n");
+				header.println("PLAYER \"" + player.getName());
+
+				header.println();
+				List<String> texts = new ArrayList<String>();
+				player.getTexts(segmentList, texts);
+				for (var text : texts) {
+					header.println(text);
+				}
 			}
 		}
 
-		sapFile.header = headerBuilder.toString();
-		sapFile.content = sapFile.segmentList.toByteArray();
-		sapFile.asapInfo = new ASAPInfo();
+		var sapFile = new SAPFile();
+		sapFile.segmentList.getEntries().addAll(segmentList.getEntries());
+
+		if (players.size() == 1) {
+			var player = players.get(0);
+			if (player.fillSAPFile(sapFile, segmentList, messageQueue)) {
+				messageQueue.sendInfo("Convertered " + player.getName() + " file to SAP format.");
+			}
+			;
+		}
+
 		return sapFile;
 	}
 }

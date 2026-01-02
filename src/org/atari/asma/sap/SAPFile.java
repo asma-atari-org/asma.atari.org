@@ -33,17 +33,8 @@ public class SAPFile {
 	}
 
 	public byte[] content;
-	public int segmentsStartIndex;
 
-	public String header;
 	public SegmentList segmentList;
 	public ASAPInfo asapInfo;
 
-	public String toString() {
-		return header + getSegmentsString();
-	}
-
-	public String getSegmentsString() {
-		return segmentList.toString();
-	}
 }

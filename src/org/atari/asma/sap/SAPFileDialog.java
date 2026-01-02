@@ -7,6 +7,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -18,6 +20,7 @@ import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
 
 import org.atari.asma.util.FileDrop;
+import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MessageQueue;
 
 class SAPFileDialog {
@@ -40,9 +43,11 @@ class SAPFileDialog {
 	private JTextArea messageTextArea;
 	private JFileChooser fileChooser;
 
+	// State
 	private File inputFile;
 	private File outputFile;
 
+	private StringBuilder header;
 	private SAPFile sapFile;
 
 	public SAPFileDialog(SAPFileEditor editor, SAPFileLogic sapFileLogic, MessageQueue messageQueue) {
@@ -50,6 +55,12 @@ class SAPFileDialog {
 		this.editor = editor;
 		this.sapFileLogic = sapFileLogic;
 		this.messageQueue = messageQueue;
+
+		// State
+		inputFile = null;
+		outputFile = null;
+		header = new StringBuilder();
+		sapFile = null;
 
 		frame = new JFrame();
 		frame.setTitle(TITLE);
@@ -162,8 +173,8 @@ class SAPFileDialog {
 			outputFilePathTextField.setText("");
 		}
 
-		headerTextArea.setText(sapFile.header);
-		bodyTextArea.setText(sapFile.getSegmentsString());
+		headerTextArea.setText(header.toString());
+		bodyTextArea.setText(sapFile.segmentList.toString());
 		frame.pack();
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
@@ -172,13 +183,45 @@ class SAPFileDialog {
 	}
 
 	private void dataFromUI() {
-		sapFile.header = headerTextArea.getText();
 	}
 
-	public void show(File inputFile, File outputFile, SAPFile sapFile) {
+	public void show(File inputFile) {
+
 		this.inputFile = inputFile;
-		this.outputFile = outputFile;
-		this.sapFile = sapFile;
+		this.outputFile = null;
+		header.setLength(0);
+		messageQueue.sendInfo("Reading '" + inputFile.getAbsolutePath() + "'.");
+		final var fileExtension = (FileUtility.getFileExtension(inputFile.getName()).toLowerCase());
+		if (fileExtension.equals(".sap")) {
+			sapFile = sapFileLogic.loadSAPFile(inputFile, messageQueue);
+			outputFile = inputFile;
+		} else if (SAPFile.isOriginalModuleFileExtension(fileExtension)) {
+			sapFile = sapFileLogic.loadOriginalModuleFile(inputFile, messageQueue);
+			if (sapFile != null) {
+				outputFile = FileUtility.changeFileExtension(inputFile, ".sap");
+				messageQueue.sendInfo("Converted ASAP comptible file '" + inputFile.getName() + "' to '"
+						+ outputFile.getName() + "'.");
+
+				if (outputFile.exists()) {
+					messageQueue.sendWarning("Be careful when saving, the target file already exists.");
+				}
+			}
+		} else if (fileExtension.equals(".xex")) {
+			var writer = new StringWriter();
+			sapFile = sapFileLogic.loadXEXFile(inputFile, new PrintWriter(writer), messageQueue);
+			header.append(writer.toString());
+			if (sapFile != null) {
+				outputFile = FileUtility.changeFileExtension(inputFile, ".sap");
+			} else {
+				outputFile = null;
+
+			}
+		}
+
+		if (sapFile == null) {
+			messageQueue.sendInfo("Error reading '" + inputFile.getAbsolutePath() + "'. See above.");
+		}
+
 		dataToUI();
 	}
 

@@ -28,18 +28,14 @@ public class SAPFileEditor {
 	};
 
 	private void run(String[] args) {
+		var files = new File[args.length];
+		for (int i = 0; i < args.length; i++) {
+			files[i] = new File(args[i]);
+		}
 
-//		if (args.length > 1) {
-//			messageQueue.sendMessage("Usage: SAPEditor <sap file|sap folder>");
-//			return;
-//		}
+		runFilesOrFolders(files);
 
-		String filePath = args[0];
-		File file = new File(filePath);
-
-		runFilesOrFolders(new File[] { file });
-
-	}
+	};
 
 	private void runFilesOrFolders(File[] files) {
 		messageQueue.clear();
@@ -60,33 +56,8 @@ public class SAPFileEditor {
 	}
 
 	public void processFile(File inputFile) {
-		File outputFile = null;
-		SAPFile sapFile = null;
-		messageQueue.sendInfo("Reading '" + inputFile.getAbsolutePath() + "'.");
-		final var fileExtension = (FileUtility.getFileExtension(inputFile.getName()).toLowerCase());
-		if (fileExtension.equals(".sap")) {
-			sapFile = sapFileLogic.loadSAPFile(inputFile, messageQueue);
-			outputFile = inputFile;
-		} else if (SAPFile.isOriginalModuleFileExtension(fileExtension)) {
-			sapFile = sapFileLogic.loadOriginalModuleFile(inputFile, messageQueue);
-			if (sapFile != null) {
-				outputFile = FileUtility.changeFileExtension(inputFile, ".sap");
-				messageQueue.sendInfo("Converted '" + inputFile.getName() + "' to '" + outputFile.getName() + "'.");
 
-				if (outputFile.exists()) {
-					messageQueue.sendWarning("Be careful when saving, the target file already exists.");
-				}
-			}
-		} else if (fileExtension.equals(".xex")) {
-			sapFile = sapFileLogic.loadXEXFile(inputFile, messageQueue);
-			outputFile = null; // TODO
-		}
-
-		if (sapFile != null) {
-			sapFileDialog.show(inputFile, outputFile, sapFile);
-		} else {
-			messageQueue.sendInfo("Error reading '" + inputFile.getAbsolutePath() + "'. See above.");
-		}
+		sapFileDialog.show(inputFile);
 	}
 
 	private void processFolder(File folder) {
@@ -116,20 +87,14 @@ public class SAPFileEditor {
 			}
 
 			var localMessageQueue = new BufferedMessageQueue(messageQueue);
-			checkSAPFile(file, localMessageQueue);
+			var sapFile = sapFileLogic.loadSAPFile(file, localMessageQueue);
+			if (sapFile == null) {
+				messageQueue.sendInfo("Error reading '" + file.getAbsolutePath() + "'. See above.");
+			}
 			localMessageQueue.flush();
 		});
 
 		messageQueue.sendInfo("All " + fileList.size() + " files processed.");
 
 	}
-
-	private SAPFile checkSAPFile(File file, MessageQueue messageQueue) {
-		var sapFile = sapFileLogic.loadSAPFile(file, messageQueue);
-		if (sapFile == null) {
-			messageQueue.sendInfo("Error reading '" + file.getAbsolutePath() + "'. See above.");
-		}
-		return sapFile;
-	}
-
 }

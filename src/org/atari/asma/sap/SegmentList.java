@@ -34,22 +34,27 @@ public class SegmentList {
 	public byte[] toByteArray() {
 		int length = 0;
 		for (var segment : entries) {
-			length += segment.content.length;
+			if (segment.header) {
+				length += 2;
+
+			}
+			length += 4 + segment.content.length;
 		}
 		var result = new byte[length];
 		int index = 0;
 		for (var segment : entries) {
-			System.arraycopy(segment.content, 0, result, index, segment.content.length);
-			length += segment.content.length;
+			var content = segment.toByteArray(false);
+			System.arraycopy(content, 0, result, index, content.length);
+			index += segment.content.length;
 		}
 		return result;
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		int segmentCount = 0;
-		for (var segment : entries){
+		for (var segment : entries) {
 			sb.append("LOAD ");
 			sb.append(ByteUtility.getByteHexString(segmentCount));
 			sb.append(": ");
@@ -59,5 +64,5 @@ public class SegmentList {
 		}
 		return sb.toString();
 	}
-	
+
 }

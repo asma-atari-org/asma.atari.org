@@ -1,6 +1,8 @@
-package org.atari.asma.sap;
+package org.atari.asma.sap.player;
 
 import java.util.*;
+
+import org.atari.asma.sap.SegmentList;
 
 public class PlayerFactory {
 

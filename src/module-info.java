@@ -3,6 +3,7 @@ module asma.atari.org {
 	exports org.atari.asma.demozoo;
 	exports org.atari.asma.util;
 	exports org.atari.asma.sap;
+	exports org.atari.asma.sap.player;
 	exports org.atari.asma;
 
 	requires transitive asap;
