@@ -71,16 +71,15 @@ public class SAPFileEditor {
 			sapFile = sapFileLogic.loadOriginalModuleFile(inputFile, messageQueue);
 			if (sapFile != null) {
 				outputFile = FileUtility.changeFileExtension(inputFile, ".sap");
+				messageQueue.sendInfo("Converted '" + inputFile.getName() + "' to '" + outputFile.getName() + "'.");
+
 				if (outputFile.exists()) {
-					messageQueue.sendWarning("Cannot convert '" + inputFile.getName() + "' to '" + outputFile.getName()
-							+ "'. Target file already exists.");
-					// TODO return;
-				} else {
-					messageQueue.sendInfo("Converted '" + inputFile.getName() + "' to '" + outputFile.getName() + "'.");
+					messageQueue.sendWarning("Be careful when saving, the target file already exists.");
 				}
 			}
 		} else if (fileExtension.equals(".xex")) {
-			outputFile = null;
+			sapFile = sapFileLogic.loadXEXFile(inputFile, messageQueue);
+			outputFile = null; // TODO
 		}
 
 		if (sapFile != null) {

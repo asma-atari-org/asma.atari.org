@@ -31,6 +31,8 @@ class SAPFileDialog {
 	private MessageQueue messageQueue;
 
 	private JFrame frame;
+	private JButton openButton;
+	private JButton saveButton;
 	private JTextField inputFilePathTextField;
 	private JTextField outputFilePathTextField;
 	private JTextArea headerTextArea;
@@ -52,7 +54,7 @@ class SAPFileDialog {
 		frame = new JFrame();
 		frame.setTitle(TITLE);
 
-		var openButton = new JButton("Open");
+		openButton = new JButton("Open");
 		openButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -62,7 +64,7 @@ class SAPFileDialog {
 			}
 
 		});
-		var saveButton = new JButton("Save");
+		saveButton = new JButton("Save");
 		saveButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -150,6 +152,8 @@ class SAPFileDialog {
 		} else {
 			title.append(" - ").append(inputFile.getName());
 		}
+
+		saveButton.setEnabled(outputFile != null);
 		frame.setTitle(title.toString());
 		inputFilePathTextField.setText(inputFile.getAbsolutePath());
 		if (outputFile != null) {

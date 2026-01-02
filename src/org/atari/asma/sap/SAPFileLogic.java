@@ -15,6 +15,7 @@ import org.atari.asma.util.MessageQueue;
 import net.sf.asap.ASAP;
 import net.sf.asap.ASAPConversionException;
 import net.sf.asap.ASAPFormatException;
+import net.sf.asap.ASAPInfo;
 import net.sf.asap.ASAPWriter;
 
 /**
@@ -142,7 +143,7 @@ public class SAPFileLogic {
 		}
 
 		sapFile.segmentsStartIndex = index;
-		if (!segmentListLogic.readSegmentList(sapFile.segmentList, content, index, messageQueue)) {
+		if (!segmentListLogic.loadSegmentList(sapFile.segmentList, content, index, messageQueue)) {
 			return null;
 		}
 		var asap = new ASAP();
@@ -225,5 +226,20 @@ public class SAPFileLogic {
 			return false;
 		}
 		return true;
+	}
+
+	public SAPFile loadXEXFile(File inputFile, MessageQueue messageQueue) {
+		var sapFile = new SAPFile();
+
+		if (!segmentListLogic.loadSegmentList(sapFile.segmentList, inputFile, messageQueue)) {
+			return null;
+		}
+		if (sapFile.segmentList.size() == 3) {
+
+		}
+		sapFile.header = "EXE";
+		sapFile.content = sapFile.segmentList.toByteArray();
+		sapFile.asapInfo = new ASAPInfo();
+		return sapFile;
 	}
 }

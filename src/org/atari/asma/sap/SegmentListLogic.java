@@ -7,7 +7,7 @@ import org.atari.asma.util.MessageQueue;
 
 public class SegmentListLogic {
 
-	public boolean readSegmentList(SegmentList segmentList, byte[] content, int index, MessageQueue messageQueue) {
+	public boolean loadSegmentList(SegmentList segmentList, byte[] content, int index, MessageQueue messageQueue) {
 
 		int segmentCount = 0;
 
@@ -52,8 +52,8 @@ public class SegmentListLogic {
 		return true;
 	}
 
-	public boolean readSegmentList(SegmentList segmentList, File file, MessageQueue messageQueue) {
+	public boolean loadSegmentList(SegmentList segmentList, File file, MessageQueue messageQueue) {
 		var content = FileUtility.readAsByteArray(file);
-		return readSegmentList(segmentList, content, 0, messageQueue);
+		return loadSegmentList(segmentList, content, 0, messageQueue);
 	}
 }
