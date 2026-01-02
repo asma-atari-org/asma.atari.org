@@ -24,6 +24,7 @@ public class SegmentListLogic {
 			if (w == 0xffff) {
 				w = ByteUtility.getWord(content, index);
 				index += 2;
+				segment.header = true;
 			}
 			segment.startAddress = w;
 			w = ByteUtility.getWord(content, index);

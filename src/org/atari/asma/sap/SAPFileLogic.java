@@ -237,7 +237,20 @@ public class SAPFileLogic {
 		if (sapFile.segmentList.size() == 3) {
 
 		}
-		sapFile.header = "EXE";
+
+		var headerBuilder = new StringBuilder();
+		headerBuilder.append("XEX\n");
+		var playerFactory = new PlayerFactory();
+		var players = playerFactory.getMatchingPlayers(sapFile.segmentList);
+		if (players.isEmpty()) {
+			headerBuilder.append("PLAYER UNKNOWN\n");
+		} else {
+			for (var player : players) {
+				headerBuilder.append("PLAYER \"" + player.getName() + "\"\n");
+			}
+		}
+
+		sapFile.header = headerBuilder.toString();
 		sapFile.content = sapFile.segmentList.toByteArray();
 		sapFile.asapInfo = new ASAPInfo();
 		return sapFile;

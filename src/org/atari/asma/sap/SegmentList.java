@@ -44,4 +44,20 @@ public class SegmentList {
 		}
 		return result;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		int segmentCount = 0;
+		for (var segment : entries){
+			sb.append("LOAD ");
+			sb.append(ByteUtility.getByteHexString(segmentCount));
+			sb.append(": ");
+			sb.append(segment.toString());
+			sb.append("\n");
+			segmentCount++;
+		}
+		return sb.toString();
+	}
+	
 }

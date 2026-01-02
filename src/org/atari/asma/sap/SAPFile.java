@@ -44,16 +44,6 @@ public class SAPFile {
 	}
 
 	public String getSegmentsString() {
-		StringBuilder sb = new StringBuilder();
-		int segmentCount = 0;
-		for (var segment : segmentList.getEntries()) {
-			sb.append("LOAD ");
-			sb.append(ByteUtility.getByteHexString(segmentCount));
-			sb.append(": ");
-			sb.append(segment.toString());
-			sb.append("\n");
-			segmentCount++;
-		}
-		return sb.toString();
+		return segmentList.toString();
 	}
 }
