@@ -17,9 +17,9 @@ public class SAPFileEditor {
 	private SAPFileDialog sapFileDialog;
 
 	private SAPFileEditor() {
-		messageQueue =  MessageQueueFactory.createSystemInstance();
+		messageQueue = MessageQueueFactory.createSystemInstance();
 		sapFileLogic = new SAPFileLogic();
-		sapFileDialog = new SAPFileDialog(this);
+		sapFileDialog = new SAPFileDialog(this, sapFileLogic, messageQueue);
 	}
 
 	public static void main(String[] args) {
@@ -37,22 +37,18 @@ public class SAPFileEditor {
 		String filePath = args[0];
 		File file = new File(filePath);
 
-		runFiles(new File[] { file });
+		runFilesOrFolders(new File[] { file });
 
 	}
 
-	public void runFiles(File[] files) {
+	private void runFilesOrFolders(File[] files) {
 		messageQueue.clear();
 		for (File file : files) {
 			try {
 				if (file.isDirectory()) {
-					scanFolder(file);
+					processFolder(file);
 				} else {
-					messageQueue.sendInfo("Reading '" + file.getAbsolutePath() + "'.");
-					var sapFile = checkSAPFile(file, messageQueue);
-					if (sapFile != null) {
-						sapFileDialog.show(file, sapFile);
-					}
+					processFile(file);
 				}
 
 			} catch (Exception ex) {
@@ -63,7 +59,38 @@ public class SAPFileEditor {
 		messageQueue.printSummary();
 	}
 
-	private void scanFolder(File folder) {
+	public void processFile(File inputFile) {
+		File outputFile = null;
+		SAPFile sapFile = null;
+		messageQueue.sendInfo("Reading '" + inputFile.getAbsolutePath() + "'.");
+		final var fileExtension = (FileUtility.getFileExtension(inputFile.getName()).toLowerCase());
+		if (fileExtension.equals(".sap")) {
+			sapFile = sapFileLogic.loadSAPFile(inputFile, messageQueue);
+			outputFile = inputFile;
+		} else if (SAPFile.isOriginalModuleFileExtension(fileExtension)) {
+			sapFile = sapFileLogic.loadOriginalModuleFile(inputFile, messageQueue);
+			if (sapFile != null) {
+				outputFile = FileUtility.changeFileExtension(inputFile, ".sap");
+				if (outputFile.exists()) {
+					messageQueue.sendWarning("Cannot convert '" + inputFile.getName() + "' to '" + outputFile.getName()
+							+ "'. Target file already exists.");
+					// TODO return;
+				} else {
+					messageQueue.sendInfo("Converted '" + inputFile.getName() + "' to '" + outputFile.getName() + "'.");
+				}
+			}
+		} else if (fileExtension.equals(".xex")) {
+			outputFile = null;
+		}
+
+		if (sapFile != null) {
+			sapFileDialog.show(inputFile, outputFile, sapFile);
+		} else {
+			messageQueue.sendInfo("Error reading '" + inputFile.getAbsolutePath() + "'. See above.");
+		}
+	}
+
+	private void processFolder(File folder) {
 		messageQueue.sendInfo("Scanning " + folder.getAbsolutePath());
 
 		var fileList = FileUtility.getRecursiveFileList(folder, new FileFilter() {
@@ -89,7 +116,6 @@ public class SAPFileEditor {
 				}
 			}
 
-	
 			var localMessageQueue = new BufferedMessageQueue(messageQueue);
 			checkSAPFile(file, localMessageQueue);
 			localMessageQueue.flush();
@@ -100,7 +126,7 @@ public class SAPFileEditor {
 	}
 
 	private SAPFile checkSAPFile(File file, MessageQueue messageQueue) {
-		var sapFile = sapFileLogic.readSAPFile(file, messageQueue);
+		var sapFile = sapFileLogic.loadSAPFile(file, messageQueue);
 		if (sapFile == null) {
 			messageQueue.sendInfo("Error reading '" + file.getAbsolutePath() + "'. See above.");
 		}

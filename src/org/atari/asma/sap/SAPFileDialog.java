@@ -7,9 +7,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -29,20 +26,29 @@ class SAPFileDialog {
 
 	private static String TITLE = "SAP File Editor";
 
+	private SAPFileEditor editor;
+	private SAPFileLogic sapFileLogic;
+	private MessageQueue messageQueue;
+
 	private JFrame frame;
-	private JTextField filePathTextField;
+	private JTextField inputFilePathTextField;
+	private JTextField outputFilePathTextField;
 	private JTextArea headerTextArea;
 	private JTextArea bodyTextArea;
 	private JTextArea messageTextArea;
-
 	private JFileChooser fileChooser;
 
-	private File file;
+	private File inputFile;
+	private File outputFile;
+
 	private SAPFile sapFile;
 
-	public SAPFileDialog(SAPFileEditor editor) {
+	public SAPFileDialog(SAPFileEditor editor, SAPFileLogic sapFileLogic, MessageQueue messageQueue) {
 
-//		this.editor = editor;
+		this.editor = editor;
+		this.sapFileLogic = sapFileLogic;
+		this.messageQueue = messageQueue;
+
 		frame = new JFrame();
 		frame.setTitle(TITLE);
 
@@ -51,55 +57,17 @@ class SAPFileDialog {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-
-				fileChooser.setCurrentDirectory(file.getParentFile());
-				fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-				fileChooser.setMultiSelectionEnabled(true);
-				if (fileChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
-					editor.runFiles(fileChooser.getSelectedFiles());
-				}
+				performOpen();
 
 			}
+
 		});
 		var saveButton = new JButton("Save");
 		saveButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				File outputFile = new File(file.getParentFile(), "_" + file.getName());
-				sapFile.header = headerTextArea.getText();
-				FileOutputStream fos;
-				try {
-					fos = new FileOutputStream(outputFile);
-				} catch (FileNotFoundException e1) {
-					e1.printStackTrace();
-					return;
-				}
-				try {
-					for (int i = 0; i < sapFile.header.length(); i++) {
-						char c = sapFile.header.charAt(i);
-						if (c == 0x0a) {
-							fos.write(0x0d);
-							fos.write(0x0a);
-						} else {
-							fos.write(c);
-						}
-
-					}
-					fos.write(sapFile.content, sapFile.segmentsStartIndex,
-							sapFile.content.length - sapFile.segmentsStartIndex);
-					System.out.println("SAP file '" + outputFile.getAbsolutePath() + "' saved.");
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} finally {
-					try {
-						fos.close();
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-				}
+				performSave();
 
 			}
 		});
@@ -112,8 +80,11 @@ class SAPFileDialog {
 		var filePanel = new JPanel();
 		filePanel.setLayout(new BorderLayout());
 
-		filePathTextField = new JTextField();
-		filePathTextField.setEditable(false);
+		inputFilePathTextField = new JTextField();
+		inputFilePathTextField.setEditable(false);
+
+		outputFilePathTextField = new JTextField();
+		outputFilePathTextField.setEditable(false);
 
 		var contentPanel = new JPanel();
 		var layout = new GridLayout();
@@ -130,18 +101,23 @@ class SAPFileDialog {
 		bodyTextArea.setBackground(frame.getBackground());
 		contentPanel.add(bodyTextArea);
 
-		messageTextArea = new JTextArea();
-		messageTextArea.setBorder(border);
-		messageTextArea.setEditable(false);
-		messageTextArea.setBackground(frame.getBackground());
-		contentPanel.add(messageTextArea);
+		var filePathsPanel = new JPanel();
+		filePathsPanel.setLayout(new BorderLayout());
+		filePathsPanel.add(inputFilePathTextField, BorderLayout.NORTH);
+		filePathsPanel.add(outputFilePathTextField, BorderLayout.SOUTH);
+		filePanel.add(filePathsPanel, BorderLayout.NORTH);
 
-		filePanel.add(filePathTextField, BorderLayout.NORTH);
 		filePanel.add(contentPanel, BorderLayout.CENTER);
 
 		frame.add(toolbar, BorderLayout.NORTH);
 
 		frame.add(filePanel, BorderLayout.CENTER);
+
+		messageTextArea = new JTextArea();
+		messageTextArea.setBorder(border);
+		messageTextArea.setEditable(false);
+		messageTextArea.setBackground(frame.getBackground());
+		frame.add(messageTextArea, BorderLayout.SOUTH);
 
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -153,39 +129,87 @@ class SAPFileDialog {
 		new FileDrop(frame, new FileDrop.Listener() {
 			public void filesDropped(java.io.File[] files) {
 				// handle file drop
-				editor.runFiles(files);
+				if (files.length == 1) {
+					editor.processFile(files[0]);
+				}
 			} // end filesDropped
 		}); // end FileDrop.Listener
 
 		fileChooser = new JFileChooser();
+
 	}
 
 	public JFrame getFrame() {
 		return frame;
 	}
 
-	void show(File file, SAPFile sapFile) {
-		this.file = file;
-		this.sapFile = sapFile;
-
+	private void dataToUI() {
 		StringBuilder title = new StringBuilder(TITLE);
 		if (sapFile.asapInfo != null) {
 			title.append(" - ").append(sapFile.asapInfo.getTitle()).append(" by ").append(sapFile.asapInfo.getAuthor());
 		} else {
-			title.append(" - ").append(file.getName());
+			title.append(" - ").append(inputFile.getName());
 		}
 		frame.setTitle(title.toString());
-		filePathTextField.setText(file.getAbsolutePath());
+		inputFilePathTextField.setText(inputFile.getAbsolutePath());
+		if (outputFile != null) {
+			outputFilePathTextField.setText(outputFile.getAbsolutePath());
+		} else {
+			outputFilePathTextField.setText("");
+		}
+
 		headerTextArea.setText(sapFile.header);
 		bodyTextArea.setText(sapFile.getSegmentsString());
 		frame.pack();
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		headerTextArea.requestFocus();
+		displayMessageQueue();
 	}
 
-	void displayMessageQueue(MessageQueue messageQueue) {
-//		messageTextArea=messageQueue.toString();
+	private void dataFromUI() {
+		sapFile.header = headerTextArea.getText();
+	}
+
+	public void show(File inputFile, File outputFile, SAPFile sapFile) {
+		this.inputFile = inputFile;
+		this.outputFile = outputFile;
+		this.sapFile = sapFile;
+		dataToUI();
+	}
+
+	private void displayMessageQueue() {
+		var builder = new StringBuilder();
+		var entries = messageQueue.getEntries();
+		for (var entry : entries) {
+
+			builder.append(entry.getType().toString()).append(" : ").append(entry.getMessage());
+			builder.append("\n");
+
+		}
+		messageTextArea.setText(builder.toString());
+		messageQueue.clear();
+	}
+
+	private void performOpen() {
+		dataFromUI();
+
+		fileChooser.setCurrentDirectory(inputFile.getParentFile());
+		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		fileChooser.setMultiSelectionEnabled(false);
+		if (fileChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
+			editor.processFile(fileChooser.getSelectedFile());
+		}
+
+		dataToUI();
+	}
+
+	private void performSave() {
+		dataFromUI();
+		if (sapFileLogic.saveSAPFile(outputFile, sapFile, messageQueue)) {
+			messageQueue.sendInfo("SAP file '" + outputFile.getAbsolutePath() + "' saved.");
+		}
+		dataToUI();
 	}
 
 }

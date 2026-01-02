@@ -138,7 +138,7 @@ public class FileInfoList {
 
 		if (filePath.toLowerCase().endsWith(FileExtension.SAP)) {
 			fileInfo.hardware = FileInfo.ATARI800;
-			var sapFile = sapFileLogic.readSAPFile(file, messageQueue);
+			var sapFile = sapFileLogic.loadSAPFile(file, messageQueue);
 			if (sapFile == null) {
 				messageQueue.sendInfo("Error reading '" + file.getAbsolutePath() + "'. See above.");
 				return null;

@@ -1,6 +1,11 @@
 package org.atari.asma.sap;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -8,7 +13,9 @@ import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MessageQueue;
 
 import net.sf.asap.ASAP;
+import net.sf.asap.ASAPConversionException;
 import net.sf.asap.ASAPFormatException;
+import net.sf.asap.ASAPWriter;
 
 /**
  * See https://asap.sourceforge.net/sap-format.html See
@@ -25,9 +32,12 @@ public class SAPFileLogic {
 		segmentListLogic = new SegmentListLogic();
 	}
 
-	public SAPFile readSAPFile(File file, MessageQueue messageQueue) {
+	public SAPFile loadSAPFile(File file, MessageQueue messageQueue) {
+		return loadSAPFile(file.getName(), FileUtility.readAsByteArray(file), messageQueue);
+	}
+
+	public SAPFile loadSAPFile(String fileName, byte[] content, MessageQueue messageQueue) {
 		var sapFile = new SAPFile();
-		var content = FileUtility.readAsByteArray(file);
 		sapFile.content = content;
 		int index = 0;
 		boolean endOfHeader = false;
@@ -137,12 +147,83 @@ public class SAPFileLogic {
 		}
 		var asap = new ASAP();
 		try {
-			asap.load(file.getName(), content, content.length);
+			asap.load(fileName, content, content.length);
 		} catch (ASAPFormatException ex) {
 			messageQueue.sendError("Invalid SAP file. " + ex.getMessage());
 			return null;
 		}
 		sapFile.asapInfo = asap.getInfo();
 		return sapFile;
+	}
+
+	public SAPFile loadOriginalModuleFile(File file, MessageQueue messageQueue) {
+
+		return loadOriginalModuleFile(file.getName(), FileUtility.readAsByteArray(file), messageQueue);
+	}
+
+	public SAPFile loadOriginalModuleFile(String fileName, byte[] content, MessageQueue messageQueue) {
+		var asap = new ASAP();
+		try {
+			asap.load(fileName, content, content.length);
+		} catch (ASAPFormatException ex) {
+			messageQueue.sendError("Invalid ASAP file. " + ex.getMessage());
+			return null;
+		}
+		var sapFile = new SAPFile();
+		sapFile.header = "";
+		sapFile.content = content;
+		sapFile.asapInfo = asap.getInfo();
+
+		var os = new ByteArrayOutputStream();
+		var sapFileName = FileUtility.changeFileExtension(new File(fileName), ".sap").getName();
+		if (!saveSAPFile(os, sapFileName, sapFile, messageQueue)) {
+			return null;
+		}
+		sapFile = loadSAPFile(sapFileName, os.toByteArray(), messageQueue);
+		return sapFile;
+	}
+
+	public boolean saveSAPFile(File file, SAPFile sapFile, MessageQueue messageQueue) {
+
+		OutputStream os = null;
+		try {
+			os = new FileOutputStream(file);
+		} catch (FileNotFoundException ex) {
+			messageQueue.sendError("Cannot save SAP file. " + ex.getMessage());
+			return false;
+		}
+		try {
+			if (!saveSAPFile(os, file.getName(), sapFile, messageQueue)) {
+				return false;
+			}
+		} finally {
+			try {
+				os.close();
+			} catch (IOException ex1) {
+				messageQueue.sendError("Cannot close output stream." + ex1.getMessage());
+			}
+		}
+		return true;
+	}
+
+	public boolean saveSAPFile(OutputStream os, String fileName, SAPFile sapFile, MessageQueue messageQueue) {
+		var output = new byte[128 * 1024 * 1024];
+		var length = 0;
+		var asapWriter = new ASAPWriter();
+		asapWriter.setOutput(output, 0, output.length);
+		try {
+			length = asapWriter.write(fileName, sapFile.asapInfo, sapFile.content, sapFile.content.length, false);
+
+		} catch (ASAPConversionException ex) {
+			messageQueue.sendError("Cannot save SAP file. " + ex.getMessage());
+			return false;
+		}
+		try {
+			os.write(output, 0, length);
+		} catch (IOException ex) {
+			messageQueue.sendError("Cannot save SAP file. " + ex.getMessage());
+			return false;
+		}
+		return true;
 	}
 }

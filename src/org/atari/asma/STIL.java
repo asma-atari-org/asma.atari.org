@@ -78,17 +78,18 @@ public final class STIL {
 
 		fastMap.clear();
 
-		Pattern p = Pattern.compile("(NAME|AUTHOR|TITLE|ARTIST|COMMENT): *(.*)");
+		var p = Pattern.compile("(NAME|AUTHOR|TITLE|ARTIST|COMMENT): *(.*)");
 
 		STILEntry entry = null;
 		TuneEntry tuneEntry = null;
 		Info lastInfo = null;
 		String lastProp = null;
-		StringBuilder cmts = new StringBuilder();
+		var cmts = new StringBuilder();
 		Reader reader = null;
+		BufferedReader bufferedReader = null;
 		try {
 			reader = new FileReader(inputFile, StandardCharsets.UTF_8);
-			final BufferedReader bufferedReader = new BufferedReader(reader);
+			bufferedReader = new BufferedReader(reader);
 			String line;
 			int lineNumber = 0;
 			while ((line = bufferedReader.readLine()) != null) {
@@ -122,7 +123,6 @@ public final class STIL {
 
 				if (line.startsWith("(#")) {
 					if (entry == null) {
-						bufferedReader.close();
 						throw new RuntimeException(
 								"Invalid format in STIL file: '(#' before '/' in line " + lineNumber + ".");
 					}
@@ -149,12 +149,10 @@ public final class STIL {
 				}
 
 				if (entry == null) {
-					bufferedReader.close();
 					throw new RuntimeException("No entry to put data in '" + line + "' in line \"+lineNumber+\".");
 				}
 
 				if (lastInfo == null) {
-					bufferedReader.close();
 					throw new RuntimeException("No context to put data in '" + line + "' in line \"+lineNumber+\".");
 				}
 
@@ -184,6 +182,9 @@ public final class STIL {
 				}
 			}
 		} finally {
+			if (bufferedReader != null) {
+				bufferedReader.close();
+			}
 			if (reader != null) {
 				reader.close();
 			}
