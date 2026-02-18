@@ -68,7 +68,12 @@ if not exist %WUDSN_SITE_HTML_FOLDER%. (
 
 echo.
 rem Run the exporter to update the JSON database.
-java -cp "%JAVA_FOLDER%\bin;%JAVA_FOLDER%\lib\asap.jar;%JAVA_FOLDER%\lib\gson-2.9.1.jar" org.atari.asma.ASMAExporter %SVN_TRUNK_ASMA_FOLDER% %SITE_ASMADB_JS%
+rem java --version 
+%JDK_HOME%\bin\java -cp "%JAVA_FOLDER%\bin;%JAVA_FOLDER%\lib\asap.jar;%JAVA_FOLDER%\lib\gson-2.9.1.jar" org.atari.asma.ASMAExporter %SVN_TRUNK_ASMA_FOLDER% %SITE_ASMADB_JS%
+if ERRORLEVEL 1 (
+    echo ERROR: ASMAExporter failed.
+    exit /b 1
+  )
 echo.
 
 rem Create the overall ZIP.
