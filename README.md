@@ -4,4 +4,6 @@ The actual ASMA archive is original in the SVN repository of http://asma.scene.p
 To build the website, the "asma" folder in the SVN repository must be linked as "public_html/asma".<br>
 The link is created by the "bat\checkout.bat" script if it is missing.
 
+Folder "examples"
+The example files from https://asap.sourceforge.net/examples.zip
 

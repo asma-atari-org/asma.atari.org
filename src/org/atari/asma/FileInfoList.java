@@ -7,11 +7,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.atari.asma.ASMAExporter.FileExtension;
 import org.atari.asma.STIL.STILEntry;
-import org.atari.asma.demozoo.ProductionList;
+import org.atari.asma.demozoo.ASMAProductionList;
+import org.atari.asma.sap.ASAPFileLogic;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.JSONWriter;
 import org.atari.asma.util.MessageQueue;
@@ -22,11 +24,13 @@ import com.google.gson.GsonBuilder;
 public class FileInfoList {
 
 	private STIL stil;
+	private ASAPFileLogic sapFileLogic;
 	private List<FileInfo> fileInfoList;
 	private Gson gson;
 
-	public FileInfoList(STIL stil) {
+	public FileInfoList(STIL stil, ASAPFileLogic sapFileLogic) {
 		this.stil = stil;
+		this.sapFileLogic = sapFileLogic;
 
 		fileInfoList = new ArrayList<FileInfo>();
 		gson = new GsonBuilder().create();
@@ -53,8 +57,8 @@ public class FileInfoList {
 		writer.endArray();
 	}
 
-	public void scanFolder(File sourceFolder) {
-		System.out.println("Scanning " + sourceFolder.getAbsolutePath());
+	public void scanFolder(File sourceFolder, MessageQueue messageQueue, int maxFiles) {
+		messageQueue.sendInfo("Scanning " + sourceFolder.getAbsolutePath());
 
 		var fileList = FileUtility.getRecursiveFileList(sourceFolder, new FileFilter() {
 
@@ -68,42 +72,62 @@ public class FileInfoList {
 			}
 		});
 
-		System.out.println(fileList.size() + " matching files found.");
+		messageQueue.sendInfo(fileList.size() + " matching files found.");
 
 		int index = sourceFolder.getAbsolutePath().length() + 1;
-		var  count = new AtomicInteger();
+		var count = new AtomicInteger();
 
 		final int blockSize = 100;
 		for (int i = 0; i < fileList.size() / blockSize; i++) {
 			System.out.print("=");
 		}
 		System.out.println();
-		
+
+		// During parallel execution we need to decouple from the streams and
+		// synchronize.
+		var fileListMessageQueue = new MessageQueue();
+		var cancelled = new AtomicBoolean();
 		fileList.parallelStream().forEach(file -> {
-			if (count.incrementAndGet() % blockSize == 0) {
-				System.out.print("^");
-			}
-			String filePath = file.getAbsolutePath().substring(index);
-			filePath = filePath.replace(File.separator, "/");
-			var songInfo = readFile(file, filePath);
-			synchronized (fileInfoList) {
-				fileInfoList.add(songInfo);
+
+			if (!cancelled.get()) {
+				if (count.incrementAndGet() % blockSize == 0) {
+					System.out.print("^");
+				}
+				String filePath = file.getAbsolutePath().substring(index);
+				filePath = filePath.replace(File.separator, "/");
+
+				var fileMessageQueue = new MessageQueue();
+				var fileInfo = readFile(file, filePath, fileMessageQueue);
+				synchronized (messageQueue) {
+					fileListMessageQueue.addEntries(fileMessageQueue);
+
+				}
+				synchronized (fileInfoList) {
+					if (fileInfo != null) {
+						fileInfoList.add(fileInfo);
+						if (fileInfoList.size() >= maxFiles) {
+							cancelled.set(true);
+						}
+					}
+				}
 			}
 		});
-		
+		System.out.println();
+
 		// Parallel process destroyed the order, so sort again.
 		fileInfoList.sort(new Comparator<FileInfo>() {
-
 
 			@Override
 			public int compare(FileInfo o1, FileInfo o2) {
 				return o1.filePath.compareTo(o2.filePath);
 			}
 		});
-		System.out.println();
+
+		// Issue which result in broken SAP file files, are reported right away.
+		messageQueue.addEntries(fileListMessageQueue);
 	}
 
-	private FileInfo readFile(File file, String filePath) {
+	private FileInfo readFile(File file, String filePath, MessageQueue messageQueue) {
 
 		// Read binary from the input stream.
 		byte[] module = FileUtility.readAsByteArray(file);
@@ -114,12 +138,17 @@ public class FileInfoList {
 
 		if (filePath.toLowerCase().endsWith(FileExtension.SAP)) {
 			fileInfo.hardware = FileInfo.ATARI800;
-			fileInfo.readFromSAPFile(filePath, module);
-			
-			STILEntry stilEntry = stil.getSTILEntry("/"+filePath);
+			var sapFile = sapFileLogic.loadSAPFile(file, messageQueue);
+			if (sapFile == null) {
+				messageQueue.sendInfo("Error reading '" + file.getAbsolutePath() + "'. See above.");
+				return null;
+			}
+			fileInfo.readFromSAPFile(sapFile);
+
+			STILEntry stilEntry = stil.getSTILEntry("/" + filePath);
 			if (stilEntry != null) {
 				// "TODO";
-				// fileInfo.comment = stilEntry.getComment(); 
+				// fileInfo.comment = stilEntry.getComment();
 			}
 		} else if (filePath.toLowerCase().endsWith(FileExtension.TTT)) {
 			fileInfo.hardware = FileInfo.ATARI2600;
@@ -142,8 +171,8 @@ public class FileInfoList {
 		return fileInfo;
 	}
 
-	public void checkFiles(ComposerList composerList, ProductionList productionList, MessageQueue messageQueue) {
-		// From "Sap.txt" specification.
+	public void checkFileInfos(ComposerList composerList, ASMAProductionList productionList) {
+		// From the ASMA "Sap.txt" specification.
 		final int MAX_FILE_NAME_LENGTH = 26;
 		final String FILE_NAME_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
 
@@ -151,7 +180,8 @@ public class FileInfoList {
 		int startIndex = COMPOSERS.length();
 
 		for (var fileInfo : fileInfoList) {
-			String filePath = fileInfo.filePath;
+			final var filePath = fileInfo.filePath;
+			final var messageQueue = fileInfo.getMessageQueue();
 			if (filePath.toLowerCase().endsWith(FileExtension.SAP)) {
 				if (!filePath.endsWith(FileExtension.SAP)) {
 					messageQueue.sendError("SAP-101: File " + fileInfo.filePath
@@ -181,7 +211,7 @@ public class FileInfoList {
 			if (filePath.startsWith(COMPOSERS)) {
 
 				int index = filePath.indexOf("/", startIndex);
-				String folderName = filePath.substring(startIndex, index);
+				var folderName = filePath.substring(startIndex, index);
 				var composer = composerList.getByFolderName(folderName);
 				if (composer != null) {
 					List<String> authors = composer.getAuthors();
@@ -209,6 +239,23 @@ public class FileInfoList {
 					messageQueue.sendError("SAP-105: File " + fileInfo.filePath + " has unknown composer path");
 				}
 			}
+
+			for (int songIndex = 0; songIndex < fileInfo.songs; songIndex++) {
+				int songNumber = songIndex + 1;
+				var urlFilePath = fileInfo.getURLFilePath(songNumber);
+				var production = productionList.getByURLFilePath(urlFilePath);
+				if (production != null) {
+					fileInfo.setDemozooID(production.id);
+				} else {
+					if (fileInfo.songs == 1) {
+						messageQueue.sendError("SAP-106: File " + fileInfo.filePath + " has no Demozoo ID.");
+					} else {
+						messageQueue.sendError("SAP-107: Song number " + songNumber + " in File " + fileInfo.filePath
+								+ " has no Demozoo ID.");
+					}
+				}
+			}
+
 			// TODO Groups
 		}
 

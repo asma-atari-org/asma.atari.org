@@ -39,7 +39,7 @@ public class FileUtility {
 		byte[] result;
 		int resultLength;
 		try {
-			var buffer = new byte[1024 * 1024*16];
+			var buffer = new byte[1024 * 1024 * 16];
 			resultLength = readAndClose(inputStream, buffer);
 			result = new byte[resultLength];
 			System.arraycopy(buffer, 0, result, 0, resultLength);
@@ -118,5 +118,30 @@ public class FileUtility {
 				}
 			}
 		}
+	}
+
+	public static String getFileExtension(String fileName) {
+		int index = fileName.lastIndexOf('/');
+		if (index >= 0) {
+			fileName = fileName.substring(index+1);
+
+		}
+		index = fileName.lastIndexOf('.');
+		if (index >= 0) {
+			return fileName.substring(index);
+
+		}
+		return "";
+	}
+
+	public static File changeFileExtension(File file, String extension) {
+		var fileName = file.getName();
+		int index = fileName.lastIndexOf('.');
+		if (index >= 0) {
+			fileName = fileName.substring(0, index);
+
+		}
+		fileName += extension;
+		return new File(file.getParent(), fileName);
 	}
 }

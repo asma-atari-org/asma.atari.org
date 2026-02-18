@@ -2,25 +2,26 @@ package org.atari.asma.sap;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.atari.asma.ASMAExporter.FileExtension;
+import org.atari.asma.util.BufferedMessageQueue;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MessageQueue;
-
-import net.sf.asap.ASAP;
-import net.sf.asap.ASAPInfo;
-import net.sf.asap.ASAPWriter;
+import org.atari.asma.util.MessageQueueFactory;
 
 public class SAPFileEditor {
 
 	private MessageQueue messageQueue;
-	private SAPFileLogic sapFileLogic;
-	private SAPFileDialog sapFileDialog;
+	private ASAPFileLogic sapFileLogic;
+	private Map<String, SAPFileDialog> sapFileDialogMap;
 
 	private SAPFileEditor() {
-		messageQueue = new MessageQueue(System.out, System.err);
-		sapFileLogic = new SAPFileLogic();
-		sapFileDialog = new SAPFileDialog(this);
+		messageQueue = MessageQueueFactory.createSystemInstance();
+		sapFileLogic = new ASAPFileLogic();
+		sapFileDialogMap = new TreeMap<String, SAPFileDialog>();
 	}
 
 	public static void main(String[] args) {
@@ -29,28 +30,23 @@ public class SAPFileEditor {
 	};
 
 	private void run(String[] args) {
+		var files = new File[args.length];
+		for (int i = 0; i < args.length; i++) {
+			files[i] = new File(args[i]);
+		}
 
-//		if (args.length > 1) {
-//			messageQueue.sendMessage("Usage: SAPEditor <sap file|sap folder>");
-//			return;
-//		}
+		runFilesOrFolders(files);
 
-		String filePath = args[0];
-		File file = new File(filePath);
+	};
 
-		runFiles(new File[] { file });
-
-	}
-
-	public void runFiles(File[] files) {
+	private void runFilesOrFolders(File[] files) {
 		messageQueue.clear();
 		for (File file : files) {
 			try {
 				if (file.isDirectory()) {
-					scanFolder(file);
+					processFolder(file);
 				} else {
-					messageQueue.sendInfo("Reading '" + file.getAbsolutePath() + "'.");
-					checkSAPFile(file, true);
+					processFile(file);
 				}
 
 			} catch (Exception ex) {
@@ -61,7 +57,29 @@ public class SAPFileEditor {
 		messageQueue.printSummary();
 	}
 
-	private void scanFolder(File folder) {
+	public void processFile(File inputFile) {
+
+		var path = inputFile.getAbsolutePath();
+		var dialog = sapFileDialogMap.get(path);
+		if (dialog == null) {
+			dialog = new SAPFileDialog(this);
+			sapFileDialogMap.put(path, dialog);
+		}
+		dialog.show(inputFile);
+	}
+
+	public void closeFile(File inputFile) {
+		var path = inputFile.getAbsolutePath();
+
+		sapFileDialogMap.remove(path);
+
+		if (sapFileDialogMap.isEmpty()) {
+			System.exit(0);
+		}
+
+	}
+
+	private void processFolder(File folder) {
 		messageQueue.sendInfo("Scanning " + folder.getAbsolutePath());
 
 		var fileList = FileUtility.getRecursiveFileList(folder, new FileFilter() {
@@ -78,28 +96,25 @@ public class SAPFileEditor {
 		int totalCount = fileList.size();
 		messageQueue.sendInfo(totalCount + " files found.");
 
-		int count = 0;
-		for (File file : fileList) {
-			checkSAPFile(file, false);
-			count++;
-			if (count % 100 == 0) {
-				messageQueue.sendInfo(count + " files processed.");
+		var count = new AtomicInteger();
+		final var blockSize = 100;
+		fileList.parallelStream().forEach(file -> {
+			if (count.incrementAndGet() % blockSize == 0) {
+				synchronized (messageQueue) {
+					messageQueue.sendInfo(count + " files processed.");
+				}
 			}
-		}
+
+			var localMessageQueue = new BufferedMessageQueue(messageQueue);
+			var sapFile = sapFileLogic.loadSAPFile(file, localMessageQueue);
+			if (sapFile == null) {
+				messageQueue.sendInfo("Error reading '" + file.getAbsolutePath() + "'. See above.");
+			}
+			localMessageQueue.flush();
+		});
+
 		messageQueue.sendInfo("All " + fileList.size() + " files processed.");
 
-	}
-
-	private void checkSAPFile(File file, boolean details) {
-		var sapFile = sapFileLogic.readSAPFile(file, messageQueue);
-		if (sapFile != null) {
-			if (details) {
-				sapFileDialog.show(file, sapFile);
-			}
-		} else {
-			messageQueue.sendInfo("Error reading '" + file.getAbsolutePath() + "'. See above.");
-
-		}
 	}
 
 }

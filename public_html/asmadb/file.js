@@ -31,7 +31,7 @@ class FileInfo {
 		}
 		throw "Unsupported hardware " + this.hardware;
 	}
-	
+
 	// Zero-based defaut song index.
 	getDefaultSongIndex() {
 		return this.defaultSongIndex;
@@ -60,12 +60,29 @@ class FileInfo {
 	getContent() {
 		return this.content;
 	}
+
 	getASAPInfo() {
 		return this.asapInfo;
 	}
 	setASAPInfo(asapInfo) {
 		this.asapInfo = asapInfo;
 	}
+
+	// The file path format in URLs is:
+	// - "filePath" if the file has only one song or if the song is the default song
+	// - "filePath#songNumber" if the file more than one song and if the song is not
+	// the default song
+	getURLFilePath(songNumber) {
+		if ((this.songs > 0) && (songNumber - 1 != this.defaultSongIndex)) {
+			return this.filePath + "#" + songNumber;
+		}
+		return this.filePath;
+	}
+
+	getDemozooID() {
+		return this.demozooID;
+	}
+
 }
 
 class FileInfoList {

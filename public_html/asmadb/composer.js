@@ -201,56 +201,59 @@ class ComposerList {
 	}
 
 	// Count the number of matching files and assign the files to their composer
-	initFileInfos(fileInfos, productionsByFilePathMap) {
+	initFileInfos(fileInfos, demozoo) {
 		for (let fileInfo of fileInfos) {
 
-			// Map known composers
-			let filePath = fileInfo.filePath;
-			let production = productionsByFilePathMap.get(filePath);
-			let filePathSegments = filePath.split("/");
-			if (filePathSegments.length == 3 && filePathSegments[0] == "Composers") {
-				let folderPath = filePathSegments[0] + "/" + filePathSegments[1];
-				let composerProxy = this.composerFolderPathProxiesMap.get(folderPath);
-				if (composerProxy != undefined) {
-					fileInfo.addComposerProxy(composerProxy);
-					composerProxy.fileCount++;
+			for (let songIndex = 0; songIndex < fileInfo.songs; songIndex++) {
+				// Map known composers
+				let songNumber = songIndex + 1;
+				let urlFilePath = fileInfo.getURLFilePath(songNumber);
+				let production = demozoo.getProductionByURLFilePath(urlFilePath);
+				let filePathSegments = urlFilePath.split("/");
+				if (filePathSegments.length == 3 && filePathSegments[0] == "Composers") {
+					let folderPath = filePathSegments[0] + "/" + filePathSegments[1];
+					let composerProxy = this.composerFolderPathProxiesMap.get(folderPath);
+					if (composerProxy != undefined) {
+						fileInfo.addComposerProxy(composerProxy);
+						composerProxy.fileCount++;
 
-					if (production != undefined && !production.authorIDs.includes(Number(composerProxy.demozooID))) {
-						Logger.log("ERROR: Composer path " + filePath + " demozoo ID \"" + composerProxy.demozooID + "\" is not in list of production author IDs \"" + production.authorIDs + "\"");
-					}
-				} else {
-					Logger.log("ERROR: No composer for path \"" + folderPath + "\"");
-				}
-			}
-
-			// Map files to authors
-			// Split at "&" in case of cooperations
-			let authors = fileInfo.getAuthorsArray();
-
-			for (let author of authors) {
-				if (author != "" && fileInfo.author != "") {
-					let authorComposerProxy = this.authorProxiesMap.get(author);
-					let lastName = "<?>";
-					let firstName = "";
-					let fullName = "";
-					let handles = "";
-					let index = author.indexOf("(");
-					if (index >= 0) {
-						fullName = author.substring(0, index - 1).trim();
-						let lastIndex = author.lastIndexOf(")");
-						handles = author.substring(index + 1, lastIndex).trim();
+						if (production != undefined && !production.authorIDs.includes(Number(composerProxy.demozooID))) {
+							Logger.log("ERROR: Composer path " + filePath + " demozoo ID \"" + composerProxy.demozooID + "\" is not in list of production author IDs \"" + production.authorIDs + "\"");
+						}
 					} else {
-						fullName = author;
-						handles = "";
+						Logger.log("ERROR: No composer for path \"" + folderPath + "\"");
 					}
-					if (authorComposerProxy === undefined) {
-						authorComposerProxy = this.addComposerProxy(ComposerStatus.UNVERIFIED, { lastName: lastName, firstName: firstName, fullName: fullName, fullNameUnicode: fullName, handles: handles });
-						this.authorProxiesMap.set(author, authorComposerProxy);
+				}
+
+				// Map files to authors
+				// Split at "&" in case of cooperations
+				let authors = fileInfo.getAuthorsArray();
+
+				for (let author of authors) {
+					if (author != "" && fileInfo.author != "") {
+						let authorComposerProxy = this.authorProxiesMap.get(author);
+						let lastName = "<?>";
+						let firstName = "";
+						let fullName = "";
+						let handles = "";
+						let index = author.indexOf("(");
+						if (index >= 0) {
+							fullName = author.substring(0, index - 1).trim();
+							let lastIndex = author.lastIndexOf(")");
+							handles = author.substring(index + 1, lastIndex).trim();
+						} else {
+							fullName = author;
+							handles = "";
+						}
+						if (authorComposerProxy === undefined) {
+							authorComposerProxy = this.addComposerProxy(ComposerStatus.UNVERIFIED, { lastName: lastName, firstName: firstName, fullName: fullName, fullNameUnicode: fullName, handles: handles });
+							this.authorProxiesMap.set(author, authorComposerProxy);
+						}
+
+						fileInfo.addComposerProxy(authorComposerProxy);
+						authorComposerProxy.fileCount++;
+
 					}
-
-					fileInfo.addComposerProxy(authorComposerProxy);
-					authorComposerProxy.fileCount++;
-
 				}
 			}
 		}
