@@ -33,7 +33,7 @@ class ASAPMptSamples
 			if (end <= start)
 				return false;
 		}
-		return this.contentLength == ((end - this.content[0]) << 8) + 32;
+		return this.contentLength >= ((end - this.content[0]) << 8) + 32;
 	}
 
 	load(loader, moduleFilename)
@@ -96,6 +96,8 @@ export class ASAP
 	#moduleInfo = new ASAPInfo();
 	#mptSamplesPage;
 	#mptSamples15kHz;
+	#mptSamplesCurrentAddress;
+	#mptSamplesSecondNibble;
 	#nextPlayerCycle;
 	#tmcPerFrameCounter;
 	#currentSong;
@@ -185,12 +187,8 @@ export class ASAP
 			this.#nmist = this.#cpu.cycle < 28292 ? NmiStatus.ON_V_BLANK : NmiStatus.RESET;
 		}
 		else if ((addr & 65280) == this.#moduleInfo.getCovoxAddress()) {
-			let pokey;
 			addr &= 3;
-			if (addr == 0 || addr == 3)
-				pokey = this.#pokeys.basePokey;
-			else
-				pokey = this.#pokeys.extraPokey;
+			let pokey = addr == 0 || addr == 3 ? this.#pokeys.basePokey : this.#pokeys.extraPokey;
 			let delta = data - this.#covox[addr];
 			if (delta != 0) {
 				pokey.addExternalDelta(this.#pokeys, this.#cpu.cycle, delta << 17);
@@ -289,6 +287,20 @@ export class ASAP
 			}
 			else
 				this.#call6502(player + 6);
+			break;
+		case ASAPModuleType.D15:
+			if (this.#cpu.cycle < 1254 || this.#mptSamplesCurrentAddress >> 8 >= this.#cpu.memory[this.#moduleInfo.getMusicAddress() + 16 + this.#currentSong])
+				break;
+			let b = this.#cpu.memory[this.#mptSamplesCurrentAddress];
+			if (this.#mptSamplesSecondNibble) {
+				this.#mptSamplesCurrentAddress++;
+				this.#mptSamplesSecondNibble = false;
+			}
+			else {
+				b >>= 4;
+				this.#mptSamplesSecondNibble = true;
+			}
+			this.#pokeys.poke(53761, b | 240, this.#cpu.cycle);
 			break;
 		}
 	}
@@ -407,6 +419,10 @@ export class ASAP
 				this.#moduleInfo.player = player;
 			return;
 		}
+		if (this.#moduleInfo.type == ASAPModuleType.D15) {
+			this.#cpu.memory.set(module.subarray(0, moduleLen), this.#moduleInfo.getMusicAddress());
+			return;
+		}
 		this.#cpu.memory.fill(0);
 		let moduleIndex = this.#moduleInfo.headerLen + 2;
 		while (moduleIndex + 5 <= moduleLen) {
@@ -451,16 +467,6 @@ export class ASAP
 		throw new ASAPFormatException("INIT routine didn't return");
 	}
 
-	/**
-	 * Mutes the selected POKEY channels.
-	 * @param mask An 8-bit mask which selects POKEY channels to be muted.
-	 */
-	mutePokeyChannels(mask)
-	{
-		this.#pokeys.basePokey.mute(mask);
-		this.#pokeys.extraPokey.mute(mask >> 4);
-	}
-
 	#restartSong()
 	{
 		this.#nextPlayerCycle = 8388608;
@@ -474,7 +480,6 @@ export class ASAP
 		this.#covox[2] = 128;
 		this.#covox[3] = 128;
 		this.#pokeys.initialize(this.#moduleInfo.isNtsc(), this.#moduleInfo.getChannels() > 1, this.#currentSampleRate);
-		this.mutePokeyChannels(255);
 		let player = this.#moduleInfo.player;
 		let music = this.#moduleInfo.getMusicAddress();
 		switch (this.#moduleInfo.type) {
@@ -526,8 +531,15 @@ export class ASAP
 		case ASAPModuleType.FC:
 			this.#do6502Init(player, this.#currentSong, 0, 0);
 			break;
+		case ASAPModuleType.D15:
+			this.#mptSamplesCurrentAddress = this.#cpu.memory[this.#moduleInfo.getMusicAddress() + this.#currentSong] << 8;
+			this.#mptSamplesSecondNibble = false;
+			this.#cpu.memory[53760] = 210;
+			this.#cpu.pc = 53760;
+			break;
 		}
-		this.mutePokeyChannels(0);
+		this.#pokeys.basePokey.endSongInit();
+		this.#pokeys.extraPokey.endSongInit();
 		this.#nextPlayerCycle = 0;
 	}
 
@@ -543,6 +555,16 @@ export class ASAP
 		this.#currentSong = song;
 		this.#currentDuration = duration;
 		this.#restartSong();
+	}
+
+	/**
+	 * Mutes the selected POKEY channels.
+	 * @param mask An 8-bit mask which selects POKEY channels to be muted.
+	 */
+	mutePokeyChannels(mask)
+	{
+		this.#pokeys.basePokey.mute(mask);
+		this.#pokeys.extraPokey.mute(mask >> 4);
 	}
 
 	/**
@@ -781,7 +803,8 @@ const ASAPModuleType = {
 	RMT : 12,
 	TMC : 13,
 	TM2 : 14,
-	FC : 15
+	FC : 15,
+	D15 : 16
 }
 
 /**
@@ -868,7 +891,7 @@ export class ASAPInfo
 	/**
 	 * ASAP version - major part.
 	 */
-	static VERSION_MAJOR = 7;
+	static VERSION_MAJOR = 8;
 
 	/**
 	 * ASAP version - minor part.
@@ -883,17 +906,17 @@ export class ASAPInfo
 	/**
 	 * ASAP version as a string.
 	 */
-	static VERSION = "7.0.0";
+	static VERSION = "8.0.0";
 
 	/**
 	 * Years ASAP was created in.
 	 */
-	static YEARS = "2005-2025";
+	static YEARS = "2005-2026";
 
 	/**
 	 * Short credits for ASAP.
 	 */
-	static CREDITS = "Another Slight Atari Player (C) 2005-2025 Piotr Fusik\nCMC, MPT, TMC, TM2 players (C) 1994-2005 Marcin Lewandowski\nRMT player (C) 2002-2005 Radek Sterba\nDLT player (C) 2009 Marek Konopka\nCMS player (C) 1999 David Spilka\nFC player (C) 2011 Jerzy Kut\n";
+	static CREDITS = "Another Slight Atari Player (C) 2005-2026 Piotr Fusik\nCMC, MPT, TMC, TM2 players (C) 1994-2005 Marcin Lewandowski\nRMT player (C) 2002-2005 Radek Sterba\nDLT player (C) 2009 Marek Konopka\nCMS player (C) 1999 David Spilka\nFC player (C) 2011 Jerzy Kut\n";
 
 	/**
 	 * Short license notice.
@@ -1843,6 +1866,38 @@ export class ASAPInfo
 		}
 	}
 
+	static MPT_SAMPLES_VBLK_PAUSE_SCANLINES = 11;
+
+	#parseMptSamples(content, contentLen)
+	{
+		if (contentLen < 288)
+			throw new ASAPFormatException("File too short");
+		this.originalType = this.type = ASAPModuleType.D15;
+		this.#songs = 0;
+		this.headerLen = -1;
+		let end = -1;
+		for (let i = 0; i < 16; i++) {
+			let start = content[i];
+			if (start == 0) {
+				for (; i < 16; i++) {
+					if (content[i] != 0 || content[16 + i] != 0)
+						throw new ASAPFormatException("Invalid header");
+				}
+				break;
+			}
+			if (i > 0 && start != end)
+				throw new ASAPFormatException("Invalid header");
+			end = content[16 + i];
+			if (end <= start)
+				throw new ASAPFormatException("Invalid header");
+			let samples = (end - start) << 9;
+			this.#addSong(samples + (samples / 301 | 0) * 11);
+		}
+		if (contentLen < ((end - content[0]) << 8) + 32)
+			throw new ASAPFormatException("File too short");
+		this.#music = (content[0] << 8) - 32;
+	}
+
 	static #parseText(module, i, argEnd)
 	{
 		let len = argEnd - i - 2;
@@ -2030,6 +2085,7 @@ export class ASAPInfo
 		}
 		if (this.#defaultSong >= this.#songs)
 			throw new ASAPFormatException("DEFSONG too big");
+		this.headerLen = moduleIndex;
 		switch (type) {
 		case 66:
 			if (this.player < 0)
@@ -2092,7 +2148,6 @@ export class ASAPInfo
 			this.#fastplay = this.#ntsc ? 262 : 312;
 		if (module[moduleIndex + 1] != 255)
 			throw new ASAPFormatException("Invalid binary header");
-		this.headerLen = moduleIndex;
 	}
 
 	static packExt(ext)
@@ -2133,6 +2188,8 @@ export class ASAPInfo
 		case 3698036:
 		case 3304820:
 		case 2122598:
+		case 3486052:
+		case 2111588:
 			return true;
 		default:
 			return false;
@@ -2267,6 +2324,14 @@ export class ASAPInfo
 			return;
 		case 2122598:
 			this.#parseFc(module, moduleLen);
+			return;
+		case 3486052:
+			this.#fastplay = 1;
+			this.#parseMptSamples(module, moduleLen);
+			return;
+		case 2111588:
+			this.#fastplay = 2;
+			this.#parseMptSamples(module, moduleLen);
 			return;
 		default:
 			throw new ASAPFormatException("Unknown filename extension");
@@ -2706,6 +2771,10 @@ export class ASAPInfo
 			return "Theta Music Composer 2.x";
 		case 2122598:
 			return "Future Composer";
+		case 3486052:
+			return "Music ProTracker 15 kHz samples";
+		case 2111588:
+			return "Music ProTracker 8 kHz samples";
 		case 7890296:
 			return "Atari 8-bit executable";
 		default:
@@ -2745,6 +2814,8 @@ export class ASAPInfo
 			return "tm2";
 		case ASAPModuleType.FC:
 			return "fc";
+		case ASAPModuleType.D15:
+			return this.#fastplay == 1 ? "d15" : "d8";
 		default:
 			return null;
 		}
@@ -2922,6 +2993,9 @@ export class ASAPWriter
 			break;
 		case ASAPModuleType.SAP_S:
 			exts[i++] = "sap";
+			break;
+		case ASAPModuleType.D15:
+			exts[i++] = info.getOriginalModuleExt();
 			break;
 		default:
 			exts[i++] = info.getOriginalModuleExt();
@@ -3459,6 +3533,8 @@ export class ASAPWriter
 			this.writeBytes(module, 0, moduleLen);
 			this.writeBytes(playerRoutine, 2, playerLastByte - player + 7);
 			break;
+		default:
+			throw new ASAPConversionException("Unknown format");
 		}
 	}
 
@@ -3586,6 +3662,7 @@ export class ASAPWriter
 				nativeWriter.write(info, info.originalType, blockLen);
 			break;
 		case ASAPModuleType.FC:
+		case ASAPModuleType.D15:
 			this.writeBytes(module, 0, moduleLen);
 			break;
 		default:
@@ -5121,6 +5198,8 @@ class PokeyChannel
 	static MUTE_USER = 2;
 
 	static MUTE_SERIAL_INPUT = 4;
+
+	static MUTE_SONG_INIT = 8;
 	mute;
 	#out;
 	delta;
@@ -5132,14 +5211,14 @@ class PokeyChannel
 		this.periodCycles = 28;
 		this.tickCycle = 8388608;
 		this.timerCycle = 8388608;
-		this.mute = 0;
+		this.mute = 8;
 		this.#out = 0;
 		this.delta = 0;
 	}
 
 	#addDelta(pokey, pokeys, cycle, delta)
 	{
-		pokey.addDelta(pokeys, cycle, delta, (this.mute & 2) != 0);
+		pokey.addPokeyDelta(pokeys, cycle, delta, (this.mute & 10) != 0);
 	}
 
 	#slope(pokey, pokeys, cycle)
@@ -5306,17 +5385,7 @@ class Pokey
 		this.startFrame();
 	}
 
-	addDelta(pokeys, cycle, delta, muted)
-	{
-		this.#sumDACInputs += delta;
-		if (muted)
-			return;
-		let newOutput = Pokey.#COMPRESSED_SUMS[this.#sumDACInputs] << 16;
-		this.addExternalDelta(pokeys, cycle, newOutput - this.#sumDACOutputs);
-		this.#sumDACOutputs = newOutput;
-	}
-
-	addExternalDelta(pokeys, cycle, delta)
+	#addDelta(pokeys, cycle, delta)
 	{
 		if (delta == 0)
 			return;
@@ -5326,6 +5395,22 @@ class Pokey
 		delta >>= 14;
 		for (let j = 0; j < 32; j++)
 			this.#deltaBuffer[i + j] += delta * pokeys.sincLookup[fraction][j];
+	}
+
+	addPokeyDelta(pokeys, cycle, delta, muted)
+	{
+		this.#sumDACInputs += delta;
+		if (muted)
+			return;
+		let newOutput = Pokey.#COMPRESSED_SUMS[this.#sumDACInputs] << 16;
+		this.#addDelta(pokeys, cycle, newOutput - this.#sumDACOutputs);
+		this.#sumDACOutputs = newOutput;
+	}
+
+	addExternalDelta(pokeys, cycle, delta)
+	{
+		if ((this.channels[0].mute & 8) == 0)
+			this.#addDelta(pokeys, cycle, delta);
 	}
 
 	/**
@@ -5395,6 +5480,12 @@ class Pokey
 	{
 		for (let i = 0; i < 4; i++)
 			this.channels[i].setMute((mask & 1 << i) != 0, 2, 0);
+	}
+
+	endSongInit()
+	{
+		for (const channel of this.channels)
+			channel.setMute(false, 8, 0);
 	}
 
 	#initMute(cycle)
