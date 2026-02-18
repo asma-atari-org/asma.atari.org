@@ -1,5 +1,7 @@
 package org.atari.asma.util;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -71,6 +73,10 @@ public final class StringUtility {
 		}
 		s = s.trim();
 		return s;
+	}
+
+	public static String getToday() {
+		return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 	}
 
 }

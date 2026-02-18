@@ -14,6 +14,7 @@ import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MemoryUtility;
 import org.atari.asma.util.MessageQueue;
 import org.atari.asma.util.MessageQueueFactory;
+import org.atari.asma.util.StringUtility;
 
 // Read, check and export all relevant data as "asmadb.js" file.
 // TODO: Read the initial file revision from the SVN SQLLite database file using from https://github.com/xerial/sqlite-jdbc
@@ -58,13 +59,14 @@ public class ASMAExporter {
 	}
 
 	@SuppressWarnings("static-method")
-	private void exportHTML(ASMADatabase asmaDatabase, Database database, File htmlFile, MessageQueue messageQueue) {
+	private void exportHTML(ASMADatabase asmaDatabase, Database database, File htmlFile, String basePath,
+			MessageQueue messageQueue) {
 		Writer writer = null;
 		try {
 			writer = new FileWriter(htmlFile, Charset.forName("UTF8"));
 			var htmlWriter = new HTMLWriter(writer);
 			var htmlExporter = new ASMAHTMLExporter(htmlWriter);
-			htmlExporter.write(asmaDatabase, database, true);
+			htmlExporter.write(asmaDatabase, database, true, basePath);
 			writer.close();
 
 		} catch (IOException ex) {
@@ -157,7 +159,17 @@ public class ASMAExporter {
 		exportJS(asmaDatabase, asmaDatabaseFile, messageQueue);
 
 		var htmlFile = FileUtility.changeFileExtension(asmaDatabaseFile, ".html");
-		exportHTML(asmaDatabase, database, htmlFile, messageQueue);
+		exportHTML(asmaDatabase, database, htmlFile, "", messageQueue);
+
+		var dateString = StringUtility.getToday();
+
+		final var baseName = "history";
+		exportHTML(asmaDatabase, database, htmlFile, "", messageQueue);
+		var htmlHistoryFolder = new File(htmlFile.getParentFile(), baseName);
+
+		var htmlHistoryFile = new File(htmlHistoryFolder,
+				FileUtility.changeFileExtension(asmaDatabaseFile, "-" + dateString + ".html").getName());
+		exportHTML(asmaDatabase, database, htmlHistoryFile, "../", messageQueue);
 
 		messageQueue.printSummary();
 
