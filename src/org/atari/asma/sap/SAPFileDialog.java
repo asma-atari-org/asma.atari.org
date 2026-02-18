@@ -158,18 +158,13 @@ class SAPFileDialog {
 		frame.add(messageTextArea, BorderLayout.SOUTH);
 
 		/*
-		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
-			@Override
-			public boolean dispatchKeyEvent(KeyEvent e) {
-				if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_S) {
-					e.consume();
-					performSave();
-					return true;
-				}
-				return false;
-			}
-		});
-		*/
+		 * KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(
+		 * new KeyEventDispatcher() {
+		 * 
+		 * @Override public boolean dispatchKeyEvent(KeyEvent e) { if (e.isControlDown()
+		 * && e.getKeyCode() == KeyEvent.VK_S) { e.consume(); performSave(); return
+		 * true; } return false; } });
+		 */
 
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -224,18 +219,18 @@ class SAPFileDialog {
 	}
 
 	public void show(File inputFile) {
-
+		ASAPFile newASAPFile = null;
 		this.inputFile = inputFile;
 		this.outputFile = null;
 		header.setLength(0);
 		messageQueue.sendInfo("Reading '" + inputFile.getAbsolutePath() + "'.");
 		final var fileExtension = (FileUtility.getFileExtension(inputFile.getName()).toLowerCase());
 		if (fileExtension.equals(".sap")) {
-			asapFile = asapFileLogic.loadSAPFile(inputFile, messageQueue);
+			newASAPFile = asapFileLogic.loadSAPFile(inputFile, messageQueue);
 			outputFile = inputFile;
 		} else if (ASAPFile.isOriginalModuleFileExtension(fileExtension)) {
-			asapFile = asapFileLogic.loadOriginalModuleFile(inputFile, messageQueue);
-			if (asapFile != null) {
+			newASAPFile = asapFileLogic.loadOriginalModuleFile(inputFile, messageQueue);
+			if (newASAPFile != null) {
 				outputFile = FileUtility.changeFileExtension(inputFile, ".sap");
 				messageQueue.sendInfo("Converted ASAP comptible file '" + inputFile.getName() + "' to '"
 						+ outputFile.getName() + "'.");
@@ -246,7 +241,7 @@ class SAPFileDialog {
 			}
 		} else if (fileExtension.equals(".xex")) {
 			var writer = new StringWriter();
-			asapFile = asapFileLogic.loadXEXFile(inputFile, new PrintWriter(writer), messageQueue);
+			newASAPFile = asapFileLogic.loadXEXFile(inputFile, new PrintWriter(writer), messageQueue);
 			header.append(writer.toString());
 			if (asapFile != null) {
 				outputFile = FileUtility.changeFileExtension(inputFile, ".sap");
@@ -254,9 +249,13 @@ class SAPFileDialog {
 				outputFile = null;
 
 			}
+		} else {
+			messageQueue.sendError("Unsupported file extension or file type.");
 		}
 
-		if (asapFile == null) {
+		if (newASAPFile != null) {
+			this.asapFile = newASAPFile;
+		} else {
 			messageQueue.sendInfo("Error reading '" + inputFile.getAbsolutePath() + "'. See above.");
 		}
 
