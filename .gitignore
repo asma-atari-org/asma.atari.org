@@ -1,4 +1,5 @@
 /bin/
+/src/net/
 public_html/asmadb/asma.zip
 *.~*
 /test/

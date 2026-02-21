@@ -1,7 +1,10 @@
 package org.atari.asma.sap;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -195,7 +198,6 @@ public class ASAPFileLogic {
 			return null;
 		}
 
-
 		var tempSAPFileName = FileUtility.changeFileExtension(new File(fileName), ".sap").getName();
 		var asapWriter = new MemoryASAPWriter();
 		try {
@@ -221,7 +223,7 @@ public class ASAPFileLogic {
 
 	public boolean saveSAPFile(File file, ASAPFile asapFile, MessageQueue messageQueue) {
 
-		var asapWriter = new ASAPWriter();
+		var asapWriter = new MemoryASAPWriter();
 
 		var asapInfo = asapFile.getASAPInfo();
 		try {
@@ -245,6 +247,11 @@ public class ASAPFileLogic {
 
 		try {
 			asapWriter.write(file.getAbsolutePath(), asapInfo, asapFile.content, asapFile.content.length, false);
+			var content = asapWriter.fileMap.get(file.getAbsolutePath());
+			if (content == null) {
+				throw new IOException("Could not write SAP file to memory.");
+			}
+			Files.write(file.toPath(), content, StandardOpenOption.CREATE);
 
 		} catch (ASAPConversionException ex) {
 			messageQueue.sendError("Cannot save SAP file. " + ex.getMessage());
@@ -252,12 +259,15 @@ public class ASAPFileLogic {
 		} catch (ASAPIOException ex) {
 			messageQueue.sendError("Cannot save SAP file. " + ex.getMessage());
 			return false;
+		} catch (IOException ex) {
+			messageQueue.sendError("Cannot save SAP file. " + ex.getMessage());
+			return false;
 		}
 
 		return true;
 	}
 
-	public ASAPFile loadXEXFile(File inputFile, PrintWriter header, MessageQueue messageQueue) {
+	public ASAPFile loadXEXFile(SAPFileProcessor fileProcessor, File inputFile, PrintWriter header, MessageQueue messageQueue) {
 
 		var segmentList = new SegmentList();
 		if (!segmentListLogic.loadSegmentList(segmentList, inputFile, messageQueue)) {
@@ -284,6 +294,13 @@ public class ASAPFileLogic {
 
 		var asapFile = new ASAPFile();
 		asapFile.segmentList.getEntries().addAll(segmentList.getEntries());
+		if (players.isEmpty()) {
+			for (int i = 0; i < segmentList.size(); i++) {
+				var segment = asapFile.segmentList.get(i);
+				messageQueue.sendInfo("Scanning segment " + i + " for modules.");
+				scanSegment(fileProcessor, inputFile, segment, header, messageQueue);
+			}
+		} else
 
 		if (players.size() == 1) {
 			var player = players.get(0);
@@ -294,5 +311,77 @@ public class ASAPFileLogic {
 		}
 
 		return asapFile;
+	}
+
+	private static class RMTEntry {
+		int offset;
+		String type;
+	}
+
+	private static List<RMTEntry> findRMTEntries(Segment segment) {
+		List<RMTEntry> result = new ArrayList<RMTEntry>();
+
+		for (int i = 0; i < segment.getLength() - 4; i++) {
+			char c1 = (char) segment.content[i];
+			char c2 = (char) segment.content[i + 1];
+			char c3 = (char) segment.content[i + 2];
+			char c4 = (char) segment.content[i + 3];
+
+			if (c1 == 'R' && c2 == 'M' && c3 == 'T' && (c4 == '4' || c4 == '8')) {
+				var entry = new RMTEntry();
+				entry.offset = i;
+				entry.type = String.valueOf(c1) + String.valueOf(c2) + String.valueOf(c3) + String.valueOf(c4);
+				result.add(entry);
+			}
+		}
+		return result;
+
+	}
+
+	private static void scanSegment(SAPFileProcessor fileProcessor, File inputFile, Segment segment, PrintWriter header,
+			MessageQueue messageQueue) {
+		List<RMTEntry> rmtOffsets = findRMTEntries(segment);
+
+		for (int i = 0; i < rmtOffsets.size(); i++) {
+			var entry = rmtOffsets.get(i);
+
+			int startAddress = segment.startAddress + entry.offset;
+			int endAddress;
+			if (i < rmtOffsets.size() - 1) {
+				endAddress = segment.startAddress + rmtOffsets.get(i + 1).offset - 1;
+			} else {
+				endAddress = segment.endAddress;
+			}
+			int length = endAddress - startAddress + 1;
+			String startAddressString = ByteUtility.getWordHexString(startAddress);
+			String endAddressString = ByteUtility.getWordHexString(endAddress);
+
+			messageQueue
+					.sendInfo("Found " + entry.type + " at $" + startAddressString + " - $" + endAddressString + ".");
+
+			byte[] rmtContent = new byte[6 + length];
+			rmtContent[0] = (byte) 0xff;
+			rmtContent[1] = (byte) 0xff;
+			rmtContent[2] = (byte) (startAddress & 0xff);
+			rmtContent[3] = (byte) (startAddress >> 8);
+			rmtContent[4] = (byte) (endAddress & 0xff);
+			rmtContent[5] = (byte) (endAddress >> 8);
+			System.arraycopy(segment.content, entry.offset, rmtContent, 6, length);
+			File rmtFile = FileUtility.changeFileExtension(inputFile, "");
+			rmtFile = new File(rmtFile.getAbsolutePath() + "-$" + startAddressString + ".rmt");
+			try {
+				Files.write(rmtFile.toPath(), rmtContent, StandardOpenOption.CREATE);
+				messageQueue.sendInfo("Opening " + rmtFile.getAbsolutePath() + " in separate window.");
+				fileProcessor.processFile(rmtFile);
+			} catch (IOException e) {
+				messageQueue.sendError(e.getMessage());
+			}
+//
+//			var asapFile = loadOriginalModuleFile(rmtFileName, rmtContent, messageQueue);
+//			if (asapFile != null) {
+//				header.println("RMT file " + rmtFileName + " loaded.");
+//			}
+		}
+
 	}
 }

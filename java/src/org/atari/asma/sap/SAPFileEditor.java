@@ -12,7 +12,7 @@ import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MessageQueue;
 import org.atari.asma.util.MessageQueueFactory;
 
-public class SAPFileEditor {
+public class SAPFileEditor implements SAPFileProcessor {
 
 	private MessageQueue messageQueue;
 	private ASAPFileLogic sapFileLogic;
@@ -79,7 +79,7 @@ public class SAPFileEditor {
 
 	}
 
-	private void processFolder(File folder) {
+	public void processFolder(File folder) {
 		messageQueue.sendInfo("Scanning " + folder.getAbsolutePath());
 
 		var fileList = FileUtility.getRecursiveFileList(folder, new FileFilter() {

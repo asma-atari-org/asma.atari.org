@@ -31,7 +31,7 @@ class SAPFileDialog {
 
 	private static String TITLE = "SAP File Editor";
 
-	private SAPFileEditor editor;
+	private SAPFileProcessor fileProcessor;
 	private ASAPFileLogic asapFileLogic;
 	private MessageQueue messageQueue;
 
@@ -69,9 +69,9 @@ class SAPFileDialog {
 
 	};
 
-	public SAPFileDialog(SAPFileEditor editor) {
+	public SAPFileDialog(SAPFileProcessor editor) {
 
-		this.editor = editor;
+		this.fileProcessor = editor;
 		this.asapFileLogic = new ASAPFileLogic();
 		this.messageQueue = new MessageQueue();
 
@@ -199,7 +199,7 @@ class SAPFileDialog {
 
 		title.append(asapFile.getTitle()).append(" by ").append(asapFile.getAuthor());
 
-		saveButton.setEnabled(outputFile != null);
+		saveButton.setEnabled(outputFile != null && asapFile.getASAPInfo()!=null);
 		frame.setTitle(title.toString());
 		inputFilePanel.setFile(inputFile);
 		outputFilePanel.setFile(outputFile);
@@ -241,7 +241,7 @@ class SAPFileDialog {
 			}
 		} else if (fileExtension.equals(".xex")) {
 			var writer = new StringWriter();
-			newASAPFile = asapFileLogic.loadXEXFile(inputFile, new PrintWriter(writer), messageQueue);
+			newASAPFile = asapFileLogic.loadXEXFile(fileProcessor, inputFile, new PrintWriter(writer), messageQueue);
 			header.append(writer.toString());
 			if (asapFile != null) {
 				outputFile = FileUtility.changeFileExtension(inputFile, ".sap");
@@ -287,7 +287,7 @@ class SAPFileDialog {
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		fileChooser.setMultiSelectionEnabled(false);
 		if (fileChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
-			editor.processFile(fileChooser.getSelectedFile());
+			fileProcessor.processFile(fileChooser.getSelectedFile());
 		}
 
 		dataToUI();
@@ -297,6 +297,7 @@ class SAPFileDialog {
 		dataFromUI();
 		if (asapFileLogic.saveSAPFile(outputFile, asapFile, messageQueue)) {
 			messageQueue.sendInfo("SAP file '" + outputFile.getAbsolutePath() + "' saved.");
+			outputFilePanel.setFile(outputFile);
 		}
 
 		dataToUI();
