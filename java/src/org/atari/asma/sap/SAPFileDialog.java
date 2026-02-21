@@ -232,7 +232,7 @@ class SAPFileDialog {
 			newASAPFile = asapFileLogic.loadOriginalModuleFile(inputFile, messageQueue);
 			if (newASAPFile != null) {
 				outputFile = FileUtility.changeFileExtension(inputFile, ".sap");
-				messageQueue.sendInfo("Converted ASAP comptible file '" + inputFile.getName() + "' to '"
+				messageQueue.sendInfo("Converted ASAP compatible file '" + inputFile.getName() + "' to '"
 						+ outputFile.getName() + "'.");
 
 				if (outputFile.exists()) {
