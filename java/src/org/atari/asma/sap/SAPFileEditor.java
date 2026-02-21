@@ -7,6 +7,8 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JFileChooser;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileSystemView;
 
 import org.atari.asma.ASMAExporter.FileExtension;
@@ -33,6 +35,18 @@ public class SAPFileEditor implements SAPFileProcessor {
 	};
 
 	private void run(String[] args) {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (UnsupportedLookAndFeelException e) {
+			// handle exception
+		} catch (ClassNotFoundException e) {
+			// handle exception
+		} catch (InstantiationException e) {
+			// handle exception
+		} catch (IllegalAccessException e) {
+			// handle exception
+		}
+
 		var files = new File[args.length];
 		for (int i = 0; i < args.length; i++) {
 			files[i] = new File(args[i]);
