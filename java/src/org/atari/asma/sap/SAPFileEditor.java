@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileSystemView;
+
 import org.atari.asma.ASMAExporter.FileExtension;
 import org.atari.asma.util.BufferedMessageQueue;
 import org.atari.asma.util.FileUtility;
@@ -35,6 +38,17 @@ public class SAPFileEditor implements SAPFileProcessor {
 			files[i] = new File(args[i]);
 		}
 
+		if (files.length == 0) {
+			JFileChooser chooser = new JFileChooser();
+			chooser.setDialogTitle("SAPFileEditor - Select files");
+			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			chooser.setMultiSelectionEnabled(true);
+			int returnVal = chooser.showOpenDialog(null);
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				files = chooser.getSelectedFiles();
+			}
+
+		}
 		runFilesOrFolders(files);
 
 	};
