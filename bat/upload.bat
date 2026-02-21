@@ -6,12 +6,12 @@ set SITE_FOLDER=%SITES_FOLDER%\%SITE%
 cd %SITE_FOLDER%\
 
 if "%ASMA_USER%" == "" (
- echo ERROR: The evironment variable ASMA_USER for FTP access to %SITE% is not set to the user name.
+ echo ERROR: The environment variable ASMA_USER for FTP access to %SITE% is not set to the user name.
  pause
  goto :eof
 )
 if "%ASMA_PASSWORD_URL_ENCODED%" == "" (
- echo ERROR: The evironment variable ASMA_PASSWORD_URL_ENCODED for FTP access to %SITE% is not set to the URL encoded password.
+ echo ERROR: The environment variable ASMA_PASSWORD_URL_ENCODED for FTP access to %SITE% is not set to the URL encoded password.
  pause
  goto :eof
 )
