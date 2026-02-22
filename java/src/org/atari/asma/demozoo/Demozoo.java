@@ -64,13 +64,13 @@ public class Demozoo {
 					productionList.add(production);
 					return true;
 				} else {
-					messageQueue.sendError("Fetch error for '" + productionsPageResult.url + "': " + response.status
+					messageQueue.sendError("DMO-100", "Fetch error for '" + productionsPageResult.url + "': " + response.status
 							+ " - " + response.content);
 					return false;
 				}
 
 			} catch (IOException ex) {
-				messageQueue.sendError("Fetch error for '" + productionsPageResult.url + "': " + ex.getMessage());
+				messageQueue.sendError("DMO-101", "Fetch error for '" + productionsPageResult.url + "': " + ex.getMessage());
 				return false;
 			}
 
@@ -92,7 +92,7 @@ public class Demozoo {
 				}
 				return productionsPage;
 			} catch (IOException ex) {
-				messageQueue.sendError(ex.getMessage());
+				messageQueue.sendError("DMO-102", ex.getMessage());
 				return null;
 			}
 		}
@@ -149,7 +149,7 @@ public class Demozoo {
 					+ MemoryUtility.getRoundedMemorySize(outputFile.length()) + ".");
 
 		} catch (IOException ex) {
-			messageQueue.sendError(ex.getMessage());
+			messageQueue.sendError("DMO-103", ex.getMessage());
 		}
 	}
 

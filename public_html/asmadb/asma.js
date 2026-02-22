@@ -650,7 +650,7 @@ class ASMA {
 
 			UI.getElementById("filePath").innerHTML = "<a href=\"" + sapURL + "\">" + filePath + "</a>";
 			UI.getElementById("fileSize").innerHTML = fileInfo.getFileSizeText();
-			UI.getElementById("demozooID").innerHTML = this.demozoo.getMusicHTMLForDemozooID(fileInfo.getDemozooID());
+			UI.getElementById("demozooID").innerHTML = this.demozoo.getMusicHTMLForDemozooID(fileInfo.getDemozooID(), title);
 
 			let saveExtensionsString = "";
 			for (let i = 0; i < fileInfo.saveExtensions.length; i++) {
@@ -1089,11 +1089,11 @@ class ASMA {
 		authorHandles.innerHTML = UI.encodeHTML(composerProxy.getHandles());
 		authorCountry.innerHTML = Util.getCountryFlagHTML(composerProxy.getCountry());
 
-		let demozoolHTML = composerProxy.getDemozooHTML();
-		if (demozoolHTML != "") {
-			authorDemozooID.innerHTML = demozoolHTML;
+		let demozooHTML = composerProxy.getDemozooHTML();
+		if (demozooHTML != "") {
+			authorDemozooID.innerHTML = demozooHTML;
 		} else {
-			authorDemozooID.innerHTML = "None";
+			authorDemozooID.innerHTML = "<a href=\"https://demozoo.org/search/?q="+composerProxy.getFullNameUnicode()+"&category=scener\" target=\"blank\">Find Scener</a>, <a href=\"https://demozoo.org/sceners/new/\" target=\"blank\">Create Scener</a>";
 		}
 
 		authorFileCount.innerHTML = "<a href=\"javascript:asmaInstance.displayAuthorSongs(" + composerProxy.getComposerIndex() + ")\">" + UI.encodeHTML(composerProxy.getFileCount().toString()) + "</a>";

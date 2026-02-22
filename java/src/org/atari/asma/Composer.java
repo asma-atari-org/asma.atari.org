@@ -60,6 +60,9 @@ public class Composer {
 	}
 
 	private String getAuthor(String handle) {
+		if (handle.equals("Mr. Holub")) {
+			handle="Mr. Holub";
+		}
 		StringBuilder result = new StringBuilder();
 		if (!firstName.isEmpty()) {
 			result.append(firstName);
@@ -67,9 +70,10 @@ public class Composer {
 		}
 		result.append(lastName);
 		if (!handle.isEmpty()) {
-			result.append(" (");
-			result.append(handle);
-			result.append(")");
+			if (!result.isEmpty()) {
+				result.append(" ");
+			}
+			result.append("(").append(handle).append(")");
 
 		}
 		return result.toString();

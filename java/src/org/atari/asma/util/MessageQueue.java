@@ -65,6 +65,15 @@ public class MessageQueue {
 		}
 	}
 
+	public boolean containsMessage(String id) {
+		for (var entry : entries) {
+			if (entry.id.equals(id)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public void clear() {
 		entries.clear();
 		infoCount = 0;
@@ -100,7 +109,7 @@ public class MessageQueue {
 
 		case INFO: {
 			if (out != null) {
-				out.println("INFO:    " + message);
+				out.println("INFO:    " + id + " - " + message);
 				out.flush();
 			}
 			infoCount++;
@@ -108,7 +117,7 @@ public class MessageQueue {
 		}
 		case WARNING: {
 			if (err != null) {
-				err.println("WARNING: " + message);
+				err.println("WARNING: " + id + " - " + message);
 				err.flush();
 			}
 			warningCount++;
@@ -117,7 +126,7 @@ public class MessageQueue {
 		case ERROR: {
 
 			if (err != null) {
-				err.println("ERROR:   " + message);
+				err.println("ERROR:   " + id + " - " + message);
 				err.flush();
 			}
 			errorCount++;
@@ -125,19 +134,26 @@ public class MessageQueue {
 		}
 		}
 	}
-
-	public void sendInfo(String message) {
+	
+	public void sendInfo( String message) {
 		sendMessage(MessagType.INFO, "", message);
 
 	}
 
-	public void sendWarning(String message) {
-		sendMessage(MessagType.WARNING, "", message);
+	public void sendInfo(String id, String message) {
+		sendMessage(MessagType.INFO, id, message);
 
 	}
 
-	public void sendError(String message) {
-		sendMessage(MessagType.ERROR, "", message);
+	
+	public void sendWarning(String id, String message) {
+		sendMessage(MessagType.WARNING, id, message);
 
 	}
+
+	public void sendError(String id, String message) {
+		sendMessage(MessagType.ERROR, id, message);
+
+	}
+	
 }

@@ -104,7 +104,7 @@ public class ASMAExporter {
 		try {
 			stil.load(stilFile);
 		} catch (IOException ex) {
-			messageQueue.sendError("Cannot read STIL file: " + ex.getMessage());
+			messageQueue.sendError("EXP-001","Cannot read STIL file: " + ex.getMessage());
 			return;
 		}
 		messageQueue.sendInfo(stil.getSize() + " STIL entries loaded.");

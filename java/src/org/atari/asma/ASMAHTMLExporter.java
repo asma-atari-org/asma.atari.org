@@ -1,14 +1,18 @@
 package org.atari.asma;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.atari.asma.demozoo.model.Database;
+import org.atari.asma.demozoo.model.Production;
 import org.atari.asma.util.MessageQueue;
+import org.atari.asma.util.MessageQueue.Entry;
 import org.atari.asma.util.StringUtility;
 
 public class ASMAHTMLExporter {
@@ -25,6 +29,10 @@ public class ASMAHTMLExporter {
 		return htmlString;
 	}
 
+	private static String getDemozooIDEditDownloadLink(int demozooID) {
+		return "https://demozoo.org/productions/" + demozooID + "/edit_download_links/";
+	}
+
 	private static String getASMAPlayerHTML(String urlFilePath) {
 		urlFilePath = urlFilePath.replace('#', '/');
 		final var link = "https://asma.atari.org/asmadb/#/" + urlFilePath;
@@ -32,25 +40,88 @@ public class ASMAHTMLExporter {
 		return htmlString;
 	}
 
-	private void writeMessageQueueCell(MessageQueue messageQueue) {
-		var htmlBuilder = new StringBuilder();
-		var entries = messageQueue.getEntries();
-		for (var entry : entries) {
-			var color = "";
-			switch (entry.getType()) {
-			case ERROR:
-				color = "color:red;";
-				break;
-			case WARNING:
-				color = "color:#FF8C00;";
+	private static final class Link {
+		public final String href;
+		public final String html;
 
-				break;
-			case INFO:
-				break;
+		public Link(String html, String href) {
+			this.html = html;
+			this.href = href;
+
+		}
+
+		public String toHTML() {
+			return "<a href=\"" + href + "\" target=\"_blank\">" + html + "</a>";
+		}
+	}
+
+	private static void formatMessageQueueEntry(StringBuilder htmlBuilder, Entry entry, List<Link> linkList) {
+		var color = "";
+		switch (entry.getType()) {
+		case ERROR:
+			color = "color:red;";
+			break;
+		case WARNING:
+			color = "color:#FF8C00;";
+
+			break;
+		case INFO:
+			break;
+		}
+		htmlBuilder.append("<div style=\"" + color + "\">");
+
+		htmlBuilder.append(entry.getType().toString()).append(" : ");
+		if (!entry.getID().isEmpty()) {
+			htmlBuilder.append(entry.getID()).append(" - ");
+		}
+		htmlBuilder.append(entry.getMessage());
+
+		for (var link : linkList) {
+			htmlBuilder.append(" ").append(link.toHTML());
+		}
+		htmlBuilder.append("</div>");
+	}
+
+	private void writeMessageQueueCell(FileInfo fileInfo) {
+		var htmlBuilder = new StringBuilder();
+		var entries = fileInfo.getMessageQueue().getEntries();
+		for (var entry : entries) {
+
+			List<Link> linkList = new ArrayList<Link>();
+			// ERROR : SAP-107 - File Composers/Mega9man/Heat_Squared.sap has no Demozoo ID.
+			if (fileInfo.getMessageQueue().containsMessage("SAP-107")) {
+				try {
+					linkList.add(new Link("Find Music", "https://demozoo.org/search/?q="
+							+ URLEncoder.encode(fileInfo.title.trim(), "UTF-8") + "+type%3Amusic+platform%3A%22Atari+8+Bit%22"));
+				} catch (UnsupportedEncodingException ex) {
+					throw new RuntimeException(ex);
+				}
+				linkList.add(
+						new Link("Create Music", "https://demozoo.org/music/new/?releaser_id=" + fileInfo.author));
+
 			}
-			htmlBuilder.append("<div style=\"" + color + "\">");
-			htmlBuilder.append(entry.getType().toString()).append(" : ").append(entry.getMessage());
-			htmlBuilder.append("</div>");
+
+			formatMessageQueueEntry(htmlBuilder, entry, linkList);
+
+		}
+		html.writeHTMLCell(htmlBuilder.toString());
+	}
+
+	private void writeMessageQueueCell(Production production) {
+		var htmlBuilder = new StringBuilder();
+		var entries = production.getMessageQueue().getEntries();
+		for (var entry : entries) {
+
+			List<Link> linkList = new ArrayList<Link>();
+			// ERROR : DMO-006 - Music download URL contains non-existing file path
+			// "Composers/Krix_Mario/Acidjazzed_Evening.sap". Check if ASMA path has
+			// changed.
+			if (production.getMessageQueue().containsMessage("DMO-006")) {
+				linkList.add(new Link("Edit Download Links", getDemozooIDEditDownloadLink(production.id)));
+
+			}
+
+			formatMessageQueueEntry(htmlBuilder, entry, linkList);
 
 		}
 		html.writeHTMLCell(htmlBuilder.toString());
@@ -132,6 +203,7 @@ public class ASMAHTMLExporter {
 		html.writeHeaderTextCell("Demozoo Author");
 		html.writeHeaderTextCell("Messages");
 		html.endRow();
+		html.write("\n");
 
 		var line = 1;
 		for (var fileInfo : asmaDatabase.fileInfoList.getEntries()) {
@@ -161,7 +233,7 @@ public class ASMAHTMLExporter {
 					demozooAuthorBuilder.append("<div>"); // TODO
 
 				} else {
-					demozooIDBuilder.append("<div style=\"color:red;\">Missing</span>");
+					demozooIDBuilder.append("<div style=\"color:orange;\">Missing</span>");
 					demozootTitleBuilder.append("<div>");
 					demozooAuthorBuilder.append("<div>");
 
@@ -173,8 +245,9 @@ public class ASMAHTMLExporter {
 			html.writeHTMLCell(demozooIDBuilder.toString());
 			html.writeHTMLCell(demozootTitleBuilder.toString());
 			html.writeHTMLCell(demozooAuthorBuilder.toString());
-			writeMessageQueueCell(fileInfo.getMessageQueue());
+			writeMessageQueueCell(fileInfo);
 			html.endRow();
+			html.write("\n");
 			line++;
 		}
 		html.endTable();
@@ -212,7 +285,11 @@ public class ASMAHTMLExporter {
 			}
 			html.beginRow();
 			html.writeLongCell(line);
-			html.writeHTMLCell(getDemozooIDHTML(production.id));
+
+			// Music download URL contains non-existing file path ?
+			String idHTML;
+			idHTML = getDemozooIDHTML(production.id);
+			html.writeHTMLCell(idHTML);
 			html.writeTextCell(production.title);
 			var authorHTMLBuilder = new StringBuilder();
 			for (var authorNick : production.author_nicks) {
@@ -254,7 +331,7 @@ public class ASMAHTMLExporter {
 			}
 			html.writeHTMLCell(urlFilePathsHTMLBuilder.toString());
 
-			writeMessageQueueCell(production.getMessageQueue());
+			writeMessageQueueCell(production);
 			html.endRow();
 			line++;
 		}

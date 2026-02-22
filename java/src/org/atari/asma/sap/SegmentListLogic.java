@@ -13,7 +13,7 @@ public class SegmentListLogic {
 
 		segmentList.clear();
 		if (content.length < 7) {
-			messageQueue.sendError("Content has less than 7 bytes.");
+			messageQueue.sendError("SEG-001", "Content has less than 7 bytes.");
 			return false;
 		}
 		while (index + 4 < content.length) {
@@ -31,7 +31,7 @@ public class SegmentListLogic {
 			index += 2;
 			segment.endAddress = w;
 			if (segment.startAddress > segment.endAddress) {
-				messageQueue.sendError("Invalid segment " + segmentCount + " at index "
+				messageQueue.sendError("SEG-002", "Invalid segment " + segmentCount + " at index "
 						+ ByteUtility.getIndexString(segmentStartIndex) + " has start address "
 						+ ByteUtility.getWordHexString(segment.startAddress) + " greater than end address "
 						+ ByteUtility.getWordHexString(segment.endAddress) + ".");
@@ -46,7 +46,7 @@ public class SegmentListLogic {
 			segmentCount++;
 		}
 		if (index != content.length) {
-			messageQueue.sendError("Invalid additional data after last segment " + segmentCount + " at index "
+			messageQueue.sendError("SEG-003", "Invalid additional data after last segment " + segmentCount + " at index "
 					+ ByteUtility.getIndexString(index) + ".");
 			return false;
 		}

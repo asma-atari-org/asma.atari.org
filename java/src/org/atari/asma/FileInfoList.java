@@ -184,8 +184,8 @@ public class FileInfoList {
 			final var messageQueue = fileInfo.getMessageQueue();
 			if (filePath.toLowerCase().endsWith(FileExtension.SAP)) {
 				if (!filePath.endsWith(FileExtension.SAP)) {
-					messageQueue.sendError("SAP-101: File " + fileInfo.filePath
-							+ " does not have a lowercase \".sap\" file extension");
+					messageQueue.sendError("SAP-101",
+							"File " + fileInfo.filePath + " does not have a lowercase \".sap\" file extension");
 				}
 				var fileName = filePath;
 				var index = filePath.lastIndexOf('/');
@@ -195,13 +195,16 @@ public class FileInfoList {
 				fileName = fileName.substring(0, fileName.length() - FileExtension.SAP.length());
 				var length = fileName.length();
 				if (length > MAX_FILE_NAME_LENGTH) {
-					messageQueue.sendError("SAP-102: File " + fileInfo.filePath + " has a file name with more than "
-							+ MAX_FILE_NAME_LENGTH + " characters. Use a shorter name.");
+					messageQueue.sendError("SAP-102",
+							"File " + fileInfo.filePath + " has a file name with " + length + " characters. This is "
+									+ (length - MAX_FILE_NAME_LENGTH)
+									+ " characters more than the recommended maximum of " + MAX_FILE_NAME_LENGTH
+									+ " characters. Use a shorter name.");
 				}
 				for (int i = 0; i < fileName.length(); i++) {
 					var c = fileName.charAt(i);
 					if (FILE_NAME_CHARACTERS.indexOf(c) < 0) {
-						messageQueue.sendError("SAP-103: File " + fileInfo.filePath
+						messageQueue.sendError("SAP-103", "File " + fileInfo.filePath
 								+ " has a file name with the invalid character \"" + c + "\" at index " + i + ".");
 
 					}
@@ -214,29 +217,39 @@ public class FileInfoList {
 				var folderName = filePath.substring(startIndex, index);
 				var composer = composerList.getByFolderName(folderName);
 				if (composer != null) {
-					List<String> authors = composer.getAuthors();
-					String[] fileAuthors = fileInfo.author.split(" & ");
-					for (String fileAuthor : fileAuthors) {
-						final String questionMark = " <?>";
-						boolean unsafe = false;
-						if (fileAuthor.endsWith(questionMark)) {
-							unsafe = true;
-							fileAuthor = fileAuthor.substring(0, fileAuthor.length() - questionMark.length());
-						}
-						if (!authors.contains(fileAuthor)) {
-							messageQueue.sendError("SAP-103: File " + fileInfo.filePath + " author " + fileAuthor
-									+ " in " + fileInfo.author + " is differnt from all composer authors "
-									+ authors.toString());
 
-						} else {
-							if (unsafe) {
-								messageQueue.sendInfo("SAP-104: File " + fileInfo.filePath + " author " + fileAuthor
-										+ " in " + fileInfo.author + " is unsafe");
+					// Only for ATAR800/SAP files, the following works.
+					if (fileInfo.hardware.equals(FileInfo.ATARI800)) {
+						List<String> authors = composer.getAuthors();
+						String[] fileAuthors = fileInfo.author.split(" & ");
+						for (String fileAuthor : fileAuthors) {
+							final String questionMark = " <?>";
+							boolean unsafe = false;
+							String trimmedFileAuthor;
+							if (fileAuthor.endsWith(questionMark)) {
+								unsafe = true;
+								trimmedFileAuthor = fileAuthor.substring(0,
+										fileAuthor.length() - questionMark.length());
+								trimmedFileAuthor = fileAuthor.trim();
+							} else {
+								trimmedFileAuthor = fileAuthor;
+							}
+							if (!authors.contains(trimmedFileAuthor)) {
+								messageQueue.sendWarning("SAP-104",
+										"File " + fileInfo.filePath + " author \"" + trimmedFileAuthor + "\" in \""
+												+ fileInfo.author + "\" is different from all composer authors \""
+												+ authors.toString() + "\"");
+
+							} else {
+								if (unsafe) {
+									messageQueue.sendInfo("SAP-105", "File " + fileInfo.filePath + " author \""
+											+ fileAuthor + "\" in \"" + fileInfo.author + "\" is unsafe.");
+								}
 							}
 						}
 					}
 				} else {
-					messageQueue.sendError("SAP-105: File " + fileInfo.filePath + " has unknown composer path");
+					messageQueue.sendError("SAP-106", "File " + fileInfo.filePath + " has an unknown composer path.");
 				}
 			}
 
@@ -248,10 +261,13 @@ public class FileInfoList {
 					fileInfo.setDemozooID(production.id);
 				} else {
 					if (fileInfo.songs == 1) {
-						messageQueue.sendError("SAP-106: File " + fileInfo.filePath + " has no Demozoo ID.");
+
+						if (fileInfo.hardware.equals(FileInfo.ATARI800)) {
+							messageQueue.sendError("SAP-107", "File " + fileInfo.filePath + " has no Demozoo ID.");
+						}
 					} else {
-						messageQueue.sendError("SAP-107: Song number " + songNumber + " in File " + fileInfo.filePath
-								+ " has no Demozoo ID.");
+						messageQueue.sendWarning("SAP-108",
+								"Song number " + songNumber + " in File " + fileInfo.filePath + " has no Demozoo ID.");
 					}
 				}
 			}

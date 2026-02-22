@@ -76,11 +76,11 @@ class Demozoo {
 		return this.productionsByURLFilePathMap.get(urlFilePath);;
 	}
 
-	getMusicHTMLForDemozooID(demozooID) {
+	getMusicHTMLForDemozooID(demozooID, title) {
 		if (demozooID) {
 			return "<a href=\"https://demozoo.org/music/" + demozooID + "\" target=\"blank\">" + demozooID + "</a>";
 		}
-		return "None";
+		return "<a href=\"https://demozoo.org/search/?q="+encodeURI(title)+"&category=music&platform%3A\"Atari+8+Bit\"\" target=\"blank\">Find Music</a>, <a href=\"https://demozoo.org/music/new/\" target=\"blank\">Create Music</a>";;
 	}
 
 	getASMAMusicHTML(fileInfo) {

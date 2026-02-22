@@ -33,11 +33,11 @@ public class DemozooImporter {
 		messageQueue.sendInfo("Fetching Demozoo database to '" + databaseFile.getPath() + "'.");
 
 		if (!databaseFile.exists()) {
-			messageQueue.sendError("Output file '" + databaseFile.getPath() + "' does not exist.");
+			messageQueue.sendError("DMO-104", "Output file '" + databaseFile.getPath() + "' does not exist.");
 			return 1;
 		}
 		if (!databaseFile.canWrite()) {
-			messageQueue.sendError("Output file '" + databaseFile.getPath() + "' is not writeable.");
+			messageQueue.sendError("DMO-105", "Output file '" + databaseFile.getPath() + "' is not writeable.");
 			return 1;
 		}
 		demozoo.importDatabase(databaseFile, messageQueue);

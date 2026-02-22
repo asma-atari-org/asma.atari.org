@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.filechooser.FileSystemView;
 
 import org.atari.asma.ASMAExporter.FileExtension;
 import org.atari.asma.util.BufferedMessageQueue;
@@ -78,7 +77,7 @@ public class SAPFileEditor implements SAPFileProcessor {
 				}
 
 			} catch (Exception ex) {
-				messageQueue.sendError(ex.getMessage());
+				messageQueue.sendError("EDI-001", ex.getMessage());
 				ex.printStackTrace();
 			}
 		}

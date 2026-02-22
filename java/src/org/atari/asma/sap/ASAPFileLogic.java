@@ -60,7 +60,7 @@ public class ASAPFileLogic {
 
 		if (content.length == 0) {
 
-			messageQueue.sendError("File '" + fileName + "' is empty");
+			messageQueue.sendError("SAP-001", "File '" + fileName + "' is empty");
 			return null;
 		}
 
@@ -80,18 +80,18 @@ public class ASAPFileLogic {
 						index++;
 
 					} else {
-						messageQueue.sendError("Invalid character " + ByteUtility.getCharForByte(b)
+						messageQueue.sendError("SAP-002", "Invalid character " + ByteUtility.getCharForByte(b)
 								+ " after carriage return at index. Line feed expected.");
 						return null;
 					}
 				} else {
-					messageQueue.sendError("Missing line feed after carriage return at index "
+					messageQueue.sendError("SAP-003", "Missing line feed after carriage return at index "
 							+ ByteUtility.getIndexString(index) + ".");
 				}
 			} else {
 				char c = (char) (b & 0xff);
 				if (ASAPFile.ATASCII_CHARACTERS.indexOf(c) == -1) {
-					messageQueue.sendError("Invalid non-ATASCII character " + ByteUtility.getCharForByte(b)
+					messageQueue.sendError("SAP-004", "Invalid non-ATASCII character " + ByteUtility.getCharForByte(b)
 							+ " at index " + ByteUtility.getIndexString(index) + ".");
 					return null;
 				}
@@ -100,12 +100,12 @@ public class ASAPFileLogic {
 			index++;
 		}
 		if (!endOfHeader) {
-			messageQueue.sendError("Invalid file structure.");
+			messageQueue.sendError("SAP-005", "Invalid file structure.");
 			return null;
 		}
 		var header = headerBuilder.toString();
 		if (!header.startsWith("SAP\n")) {
-			messageQueue.sendError("Header does not start with 'SAP' line.");
+			messageQueue.sendError("SAP-006", "Header does not start with 'SAP' line.");
 			return null;
 		}
 		var lines = header.split("\n");
@@ -125,7 +125,7 @@ public class ASAPFileLogic {
 			var foundTag = line;
 			foundTagSet.add(foundTag);
 			if (!tags.contains(foundTag)) {
-				messageQueue.sendError("Undefined tag '" + foundTag + "' found.");
+				messageQueue.sendError("SAP-007", "Undefined tag '" + foundTag + "' found.");
 				return null;
 			}
 			boolean ok = false;
@@ -138,7 +138,7 @@ public class ASAPFileLogic {
 				tagIndex++;
 			}
 			if (!ok) {
-				messageQueue.sendWarning("Found tag " + foundTag + " does not fit to the recommended tag sequece '"
+				messageQueue.sendWarning("SAP-008", "Found tag " + foundTag + " does not fit to the recommended tag sequece '"
 						+ tags.toString() + "'.");
 				return null;
 
@@ -148,21 +148,21 @@ public class ASAPFileLogic {
 		}
 
 		if (!foundTagSet.contains(SAPTags.AUTHOR)) {
-			messageQueue.sendWarning("Stronly recommended tag '" + SAPTags.AUTHOR + "' missing");
+			messageQueue.sendWarning("SAP-009", "Stronly recommended tag '" + SAPTags.AUTHOR + "' missing");
 			return null;
 		}
 		if (!foundTagSet.contains(SAPTags.NAME)) {
-			messageQueue.sendWarning("Stronly recommended tag '" + SAPTags.NAME + "' missing");
+			messageQueue.sendWarning("SAP-010", "Stronly recommended tag '" + SAPTags.NAME + "' missing");
 			return null;
 		}
 		if (!foundTagSet.contains(SAPTags.DATE)) {
-			messageQueue.sendWarning("Stronly recommended tag '" + SAPTags.DATE + "' missing");
+			messageQueue.sendWarning("SAP-011", "Stronly recommended tag '" + SAPTags.DATE + "' missing");
 			return null;
 		}
 
 		// There must be at least one segment header followed by at least one byte.
 		if (index + 6 >= content.length) {
-			messageQueue.sendError("Invalid binary segment at index " + ByteUtility.getIndexString(index) + ".");
+			messageQueue.sendError("SAP-012", "Invalid binary segment at index " + ByteUtility.getIndexString(index) + ".");
 			return null;
 		}
 
@@ -175,7 +175,7 @@ public class ASAPFileLogic {
 		try {
 			asap.load(fileName, content, content.length);
 		} catch (ASAPFormatException ex) {
-			messageQueue.sendError("Invalid SAP file. " + ex.getMessage());
+			messageQueue.sendError("SAP-006", "Invalid SAP file. " + ex.getMessage());
 			return null;
 		}
 		sapFile.setASAPInfo(asap.getInfo());
@@ -194,7 +194,7 @@ public class ASAPFileLogic {
 		try {
 			asap.load(fileName, content, content.length);
 		} catch (ASAPFormatException ex) {
-			messageQueue.sendError("Invalid ASAP file. " + ex.getMessage());
+			messageQueue.sendError("SAP-013", "Invalid ASAP file. " + ex.getMessage());
 			return null;
 		}
 
@@ -205,15 +205,15 @@ public class ASAPFileLogic {
 			asapWriter.write(tempSAPFileName, asapInfo, content, content.length, false);
 
 		} catch (ASAPConversionException ex) {
-			messageQueue.sendError("Cannot save SAP file. " + ex.getMessage());
+			messageQueue.sendError("SAP-014", "Cannot save SAP file. " + ex.getMessage());
 			return null;
 		} catch (ASAPIOException ex) {
-			messageQueue.sendError("Cannot save SAP file. " + ex.getMessage());
+			messageQueue.sendError("SAP-015","Cannot save SAP file. " + ex.getMessage());
 			return null;
 		}
 
 		if (asapWriter.fileMap.size() != 1) {
-			messageQueue.sendError("File could not be converted to SAP format.");
+			messageQueue.sendError("SAP-016", "File could not be converted to SAP format.");
 			return null;
 		}
 
@@ -229,17 +229,17 @@ public class ASAPFileLogic {
 		try {
 			asapInfo.setAuthor(asapFile.getAuthor());
 		} catch (ASAPArgumentException ex) {
-			messageQueue.sendError("Cannot set author. " + ex.getMessage());
+			messageQueue.sendError("SAP-017", "Cannot set author. " + ex.getMessage());
 		}
 		try {
 			asapInfo.setTitle(asapFile.getTitle());
 		} catch (ASAPArgumentException ex) {
-			messageQueue.sendError("Cannot set title. " + ex.getMessage());
+			messageQueue.sendError("SAP-018","Cannot set title. " + ex.getMessage());
 		}
 		try {
 			asapInfo.setDate(asapFile.getDate());
 		} catch (ASAPArgumentException ex) {
-			messageQueue.sendError("Cannot set date. " + ex.getMessage());
+			messageQueue.sendError("SAP-019","Cannot set date. " + ex.getMessage());
 		}
 		if (messageQueue.getErrorCount() > 0) {
 			return false;
@@ -254,13 +254,13 @@ public class ASAPFileLogic {
 			Files.write(file.toPath(), content, StandardOpenOption.CREATE);
 
 		} catch (ASAPConversionException ex) {
-			messageQueue.sendError("Cannot save SAP file. " + ex.getMessage());
+			messageQueue.sendError("SAP-020","Cannot save SAP file. " + ex.getMessage());
 			return false;
 		} catch (ASAPIOException ex) {
-			messageQueue.sendError("Cannot save SAP file. " + ex.getMessage());
+			messageQueue.sendError("SAP-020","Cannot save SAP file. " + ex.getMessage());
 			return false;
 		} catch (IOException ex) {
-			messageQueue.sendError("Cannot save SAP file. " + ex.getMessage());
+			messageQueue.sendError("SAP-020","Cannot save SAP file. " + ex.getMessage());
 			return false;
 		}
 
@@ -374,7 +374,7 @@ public class ASAPFileLogic {
 				messageQueue.sendInfo("Opening " + rmtFile.getAbsolutePath() + " in separate window.");
 				fileProcessor.processFile(rmtFile);
 			} catch (IOException e) {
-				messageQueue.sendError(e.getMessage());
+				messageQueue.sendError("SAP-021",e.getMessage());
 			}
 //
 //			var asapFile = loadOriginalModuleFile(rmtFileName, rmtContent, messageQueue);

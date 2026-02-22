@@ -25,7 +25,7 @@ public class BufferedMessageQueue extends MessageQueue {
 				}
 				var err = errStream.toString(StandardCharsets.UTF_8);
 				if (!err.isEmpty()) {
-					parentMessageQueue.sendError(err);
+					parentMessageQueue.sendError("GEN-001", err);
 				}
 		}
 	}

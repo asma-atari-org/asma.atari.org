@@ -236,7 +236,7 @@ class SAPFileDialog {
 						+ outputFile.getName() + "'.");
 
 				if (outputFile.exists()) {
-					messageQueue.sendWarning("Be careful when saving, the target file already exists.");
+					messageQueue.sendWarning("DIA-001", "Be careful when saving, the target file already exists.");
 				}
 			}
 		} else if (fileExtension.equals(".xex")) {
@@ -250,7 +250,7 @@ class SAPFileDialog {
 
 			}
 		} else {
-			messageQueue.sendError("Unsupported file extension or file type.");
+			messageQueue.sendError("DIA-002", "Unsupported file extension or file type.");
 		}
 
 		if (newASAPFile != null) {

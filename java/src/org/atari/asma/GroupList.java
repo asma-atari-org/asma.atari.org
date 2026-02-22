@@ -56,7 +56,7 @@ public class GroupList {
 							"Group " + previousGroup.toString() + " already registered for folder name "
 									+ previousGroup.folderName + " of group " + group.toString());
 			} else {
-				messageQueue.sendError("GRP-001: Group " + group.toString() + " has no folder path");
+				messageQueue.sendError("GRP-001", "Group " + group.toString() + " has no folder path");
 			}
 
 			if (!group.demozooID.isEmpty()) {
@@ -67,7 +67,7 @@ public class GroupList {
 									+ previousGroup.demozooID + " of group " + group.toString());
 			} else {
 				if (!group.handle.isEmpty()) {
-					messageQueue.sendError("GRP-002: Group " + group.toString() + " has no Demozoo ID");
+					messageQueue.sendError("GRP-002", "Group " + group.toString() + " has no Demozoo ID");
 				}
 			}
 		}
@@ -101,13 +101,13 @@ public class GroupList {
 			if (!group.folderName.isEmpty()) {
 				File groupFolder = new File(groupsFolder, group.folderName);
 				if (!groupFolder.exists()) {
-					messageQueue.sendError("GRP-003: Folder " + groupFolder.toString() + " of group\""
+					messageQueue.sendError("GRP-003", "Folder " + groupFolder.toString() + " of group\""
 							+ group.toString() + "\" does not exist");
 					continue;
 
 				}
 				if (!groupFolder.isDirectory()) {
-					messageQueue.sendError("GRP-004: Path " + groupFolder.toString() + " of group \"" + group.toString()
+					messageQueue.sendError("GRP-004", "Path " + groupFolder.toString() + " of group \"" + group.toString()
 							+ "\" is not a directory");
 					continue;
 
@@ -119,13 +119,13 @@ public class GroupList {
 		for (File groupFolder : groupFolders) {
 
 			if (!groupFolder.isDirectory()) {
-				messageQueue.sendError("GRP-005: Path " + groupFolder.toString() + " is not a directory");
+				messageQueue.sendError("GRP-005", "Path " + groupFolder.toString() + " is not a directory");
 				continue;
 
 			}
 			String folderName = groupFolder.getName();
 			if (getByFolderName(folderName) == null) {
-				messageQueue.sendError("GRP-006: Folder " + groupFolder.toString() + " has not entry in group list");
+				messageQueue.sendError("GRP-006", "Folder " + groupFolder.toString() + " has not entry in group list");
 				continue;
 
 			}

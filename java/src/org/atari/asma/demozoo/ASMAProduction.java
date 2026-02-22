@@ -40,6 +40,6 @@ public final class ASMAProduction {
 
 	@Override
 	public String toString() {
-		return id + " - " + title + "( " + getURL() + " )";
+		return id + " - " + title + " (" + getURL() + ")";
 	}
 }

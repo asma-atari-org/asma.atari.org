@@ -26,6 +26,11 @@
 			<location>C:/jac/system/WWW/Sites/asma.atari.org/bat</location>
 		</link>
 		<link>
+			<name>demozoo-main</name>
+			<type>2</type>
+			<location>C:/Users/JAC/Downloads/demozoo-main/demozoo-main</location>
+		</link>
+		<link>
 			<name>public_html</name>
 			<type>2</type>
 			<location>C:/jac/system/WWW/Sites/asma.atari.org/public_html</location>
