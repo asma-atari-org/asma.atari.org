@@ -93,6 +93,18 @@ public final class Production {
 		return "";
 	}
 
+	public String getAuthorNicksString() {
+		StringBuilder result = new StringBuilder();
+		for (var i = 0; i < author_nicks.length; i++) {
+			var authorNick = author_nicks[i];
+			result.append(authorNick.name);
+			if (i < author_nicks.length - 1) {
+				result.append(",");
+			}
+		}
+		return result.toString();
+	}
+
 	public boolean hasTag(String tag) {
 		return StringUtility.hasElement(tags, tag);
 	}

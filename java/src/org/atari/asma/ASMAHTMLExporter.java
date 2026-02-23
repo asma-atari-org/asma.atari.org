@@ -5,6 +5,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -301,7 +303,18 @@ public class ASMAHTMLExporter {
 		html.endRow();
 
 		var line = 1;
-		for (var production : database.productions) {
+		Production[] sortedProductions = Arrays.copyOf(database.productions, database.productions.length);
+		Arrays.sort(sortedProductions, new Comparator<Production>() {
+			public int compare(Production o1, Production o2) {
+				int result;
+				result = o1.getAuthorNicksString().compareTo(o2.getAuthorNicksString());
+				if (result == 0) {
+					result = o1.title.compareTo(o2.title);
+				}
+				return result;
+			};
+		});
+		for (var production : sortedProductions) {
 			if (onlyIssues && !hasIssues(production.getMessageQueue())) {
 				continue;
 			}
@@ -314,10 +327,14 @@ public class ASMAHTMLExporter {
 			html.writeHTMLCell(idHTML);
 			html.writeTextCell(production.title);
 			var authorHTMLBuilder = new StringBuilder();
-			for (var authorNick : production.author_nicks) {
-				authorHTMLBuilder.append(authorNick.releaser.id).append("<br>");
+			for (var i = 0; i < production.author_nicks.length; i++) {
+				var authorNick = production.author_nicks[i];
+				authorHTMLBuilder.append(getDemozooScenerHTML(authorNick.name, authorNick.releaser.id));
+				if (i < production.author_nicks.length - 1) {
+					authorHTMLBuilder.append("<br>");
+				}
 			}
-			html.writeTextCell(authorHTMLBuilder.toString());
+			html.writeHTMLCell(authorHTMLBuilder.toString());
 			html.writeTextCell(production.release_date);
 			html.writeTextCell(production.getHardware());
 

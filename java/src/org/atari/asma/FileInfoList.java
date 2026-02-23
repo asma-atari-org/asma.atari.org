@@ -213,9 +213,6 @@ public class FileInfoList {
 			}
 			if (filePath.startsWith(COMPOSERS)) {
 
-				if (fileInfo.title.equals("Potato Heart")) {
-					var test=1;
-				}
 				int index = filePath.indexOf("/", startIndex);
 				var folderName = filePath.substring(startIndex, index);
 				var composer = composerList.getByFolderName(folderName);
