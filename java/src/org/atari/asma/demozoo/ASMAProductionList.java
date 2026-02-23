@@ -52,7 +52,6 @@ public class ASMAProductionList {
 					productionList.add(asmaProduction);
 					productionByIDMap.put(asmaProduction.id, asmaProduction);
 
-					System.out.println(i + ":" + urlFilePath);
 					ASMAProduction previousASMAProduction = productionByURLFilePathMap.put(urlFilePath, asmaProduction);
 					if (previousASMAProduction != null) {
 						String message = "Production " + previousASMAProduction.toString()

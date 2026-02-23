@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.atari.asma.demozoo.DemozooLink;
 import org.atari.asma.demozoo.model.Database;
 import org.atari.asma.demozoo.model.Production;
 import org.atari.asma.util.MessageQueue;
@@ -23,14 +24,22 @@ public class ASMAHTMLExporter {
 		this.html = htmlWriter;
 	}
 
-	private static String getDemozooIDHTML(int demozooID) {
-		final var link = "https://demozoo.org/music/" + demozooID;
-		final var htmlString = HTMLWriter.getTextWithLink(Long.toString(demozooID), link);
+	private static String getDemozooMusicHTML(int productionID) {
+		String link = null;
+		if (productionID > 0) {
+			link = DemozooLink.getMusic(productionID);
+		}
+		final var htmlString = HTMLWriter.getTextWithLink(Long.toString(productionID), link);
 		return htmlString;
 	}
 
-	private static String getDemozooIDEditDownloadLink(int demozooID) {
-		return "https://demozoo.org/productions/" + demozooID + "/edit_download_links/";
+	private static String getDemozooScenerHTML(String text, int scenerID) {
+		String link = null;
+		if (scenerID > 0) {
+			link = DemozooLink.getScener(scenerID);
+		}
+		final var htmlString = HTMLWriter.getTextWithLink(text, link);
+		return htmlString;
 	}
 
 	private static String getASMAPlayerHTML(String urlFilePath) {
@@ -74,7 +83,7 @@ public class ASMAHTMLExporter {
 		if (!entry.getID().isEmpty()) {
 			htmlBuilder.append(entry.getID()).append(" - ");
 		}
-		htmlBuilder.append(entry.getMessage());
+		htmlBuilder.append(HTMLWriter.encodeHTML(entry.getMessage()));
 
 		for (var link : linkList) {
 			htmlBuilder.append(" ").append(link.toHTML());
@@ -82,7 +91,7 @@ public class ASMAHTMLExporter {
 		htmlBuilder.append("</div>");
 	}
 
-	private void writeMessageQueueCell(FileInfo fileInfo) {
+	private void writeMessageQueueCell(FileInfo fileInfo, int scenerID) {
 		var htmlBuilder = new StringBuilder();
 		var entries = fileInfo.getMessageQueue().getEntries();
 		for (var entry : entries) {
@@ -91,13 +100,17 @@ public class ASMAHTMLExporter {
 			// ERROR : SAP-107 - File Composers/Mega9man/Heat_Squared.sap has no Demozoo ID.
 			if (fileInfo.getMessageQueue().containsMessage("SAP-107")) {
 				try {
-					linkList.add(new Link("Find Music", "https://demozoo.org/search/?q="
-							+ URLEncoder.encode(fileInfo.title.trim(), "UTF-8") + "+type%3Amusic+platform%3A%22Atari+8+Bit%22"));
+					linkList.add(new Link("Find Music",
+							"https://demozoo.org/search/?q=" + URLEncoder.encode(fileInfo.title.trim(), "UTF-8")
+									+ "+type%3Amusic+platform%3A%22Atari+8+Bit%22"));
 				} catch (UnsupportedEncodingException ex) {
 					throw new RuntimeException(ex);
 				}
-				linkList.add(
-						new Link("Create Music", "https://demozoo.org/music/new/?releaser_id=" + fileInfo.author));
+				String url = "https://demozoo.org/music/new/";
+				if (scenerID > 0) {
+					url += "?releaser_id=" + scenerID;
+				}
+				linkList.add(new Link("Create Music", url));
 
 			}
 
@@ -117,7 +130,7 @@ public class ASMAHTMLExporter {
 			// "Composers/Krix_Mario/Acidjazzed_Evening.sap". Check if ASMA path has
 			// changed.
 			if (production.getMessageQueue().containsMessage("DMO-006")) {
-				linkList.add(new Link("Edit Download Links", getDemozooIDEditDownloadLink(production.id)));
+				linkList.add(new Link("Edit Download Links", DemozooLink.getEditDownloadLinks(production.id)));
 
 			}
 
@@ -214,7 +227,16 @@ public class ASMAHTMLExporter {
 			html.writeLongCell(line);
 			html.writeHTMLCell(getASMAPlayerHTML(fileInfo.filePath));
 			html.writeTextCell(fileInfo.title);
-			html.writeTextCell(fileInfo.author);
+
+			int composerID = 0;
+			var composerOrGroup = asmaDatabase.getComposerOrGroup(fileInfo.getFolderPath());
+			if (composerOrGroup instanceof Composer) {
+				var composer = (Composer) composerOrGroup;
+				composerID = Integer.valueOf(composer.demozooID);
+				html.writeHTMLCell(getDemozooScenerHTML(fileInfo.author, composerID));
+			} else {
+				html.writeTextCell(fileInfo.author);
+			}
 			html.writeTextCell(fileInfo.date);
 			html.writeLongCell(fileInfo.channels);
 			html.writeTextCell(fileInfo.hardware);
@@ -228,9 +250,9 @@ public class ASMAHTMLExporter {
 				final var urlFilePath = fileInfo.getURLFilePath(songNumber);
 				final var asmaProduction = asmaDatabase.productionList.getByURLFilePath(urlFilePath);
 				if (asmaProduction != null) {
-					demozooIDBuilder.append("<div>").append(getDemozooIDHTML(asmaProduction.id));
+					demozooIDBuilder.append("<div>").append(getDemozooMusicHTML(asmaProduction.id));
 					demozootTitleBuilder.append("<div>").append(asmaProduction.title);
-					demozooAuthorBuilder.append("<div>"); // TODO
+					demozooAuthorBuilder.append("<div>");
 
 				} else {
 					demozooIDBuilder.append("<div style=\"color:orange;\">Missing</span>");
@@ -245,7 +267,7 @@ public class ASMAHTMLExporter {
 			html.writeHTMLCell(demozooIDBuilder.toString());
 			html.writeHTMLCell(demozootTitleBuilder.toString());
 			html.writeHTMLCell(demozooAuthorBuilder.toString());
-			writeMessageQueueCell(fileInfo);
+			writeMessageQueueCell(fileInfo, composerID);
 			html.endRow();
 			html.write("\n");
 			line++;
@@ -288,7 +310,7 @@ public class ASMAHTMLExporter {
 
 			// Music download URL contains non-existing file path ?
 			String idHTML;
-			idHTML = getDemozooIDHTML(production.id);
+			idHTML = getDemozooMusicHTML(production.id);
 			html.writeHTMLCell(idHTML);
 			html.writeTextCell(production.title);
 			var authorHTMLBuilder = new StringBuilder();

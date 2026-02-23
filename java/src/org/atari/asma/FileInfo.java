@@ -35,6 +35,15 @@ public final class FileInfo {
 		messageQueue = new MessageQueue();
 	}
 
+	public String getFolderPath() {
+		String result = "";
+		var index = filePath.lastIndexOf("/");
+		if (index >= 0) {
+			result = filePath.substring(0, index );
+		}
+		return result;
+	}
+
 	// The file path format in URLs is:
 	// - "filePath" if the file has only one song or if the song is the default song
 	// - "filePath#songNumber" if the file more than one song and if the song is not

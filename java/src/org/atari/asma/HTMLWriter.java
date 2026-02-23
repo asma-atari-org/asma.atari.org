@@ -15,6 +15,9 @@ public class HTMLWriter {
 
 	public static String encodeHTML(String text) {
 		text = text.replace("\"", "&quot;");
+		text = text.replace("<", "&lt;");
+		text = text.replace(">", "&gt;");
+
 		return text;
 	}
 
@@ -23,7 +26,7 @@ public class HTMLWriter {
 			text = "";
 		}
 		var builder = new StringBuilder();
-		if (link != null) {
+		if (link != null && !link.isEmpty()) {
 			String encodedLink;
 
 			encodedLink = link;

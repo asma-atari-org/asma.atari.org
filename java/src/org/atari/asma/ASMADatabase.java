@@ -37,4 +37,16 @@ public class ASMADatabase {
 
 		writer.endObject();
 	}
+
+	Object getComposerOrGroup(String folderPath) {
+		String prefix = "Composers/";
+		if (folderPath.startsWith(prefix)) {
+			return composerList.getByFolderName(folderPath.substring(prefix.length()));
+		}
+		prefix = "Groups/";
+		if (folderPath.startsWith(prefix)) {
+			return groupList.getByFolderName(folderPath.substring(prefix.length()));
+		}
+		return null;
+	}
 }

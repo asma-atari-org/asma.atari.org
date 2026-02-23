@@ -213,6 +213,9 @@ public class FileInfoList {
 			}
 			if (filePath.startsWith(COMPOSERS)) {
 
+				if (fileInfo.title.equals("Potato Heart")) {
+					var test=1;
+				}
 				int index = filePath.indexOf("/", startIndex);
 				var folderName = filePath.substring(startIndex, index);
 				var composer = composerList.getByFolderName(folderName);
@@ -230,7 +233,7 @@ public class FileInfoList {
 								unsafe = true;
 								trimmedFileAuthor = fileAuthor.substring(0,
 										fileAuthor.length() - questionMark.length());
-								trimmedFileAuthor = fileAuthor.trim();
+								trimmedFileAuthor = trimmedFileAuthor.trim();
 							} else {
 								trimmedFileAuthor = fileAuthor;
 							}
@@ -253,12 +256,15 @@ public class FileInfoList {
 				}
 			}
 
+			int foundSongNumbers = 0;
+			List<Integer> missingSongNumbers = new ArrayList<Integer>();
 			for (int songIndex = 0; songIndex < fileInfo.songs; songIndex++) {
 				int songNumber = songIndex + 1;
 				var urlFilePath = fileInfo.getURLFilePath(songNumber);
 				var production = productionList.getByURLFilePath(urlFilePath);
 				if (production != null) {
 					fileInfo.setDemozooID(production.id);
+					foundSongNumbers++;
 				} else {
 					if (fileInfo.songs == 1) {
 
@@ -266,10 +272,18 @@ public class FileInfoList {
 							messageQueue.sendError("SAP-107", "File " + fileInfo.filePath + " has no Demozoo ID.");
 						}
 					} else {
-						messageQueue.sendWarning("SAP-108",
-								"Song number " + songNumber + " in File " + fileInfo.filePath + " has no Demozoo ID.");
+						missingSongNumbers.add(songNumber);
+
 					}
 				}
+
+			}
+			// Having separate productions for subsong is optional.
+			// But if there are more than one URL, all songs must have URLs.
+			if (fileInfo.songs > 1 && (foundSongNumbers > 1) && !missingSongNumbers.isEmpty()) {
+				messageQueue.sendWarning("SAP-108", "Song numbers " + missingSongNumbers.toString() + " in File "
+						+ fileInfo.filePath + " have no Demozoo ID.");
+
 			}
 
 			// TODO Groups
