@@ -125,7 +125,7 @@ public class GroupList {
 			}
 			String folderName = groupFolder.getName();
 			if (getByFolderName(folderName) == null) {
-				messageQueue.sendError("GRP-006", "Folder " + groupFolder.toString() + " has not entry in group list");
+				messageQueue.sendError("GRP-006", "Folder " + groupFolder.toString() + " has no entry in the group list");
 				continue;
 
 			}

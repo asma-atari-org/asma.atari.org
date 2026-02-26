@@ -139,7 +139,7 @@ public class ComposerList {
 				for (String groupFolderName : groupsFolderNameArray) {
 					if (groupList.getByFolderName(groupFolderName) == null) {
 						messageQueue.sendError("COM-008", "Group folder " + groupFolderName + " of composer "
-								+ composer.toString() + " has not entry in group list");
+								+ composer.toString() + " has no entry in the group list");
 						continue;
 					}
 				}
