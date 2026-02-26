@@ -1,9 +1,7 @@
 package org.atari.asma;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -101,18 +99,9 @@ public class ASMAHTMLExporter {
 			List<Link> linkList = new ArrayList<Link>();
 			// ERROR : SAP-107 - File Composers/Mega9man/Heat_Squared.sap has no Demozoo ID.
 			if (fileInfo.getMessageQueue().containsMessage("SAP-107")) {
-				try {
-					linkList.add(new Link("Find Music",
-							"https://demozoo.org/search/?q=" + URLEncoder.encode(fileInfo.title.trim(), "UTF-8")
-									+ "+type%3Amusic+platform%3A%22Atari+8+Bit%22"));
-				} catch (UnsupportedEncodingException ex) {
-					throw new RuntimeException(ex);
-				}
-				String url = "https://demozoo.org/music/new/";
-				if (scenerID > 0) {
-					url += "?releaser_id=" + scenerID;
-				}
-				linkList.add(new Link("Create Music", url));
+				linkList.add(new Link("Find Music", DemozooLink.getFindMusic(fileInfo.title)));
+				linkList.add(new Link("Create Music", DemozooLink.getNewMusic(scenerID, fileInfo.title, fileInfo.date,
+						ASMALink.getFile(fileInfo.filePath))));
 
 			}
 
