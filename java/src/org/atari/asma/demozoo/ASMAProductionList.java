@@ -38,7 +38,7 @@ public class ASMAProductionList {
 				switch (urlFilePaths.size()) {
 				case 0:
 					if (production.getHardware().equals("ATARI2600") && !fileExtensions.contains("ttt")) {
-						messageQueue.sendInfo("DMO-004",
+						messageQueue.sendInfo("DMO-007",
 								"Atari 2600 is currently not supported by ASMA, except for TIA-Tracker files.");
 
 					} else {
@@ -47,6 +47,10 @@ public class ASMAProductionList {
 					break;
 
 				case 1:
+					if (productionByIDMap.containsKey(production.id)) {
+						continue;
+					}
+
 					var urlFilePath = urlFilePaths.get(0);
 					var asmaProduction = new ASMAProduction(production);
 					productionList.add(asmaProduction);
