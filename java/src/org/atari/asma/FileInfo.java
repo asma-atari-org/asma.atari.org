@@ -39,7 +39,7 @@ public final class FileInfo {
 		String result = "";
 		var index = filePath.lastIndexOf("/");
 		if (index >= 0) {
-			result = filePath.substring(0, index );
+			result = filePath.substring(0, index);
 		}
 		return result;
 	}
@@ -48,8 +48,8 @@ public final class FileInfo {
 	// - "filePath" if the file has only one song or if the song is the default song
 	// - "filePath#songNumber" if the file more than one song and if the song is not
 	// the default song
-	public String getURLFilePath(int songNumber) {
-		if ((songs > 0) && (songNumber - 1 != defaultSongIndex)) {
+	public String getURLFilePath(int songNumber, boolean includeDefaultSongSuffix) {
+		if ((songs > 0) && (includeDefaultSongSuffix || (songNumber - 1 != defaultSongIndex))) {
 			return filePath + "#" + songNumber;
 		}
 		return filePath;

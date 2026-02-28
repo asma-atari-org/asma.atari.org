@@ -235,10 +235,12 @@ public class FileInfoList {
 								trimmedFileAuthor = fileAuthor;
 							}
 							if (!authors.contains(trimmedFileAuthor)) {
+								if (false) {
 								messageQueue.sendWarning("SAP-104",
 										"File " + fileInfo.filePath + " author \"" + trimmedFileAuthor + "\" in \""
 												+ fileInfo.author + "\" is different from all composer authors \""
 												+ authors.toString() + "\"");
+								}
 
 							} else {
 								if (unsafe) {
@@ -257,8 +259,14 @@ public class FileInfoList {
 			List<Integer> missingSongNumbers = new ArrayList<Integer>();
 			for (int songIndex = 0; songIndex < fileInfo.songs; songIndex++) {
 				int songNumber = songIndex + 1;
-				var urlFilePath = fileInfo.getURLFilePath(songNumber);
+				// Check with "#<songNumber> suffix for default song
+				var urlFilePath = fileInfo.getURLFilePath(songNumber, true);
 				var production = productionList.getByURLFilePath(urlFilePath);
+				if (production==null) {
+					 // Check without "#<songNumber> suffix for default song
+					 urlFilePath = fileInfo.getURLFilePath(songNumber, false);
+					 production = productionList.getByURLFilePath(urlFilePath);
+				}
 				if (production != null) {
 					fileInfo.setDemozooID(production.id);
 					foundSongNumbers++;

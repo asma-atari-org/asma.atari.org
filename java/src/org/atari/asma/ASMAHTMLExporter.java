@@ -238,7 +238,7 @@ public class ASMAHTMLExporter {
 			var demozooAuthorBuilder = new StringBuilder();
 			for (int songNumber = 1; songNumber <= fileInfo.songs; songNumber++) {
 
-				final var urlFilePath = fileInfo.getURLFilePath(songNumber);
+				final var urlFilePath = fileInfo.getURLFilePath(songNumber, true);
 				final var asmaProduction = asmaDatabase.productionList.getByURLFilePath(urlFilePath);
 				if (asmaProduction != null) {
 					demozooIDBuilder.append("<div>").append(getDemozooMusicHTML(asmaProduction.id));
