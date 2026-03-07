@@ -64,7 +64,6 @@ class Util {
 	static getCountryFlagPath(country) {
 
 		country = Util.getNormalizedCountry(country);
-
 		// From https://en.wikipedia.org/wiki/Regional_indicator_symbol
 		let countryFlags = {
 			"Argentina": "Emojione_1F1E6-1F1F7.svg",
@@ -77,6 +76,7 @@ class Util {
 			"Germany": "Emojione_1F1E9-1F1EA.svg",
 			"Hungary": "Emojione_1F1ED-1F1FA.svg",
 			"Italy": "Emojione_1F1EE-1F1F9.svg",
+			"Iraq": "Emojione_1F1EE-1F1F6.svg",
 			"Mexico": "Emojione_1F1F2-1F1FD.svg",
 			"Netherlands": "Emojione_1F1F3-1F1F1.svg",
 			"Norway": "Emojione_1F1F3-1F1F4.svg",
@@ -89,7 +89,7 @@ class Util {
 			"Ukraine": "Emojione_1F1FA-1F1E6.svg",
 			"Unknown": "Nuvola_unknown_flag.svg",
 			"United Kingdom": "Emojione_1F1EC-1F1E7.svg",
-			"USA": "Emojione_1F1FA-1F1F8.svg"
+			"United States": "Emojione_1F1FA-1F1F8.svg"
 		};
 
 		if (country == "") {
