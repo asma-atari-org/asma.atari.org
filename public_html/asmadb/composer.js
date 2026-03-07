@@ -218,10 +218,10 @@ class ComposerList {
 						composerProxy.fileCount++;
 
 						if (production != undefined && !production.authorIDs.includes(Number(composerProxy.demozooID))) {
-							Logger.log("ERROR: Composer folder path " + folderPath + " demozoo ID \"" + composerProxy.demozooID + "\" is not in list of production author IDs \"" + production.authorIDs + "\"");
+							Logger.logError("Composer for folder path " + folderPath + " demozoo ID \"" + composerProxy.demozooID + "\" is not in list of production folder author IDs \"" + production.authorIDs + "\" for production \"" + urlFilePath + "\.");
 						}
 					} else {
-						Logger.log("ERROR: No composer for folder path \"" + folderPath + "\"");
+						Logger.logError("No composer for folder path \"" + folderPath + "\".");
 					}
 				}
 

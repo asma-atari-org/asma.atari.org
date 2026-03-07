@@ -36,6 +36,11 @@ class FileInfo {
 	getDefaultSongIndex() {
 		return this.defaultSongIndex;
 	}
+	
+	getSongs(){
+		return this.songs;
+	}
+	
 	getSongsText() {
 		if (this.songs == 1) {
 			return "1";

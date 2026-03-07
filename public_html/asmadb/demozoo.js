@@ -57,7 +57,11 @@ class Demozoo {
 					brokenLinkCount += 1;
 				}
 			} else {
-				missingLinkCount += 1;
+				// Counting on file level only makes sense if there is a single song.
+				if (fileInfo.getSongs() == 1) {
+					Logger.logError(fileInfo.getFilePath() + " has no Demozoo ID.");
+					missingLinkCount += 1;
+				}
 			}
 
 		}
@@ -80,7 +84,7 @@ class Demozoo {
 		if (demozooID) {
 			return "<a href=\"https://demozoo.org/music/" + demozooID + "\" target=\"blank\">" + demozooID + "</a>";
 		}
-		return "<a href=\"https://demozoo.org/search/?q="+encodeURI(title)+"&category=music&platform%3A\"Atari+8+Bit\"\" target=\"blank\">Find Music</a>, <a href=\"https://demozoo.org/music/new/\" target=\"blank\">Create Music</a>";;
+		return "<a href=\"https://demozoo.org/search/?q=" + encodeURI(title) + "&category=music&platform%3A\"Atari+8+Bit\"\" target=\"blank\">Find Music</a>, <a href=\"https://demozoo.org/music/new/\" target=\"blank\">Create Music</a>";;
 	}
 
 	getASMAMusicHTML(fileInfo) {
