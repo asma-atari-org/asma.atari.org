@@ -173,7 +173,11 @@ public class FileInfoList {
 
 	public void checkFileInfos(ComposerList composerList, ASMAProductionList productionList) {
 		// From the ASMA "Sap.txt" specification.
-		final int MAX_FILE_NAME_LENGTH = 26;
+		// The rules introduced in this chapter are not obligatory, however, they are used in the Atari SAP Music Archive.
+		// The filenames must not be longer than 26 characters (plus ".sap" extension).
+		// The reason was the 30 characters filename limit in Amiga's Fast File System (https://en.wikipedia.org/wiki/Amiga_Fast_File_System).
+		// In 2026, we dropped that limit.
+		// final int MAX_FILE_NAME_LENGTH = 26;
 		final String FILE_NAME_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
 
 		final String COMPOSERS = "Composers/";
@@ -193,6 +197,7 @@ public class FileInfoList {
 					fileName = fileName.substring(index + 1);
 				}
 				fileName = fileName.substring(0, fileName.length() - FileExtension.SAP.length());
+				/*
 				var length = fileName.length();
 				if (length > MAX_FILE_NAME_LENGTH) {
 					messageQueue.sendError("SAP-102",
@@ -200,12 +205,12 @@ public class FileInfoList {
 									+ (length - MAX_FILE_NAME_LENGTH)
 									+ " characters more than the recommended maximum of " + MAX_FILE_NAME_LENGTH
 									+ " characters. Use a shorter name.");
-				}
+				}*/
 				for (int i = 0; i < fileName.length(); i++) {
 					var c = fileName.charAt(i);
 					if (FILE_NAME_CHARACTERS.indexOf(c) < 0) {
 						messageQueue.sendError("SAP-103", "File " + fileInfo.filePath
-								+ " has a file name with the invalid character \"" + c + "\" at index " + i + ".");
+								+ " has a file name with the invalid character \"" + c + "\" (0x"+Long.toHexString(c)+") at index " + i + ".");
 
 					}
 				}
@@ -234,8 +239,10 @@ public class FileInfoList {
 							} else {
 								trimmedFileAuthor = fileAuthor;
 							}
+							// TODO: Currently deactivated
+							boolean WARN_DIFFRENT_COMPOSERS=false;
 							if (!authors.contains(trimmedFileAuthor)) {
-								if (false) {
+								if (WARN_DIFFRENT_COMPOSERS) {
 								messageQueue.sendWarning("SAP-104",
 										"File " + fileInfo.filePath + " author \"" + trimmedFileAuthor + "\" in \""
 												+ fileInfo.author + "\" is different from all composer authors \""

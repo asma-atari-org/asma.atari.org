@@ -42,7 +42,11 @@ public class ASMAProductionList {
 								"Atari 2600 is currently not supported by ASMA, except for TIA-Tracker files.");
 
 					} else {
-						messageQueue.sendError("DMO-002", "Music has no ASMA download link.");
+						if (fileExtensions.contains("sap")) {
+							messageQueue.sendError("DMO-008", "Music has .sap file but no ASMA download link.");
+						} else {
+							messageQueue.sendWarning("DMO-002", "Music has no ASMA download link.");
+						}
 					}
 					break;
 
