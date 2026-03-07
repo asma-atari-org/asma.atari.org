@@ -21,7 +21,7 @@ public abstract class Player {
 	}
 
 	protected static boolean segmentMatches(SegmentList segmentList, int index, boolean header, int startAddress,
-			int endAddress) {
+			int endAddress, String crc32) {
 		if (index >= segmentList.size()) {
 			return false;
 		}
@@ -34,6 +34,11 @@ public abstract class Player {
 		}
 		if (segment.endAddress != endAddress) {
 			return false;
+		}
+		if (!crc32.isEmpty()) {
+			if (!segment.getCRC32().equals(crc32)) {
+				return false;
+			}
 		}
 		return true;
 	}

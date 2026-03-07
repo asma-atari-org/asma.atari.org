@@ -35,9 +35,9 @@ public class RMT134PlayerV1 extends RMTPlayer {
 		 * 
 		 * The screen text starts at $2EBC.
 		 */
-		if (segmentList.size() == 4 && segmentMatches(segmentList, 0, true, 0x1900, 0x1eff)
-				&& segmentMatches(segmentList, 1, false, 0x2000, 0x2fff)
-				&& segmentMatches(segmentList, 2, false, 0x02e0, 0x02e1)) {
+		if (segmentList.size() == 4 && segmentMatches(segmentList, 0, true, 0x1900, 0x1eff, "")
+				&& segmentMatches(segmentList, 1, false, 0x2000, 0x2fff, "")
+				&& segmentMatches(segmentList, 2, false, 0x02e0, 0x02e1, "")) {
 			var segment = segmentList.get(LZSS_SEGMENT);
 			if (segment.header == false && segment.startAddress == 0x3000) {
 				return true;
