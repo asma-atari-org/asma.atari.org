@@ -11,9 +11,10 @@ public abstract class RMT128Player extends RMTPlayer {
 
 	protected static final int MONO_ENDADDRESS = 0x3958;
 	protected static final String MONO_CRC32 = "6741E9E6";
-
+	protected static final String PATCH8_MONO_CRC32 = "9B7BA32A";
+	
 	protected static final String STEREO_CRC32 = "EE4A0640";
-	protected static final String STEREO_CRC32_FASTPLAY_156 ="737E31C6";
+	protected static final String STEREO_CRC32_FASTPLAY_156 = "737E31C6";
 	protected static final int STEREO_ENDADDRESS = 0x3A64;
 
 	private static final int TEXT_SEGMENT = 2;
@@ -22,18 +23,20 @@ public abstract class RMT128Player extends RMTPlayer {
 
 	protected boolean matches(SegmentList segmentList, int segment0EndAddres, String segment0CRC32, String magicBytes) {
 		/*
-		 * RMT128 Mono Player: Standard Tables
+		 * RMT 1.28, Mono Player: Standard Tables
 		 * 
-		 * $3182-$3958 (CRC32 = 6741E9E6), $3E00-$3ED5 (CRC32 = F2B3A822), $3f00-$3fc9 (CRC32 = variable, text)
-		 * $4000-any: RMT4, $02e0-$02e1 (CRC32 = 80B80F54)
+		 * $3182-$3958 (CRC32 = 6741E9E6), $3E00-$3ED5 (CRC32 = F2B3A822), $3f00-$3fc9
+		 * (CRC32 = variable, text) $4000-any: RMT4, $02e0-$02e1 (CRC32 = 80B80F54)
 		 * 
-		 * RMT128 Stereo Player: Standard Tables
+		 * RMT 1.28 Patch 8, Mono Player: Standard Tables PATCH8_MONO_CRC32
 		 * 
-		 * $3182-$3A64 (CRC32 = EE4A0640), $3E00-$3ED5 (CRC32 = F2B3A822), $3f00-$3fc9 (CRC32 = variable, text)
-		 * $4000-any: RMT8, $02E0-$02E1 (CRC32 = 80B80F54)
+		 * RMT 1.28 Stereo Player: Standard Tables
 		 * 
-		 * RMT127 Stereo Player: FASTPLAY 156
-		 * $3182-3A64 (CRC32 = 737E31C6), $3E00-$3ED5 (CRC32 = F2B3A822), $3F00 - 3FC9 (CRC32 = variable, text)
+		 * $3182-$3A64 (CRC32 = EE4A0640), $3E00-$3ED5 (CRC32 = F2B3A822), $3f00-$3fc9
+		 * (CRC32 = variable, text) $4000-any: RMT8, $02E0-$02E1 (CRC32 = 80B80F54)
+		 * 
+		 * RMT 1.28 Stereo Player: FASTPLAY 156 $3182-3A64 (CRC32 = 737E31C6), $3E00-$3ED5
+		 * (CRC32 = F2B3A822), $3F00 - 3FC9 (CRC32 = variable, text)
 		 */
 		if (segmentList.size() == 5 && segmentMatches(segmentList, 0, true, 0x3182, segment0EndAddres, segment0CRC32)
 				&& segmentMatches(segmentList, 1, false, 0x3e00, 0x3ed5, "F2B3A822")

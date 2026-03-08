@@ -134,8 +134,8 @@ public class MessageQueue {
 		}
 		}
 	}
-	
-	public void sendInfo( String message) {
+
+	public void sendInfo(String message) {
 		sendMessage(MessagType.INFO, "", message);
 
 	}
@@ -145,7 +145,6 @@ public class MessageQueue {
 
 	}
 
-	
 	public void sendWarning(String id, String message) {
 		sendMessage(MessagType.WARNING, id, message);
 
@@ -155,5 +154,17 @@ public class MessageQueue {
 		sendMessage(MessagType.ERROR, id, message);
 
 	}
-	
+
+	public int compareTo(MessageQueue other) {
+		var result=Long.compare(getErrorCount(), other.getErrorCount());
+		if (result==0) {
+			result=Long.compare(getWarningCount(), other.getWarningCount());
+		}
+		if (result==0) {
+			result=Long.compare(getInfoCount(), other.getInfoCount());
+		}
+		return result;
+
+	}
+
 }
