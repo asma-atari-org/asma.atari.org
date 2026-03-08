@@ -33,7 +33,7 @@ public class ASMAProductionList {
 			final var urlFilePaths = production.getASMAURLFilePaths();
 			final var fileExtensions = production.getFileExtensionsSet();
 			if (production.download_links.length == 0) {
-				messageQueue.sendWarning("DMO-001", "Music has no download link.");
+				messageQueue.sendInfo("DMO-001", "Music has no download link.");
 			} else {
 				switch (urlFilePaths.size()) {
 				case 0:
