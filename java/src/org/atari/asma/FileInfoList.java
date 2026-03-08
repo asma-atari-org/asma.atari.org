@@ -172,6 +172,11 @@ public class FileInfoList {
 	}
 
 	public void checkFileInfos(ComposerList composerList, ASMAProductionList productionList) {
+	
+		// According to the STIL specification there are 9 characters for a tag must at must 90 characters for a value.
+		// Therefore we limit all lines, including the file path, to 99 characters.
+		final int MAX_FILE_PATH_LENGTH = 99;
+		
 		// From the ASMA "Sap.txt" specification.
 		// The rules introduced in this chapter are not obligatory, however, they are used in the Atari SAP Music Archive.
 		// The filenames must not be longer than 26 characters (plus ".sap" extension).
@@ -179,13 +184,32 @@ public class FileInfoList {
 		// In 2026, we dropped that limit.
 		// final int MAX_FILE_NAME_LENGTH = 26;
 		final String FILE_NAME_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
-
+		final String FOLDER_PATH_CHARACTERS = "/"+FILE_NAME_CHARACTERS;
+		
 		final String COMPOSERS = "Composers/";
 		int startIndex = COMPOSERS.length();
 
 		for (var fileInfo : fileInfoList) {
-			final var filePath = fileInfo.filePath;
 			final var messageQueue = fileInfo.getMessageQueue();
+			final var folderPath=fileInfo.getFolderPath();
+			
+			for (int i = 0; i < folderPath.length(); i++) {
+				var c = folderPath.charAt(i);
+				if (FOLDER_PATH_CHARACTERS.indexOf(c) < 0) {
+					messageQueue.sendError("SAP-103", "File " + fileInfo.filePath
+							+ " has a folder path with the invalid character \"" + c + "\" (0x"+Long.toHexString(c)+") at index " + i + ".");
+
+				}
+			}
+
+			final var filePath = fileInfo.filePath;
+			if (filePath.length()>MAX_FILE_PATH_LENGTH) {
+					messageQueue.sendError("SAP-109", "File " + fileInfo.filePath
+							+ " has a relative file path that exceeds the allowed limit of " + MAX_FILE_PATH_LENGTH + " characters. Use a short file path.");
+
+			}
+	
+			
 			if (filePath.toLowerCase().endsWith(FileExtension.SAP)) {
 				if (!filePath.endsWith(FileExtension.SAP)) {
 					messageQueue.sendError("SAP-101",
@@ -196,6 +220,7 @@ public class FileInfoList {
 				if (index >= 0) {
 					fileName = fileName.substring(index + 1);
 				}
+				
 				fileName = fileName.substring(0, fileName.length() - FileExtension.SAP.length());
 				/*
 				var length = fileName.length();
@@ -214,6 +239,7 @@ public class FileInfoList {
 
 					}
 				}
+
 
 			}
 			if (filePath.startsWith(COMPOSERS)) {
