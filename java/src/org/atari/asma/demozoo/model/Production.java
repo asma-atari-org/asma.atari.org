@@ -1,14 +1,11 @@
 package org.atari.asma.demozoo.model;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.atari.asma.demozoo.Demozoo.PlatformDefinition;
-import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MessageQueue;
 import org.atari.asma.util.StringUtility;
 
@@ -24,6 +21,7 @@ public final class Production {
 	public Platform[] platforms;
 	public ProductionType[] types;
 	public Link[] download_links;
+	public String[] fileExtensions;
 	public String[] tags;
 
 	private transient MessageQueue messageQueue; // transient
@@ -59,26 +57,16 @@ public final class Production {
 		return "";
 	}
 
-	public Set<String> getFileExtensions() {
-		Set<String> set = new TreeSet<String>();
-		for (var link : download_links) {
 
-			try {
-				var uri = new URI(link.url);
+	public Set<String> getFileExtensionsSet() {
 
-				var fileExtension = FileUtility.getFileExtension(uri.getPath());
-				if (fileExtension.startsWith(".")) {
-					fileExtension = fileExtension.substring(1);
-				}
-				fileExtension = fileExtension.toLowerCase();
-
-				set.add(fileExtension);
-			} catch (URISyntaxException ex) {
-
-			}
-
+		var extensions = fileExtensions;
+		var result = new TreeSet<String>();
+		for (var extension : extensions) {
+			result.add(extension);
 		}
-		return set;
+
+		return result;
 	}
 
 	public String getHardware() {

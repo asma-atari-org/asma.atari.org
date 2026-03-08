@@ -346,7 +346,7 @@ public class ASMAHTMLExporter {
 			}
 			html.writeHTMLCell(downloadLinkHTMLBuilder.toString());
 
-			var fileExtensions = production.getFileExtensions();
+			var fileExtensions = production.getFileExtensionsSet();
 			html.writeTextCell(StringUtility.toString(fileExtensions));
 
 			html.writeTextCell(production.getTags());

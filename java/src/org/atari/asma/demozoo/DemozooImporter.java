@@ -20,7 +20,7 @@ public class DemozooImporter {
 		MessageQueue messageQueue = MessageQueueFactory.createSystemInstance();
 
 		if (args.length != 1) {
-			messageQueue.sendInfo("Usage: DemozooImporter <trunk/asma folder>");
+			messageQueue.sendInfo("DMO-100","Usage: DemozooImporter <trunk/asma folder>");
 			return 0;
 		}
 
@@ -30,14 +30,14 @@ public class DemozooImporter {
 		var databaseFile = new File(sourceFolder, ASMAPaths.DEMOZOO_DATABASE_JSON);
 
 		var demozoo = new Demozoo();
-		messageQueue.sendInfo("Fetching Demozoo database to '" + databaseFile.getPath() + "'.");
+		messageQueue.sendInfo("DMO-101", "Fetching Demozoo database to '" + databaseFile.getPath() + "'.");
 
 		if (!databaseFile.exists()) {
-			messageQueue.sendError("DMO-104", "Output file '" + databaseFile.getPath() + "' does not exist.");
+			messageQueue.sendError("DMO-102", "Output file '" + databaseFile.getPath() + "' does not exist.");
 			return 1;
 		}
 		if (!databaseFile.canWrite()) {
-			messageQueue.sendError("DMO-105", "Output file '" + databaseFile.getPath() + "' is not writeable.");
+			messageQueue.sendError("DMO-103", "Output file '" + databaseFile.getPath() + "' is not writeable.");
 			return 1;
 		}
 		demozoo.importDatabase(databaseFile, messageQueue);

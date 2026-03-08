@@ -31,7 +31,7 @@ public class ASMAProductionList {
 			final var production = productions[i];
 			final var messageQueue = production.getMessageQueue();
 			final var urlFilePaths = production.getASMAURLFilePaths();
-			final var fileExtensions = production.getFileExtensions();
+			final var fileExtensions = production.getFileExtensionsSet();
 			if (production.download_links.length == 0) {
 				messageQueue.sendWarning("DMO-001", "Music has no download link.");
 			} else {
@@ -42,8 +42,10 @@ public class ASMAProductionList {
 								"Atari 2600 is currently not supported by ASMA, except for TIA-Tracker files.");
 
 					} else {
-						if (fileExtensions.contains("sap")) {
-							messageQueue.sendError("DMO-008", "Music has .sap file but no ASMA download link.");
+						if (fileExtensions.contains("cmc") || fileExtensions.contains("cms")
+								|| fileExtensions.contains("rmt") || fileExtensions.contains("sap")) {
+							messageQueue.sendError("DMO-008",
+									"Music has ASAP file extension but no ASMA download link.");
 						} else {
 							messageQueue.sendWarning("DMO-002", "Music has no ASMA download link.");
 						}

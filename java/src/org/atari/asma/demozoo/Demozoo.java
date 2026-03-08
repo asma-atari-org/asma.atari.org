@@ -40,7 +40,21 @@ public class Demozoo {
 			this.messageQueue = messageQueue;
 		}
 
-		private boolean fetchProduction(ProductionsPage productionsPage, int resultIndex) {
+		private static void normalizeProduction(Production production) {
+
+			// Rewrite URLs to actual download URLs
+			final var PREFIX = "https://files.scene.org/view/";
+			final var REPLACEMENT = "https://files.scene.org/get/";
+
+			for (var link : production.download_links) {
+				if (link.url.startsWith(PREFIX)) {
+					link.url = REPLACEMENT + link.url.substring(PREFIX.length());
+				}
+			}
+
+		}
+
+		private Production fetchProduction(ProductionsPage productionsPage, int resultIndex) {
 
 			var productionsPageResult = productionsPage.results[resultIndex];
 
@@ -51,7 +65,7 @@ public class Demozoo {
 					* (productionsPage.count - productionNumber));
 
 			if (productionNumber % 10 == 0) {
-				messageQueue.sendInfo("Fetching production " + (productionNumber) + " of " + productionsPage.count
+				messageQueue.sendInfo("DMO-109", "Fetching production " + (productionNumber) + " of " + productionsPage.count
 						+ " from " + productionsPageResult.url + " ("
 						+ StringUtility.getDurationString(milliSecondsSinceStart) + " until now, "
 						+ StringUtility.getDurationString(milliSecondsToGo) + " to go)");
@@ -62,37 +76,47 @@ public class Demozoo {
 				if (response.isSuccess()) {
 					Production production = Serializer.deserialize(response.content, Production.class);
 					productionList.add(production);
-					return true;
+					return production;
 				} else {
-					messageQueue.sendError("DMO-100", "Fetch error for '" + productionsPageResult.url + "': " + response.status
-							+ " - " + response.content);
-					return false;
+					messageQueue.sendError("DMO-110", "Fetch error for '" + productionsPageResult.url + "': "
+							+ response.status + " - " + response.content);
+					return null;
 				}
 
 			} catch (IOException ex) {
-				messageQueue.sendError("DMO-101", "Fetch error for '" + productionsPageResult.url + "': " + ex.getMessage());
-				return false;
+				messageQueue.sendError("DMO-111",
+						"Fetch error for '" + productionsPageResult.url + "': " + ex.getMessage());
+				return null;
 			}
 
 		}
 
 		private ProductionsPage fetchPage(String url, List<Production> productionList) {
+			final int DELAY = 100;
 			try {
 				var response = RestClient.sendGetRequest(url);
 				ProductionsPage productionsPage = Serializer.deserialize(response.content, ProductionsPage.class);
 				for (int i = 0; i < productionsPage.results.length; i++) {
-					if (!fetchProduction(productionsPage, i)) {
+					var production = fetchProduction(productionsPage, i);
+					if (production == null) {
 						return null;
 					}
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException ignore) {
+					var startTime = System.currentTimeMillis();
+					normalizeProduction(production);
+					production.fileExtensions = LinkUtility.getFileExtensions(production.download_links, messageQueue);
 
+					var duration = System.currentTimeMillis() - startTime;
+					if (duration < DELAY) {
+						try {
+							Thread.sleep(DELAY - duration);
+						} catch (InterruptedException ignore) {
+
+						}
 					}
 				}
 				return productionsPage;
 			} catch (IOException ex) {
-				messageQueue.sendError("DMO-102", ex.getMessage());
+				messageQueue.sendError("DMO-108", ex.getMessage());
 				return null;
 			}
 		}
@@ -105,7 +129,7 @@ public class Demozoo {
 			do {
 				pageNumber++;
 				if (pageNumber <= MAX_PAGES) {
-					messageQueue.sendInfo("Fetching page " + pageNumber + " from " + url);
+					messageQueue.sendInfo("DMO-107", "Fetching page " + pageNumber + " from " + url);
 
 					var page = this.fetchPage(url, productionList);
 					if (page != null) {
@@ -139,17 +163,17 @@ public class Demozoo {
 		database.updateDateTime = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
 		fetchProductions(database, messageQueue);
 
-		messageQueue.sendInfo("Saving to '" + outputFile.getAbsolutePath() + "'.");
+		messageQueue.sendInfo("DMO-104", "Saving to '" + outputFile.getAbsolutePath() + "'.");
 		try {
 			var content = Serializer.serialize(database);
 			var writer = new FileWriter(outputFile, StandardCharsets.UTF_8);
 			writer.write(content);
 			writer.close();
-			messageQueue.sendInfo("Demozoo database file written with "
+			messageQueue.sendInfo("DMO-106", "Demozoo database file written with "
 					+ MemoryUtility.getRoundedMemorySize(outputFile.length()) + ".");
 
 		} catch (IOException ex) {
-			messageQueue.sendError("DMO-103", ex.getMessage());
+			messageQueue.sendError("DMO-105", ex.getMessage());
 		}
 	}
 
