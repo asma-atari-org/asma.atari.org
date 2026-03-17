@@ -2,16 +2,16 @@ package org.atari.asma.sap;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import org.atari.asma.ASMAExporter.FileExtension;
 import org.atari.asma.util.BufferedMessageQueue;
+import org.atari.asma.util.FileDrop;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MessageQueue;
 import org.atari.asma.util.MessageQueueFactory;
@@ -20,12 +20,26 @@ public class SAPFileEditor implements SAPFileProcessor {
 
 	private MessageQueue messageQueue;
 	private ASAPFileLogic sapFileLogic;
-	private Map<String, SAPFileDialog> sapFileDialogMap;
+
+	private SAPFileList fileList;
 
 	private SAPFileEditor() {
 		messageQueue = MessageQueueFactory.createSystemInstance();
 		sapFileLogic = new ASAPFileLogic();
-		sapFileDialogMap = new TreeMap<String, SAPFileDialog>();
+
+		fileList = new SAPFileList();
+		addFileDropListener(fileList.getFrame());
+	}
+
+	private void addFileDropListener(JFrame frame) {
+		new FileDrop(frame, new FileDrop.Listener() {
+			public void filesDropped(java.io.File[] files) {
+				// handle file drop
+				for (var file : files) {
+					processFile(file);
+				}
+			} // end filesDropped
+		}); // end FileDrop.Listener
 	}
 
 	public static void main(String[] args) {
@@ -87,10 +101,11 @@ public class SAPFileEditor implements SAPFileProcessor {
 	public void processFile(File inputFile) {
 
 		var path = inputFile.getAbsolutePath();
-		var dialog = sapFileDialogMap.get(path);
+		var dialog = fileList.getDialog(path);
 		if (dialog == null) {
 			dialog = new SAPFileDialog(this);
-			sapFileDialogMap.put(path, dialog);
+			addFileDropListener(dialog.getFrame());
+			fileList.putDialog(path, dialog);
 		}
 		dialog.show(inputFile);
 	}
@@ -98,11 +113,11 @@ public class SAPFileEditor implements SAPFileProcessor {
 	public void closeFile(File inputFile) {
 		var path = inputFile.getAbsolutePath();
 
-		sapFileDialogMap.remove(path);
+		fileList.removeDialog(path);
 
-		if (sapFileDialogMap.isEmpty()) {
-			System.exit(0);
-		}
+//		if (sapFileDialogMap.isEmpty()) {
+//			System.exit(0);
+//		}
 
 	}
 

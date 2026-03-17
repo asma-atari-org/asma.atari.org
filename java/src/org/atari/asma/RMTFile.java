@@ -61,7 +61,7 @@ public class RMTFile {
 	}
 
 	public int getFormatVersionNumber() {
-		return getByte(5);
+		return getByte(7);
 	}
 
 	public String toString() {

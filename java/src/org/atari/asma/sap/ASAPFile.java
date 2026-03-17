@@ -32,6 +32,26 @@ public class ASAPFile {
 		return s.trim().isEmpty() || s.trim().equals("<?>");
 	}
 
+	public static String normalizeFileName(String fileName) {
+		var builder=new StringBuilder(fileName.length());
+		int index=fileName.lastIndexOf(".");
+		if (index<0) {index=fileName.length(); }
+		for (int i=0;i<index;i++) {
+			var c=fileName.charAt(i);
+			if (c==' ' || c=='-') {
+				c='_';
+			}
+			if ("0123456789_ABCDEFGHIHJKLMNOPQRSTUVWXYZabcdefghihjklmnopqrstuvwxyz".indexOf(c)<0) {
+				continue;
+			}
+			builder.append(c);
+		}
+		if (index<fileName.length()) {
+			builder.append(fileName.substring(index).toLowerCase());
+		}
+		return builder.toString();
+	}
+
 	public ASAPFile() {
 		segmentList = new SegmentList();
 		author = "";
@@ -49,7 +69,7 @@ public class ASAPFile {
 	private String date;
 
 	private static String getString(String s) {
-		if (s==null || s.isBlank()) {
+		if (s == null || s.isBlank()) {
 			return "<?>";
 		}
 		return s;

@@ -9,8 +9,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.atari.asma.util.MessageQueue;
+import org.atari.asma.util.MessageQueueFactory;
 
 public class ZipUtility {
+
+	public static void main(String[] args) {
+		var url = "https://files.scene.org/get/parties/2023/xenium23/msx_chip/chipmsx_zoltarx_trainoscope.7z";
+		var messageQueue = MessageQueueFactory.createSystemInstance();
+		System.out.println(getZIPFileContentFileExtensions(url, messageQueue));
+	}
 
 	public static Set<String> getZIPFileContentFileExtensions(String url, MessageQueue messageQueue) {
 

@@ -60,15 +60,24 @@ public final class Production {
 
 	public Set<String> getFileExtensionsSet() {
 
-		var extensions = fileExtensions;
 		var result = new TreeSet<String>();
-		for (var extension : extensions) {
-			result.add(extension);
+		for (var fileExtension : fileExtensions) {
+			result.add(fileExtension);
 		}
 
 		return result;
 	}
 
+	public Set<String> getTagsSet() {
+
+		var result = new TreeSet<String>();
+		for (var tag : tags) {
+			result.add(tag);
+		}
+
+		return result;
+	}
+	
 	public String getHardware() {
 		for (var platform : platforms) {
 			if (platform.id == PlatformDefinition.ATARI_800) {

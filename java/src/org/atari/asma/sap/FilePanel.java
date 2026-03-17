@@ -22,6 +22,7 @@ public class FilePanel extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	private boolean fileMode;
 	public JLabel filePathLabel;
 
 	public JTextField filePathField;
@@ -29,10 +30,12 @@ public class FilePanel extends JPanel {
 	public JLabel fileStatusLabel;
 	public JLabel fileSizeLabel;
 	public JLabel fileDateLabel;
-	
-	public JButton playButton;
 
-	public FilePanel() {
+	public JButton button;
+
+	public FilePanel(boolean fileMode) {
+
+		this.fileMode = fileMode;
 
 		var border = BorderFactory.createEmptyBorder(1, 5, 1, 5);
 
@@ -60,21 +63,24 @@ public class FilePanel extends JPanel {
 		fileDateLabel.setBorder(border);
 		add(fileDateLabel);
 
-		playButton=new JButton("Play");
-		add(playButton);
-		
-		playButton.addActionListener(new ActionListener() {
-			
+		button = new JButton("Play");
+		if (!fileMode) {
+			button.setText("Open Folder");
+		}
+		add(button);
+
+		button.addActionListener(new ActionListener() {
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				var  desktop = Desktop.getDesktop();
+				var desktop = Desktop.getDesktop();
 				try {
 					desktop.open(new File(filePathField.getText()));
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				
+
 			}
 		});
 
@@ -89,23 +95,29 @@ public class FilePanel extends JPanel {
 		var format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 		if (file != null) {
 			filePathField.setText(file.getAbsolutePath());
-			if (file.exists()) {
-				if (file.isFile()) {
-					fileStatusLabel.setText("Exists");
-					fileSizeLabel.setText(String.valueOf(file.length()) + " b");
-					fileDateLabel.setText(format.format(new Date(file.lastModified())));
-					playButton.setEnabled(true);
+			if (fileMode) {
+				if (file.exists()) {
+					if (file.isFile()) {
+						fileStatusLabel.setText("Exists");
+						fileSizeLabel.setText(String.valueOf(file.length()) + " b");
+						fileDateLabel.setText(format.format(new Date(file.lastModified())));
+						button.setEnabled(true);
+
+					} else {
+						fileStatusLabel.setText("Directory");
+						fileSizeLabel.setText("");
+						fileDateLabel.setText("");
+						button.setEnabled(false);
+
+					}
 
 				} else {
-					fileStatusLabel.setText("Directory");
-					fileSizeLabel.setText("");
-					fileDateLabel.setText("");
-					playButton.setEnabled(false);
+					fileStatusLabel.setText("New");
+					button.setEnabled(false);
 
 				}
 			} else {
-				fileStatusLabel.setText("New");
-				playButton.setEnabled(false);
+				button.setEnabled(true);
 
 			}
 		} else {
@@ -113,8 +125,8 @@ public class FilePanel extends JPanel {
 			fileStatusLabel.setText("");
 			fileSizeLabel.setText("");
 			fileDateLabel.setText("");
-			
-			playButton.setEnabled(false);
+
+			button.setEnabled(false);
 
 		}
 

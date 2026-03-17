@@ -21,11 +21,10 @@ import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
 
-import org.atari.asma.util.FileDrop;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MessageQueue;
 
-class SAPFileDialog {
+public class SAPFileDialog {
 
 //	private SAPEditor editor;
 
@@ -39,6 +38,7 @@ class SAPFileDialog {
 	private JButton openButton;
 	private JButton saveButton;
 	private FilePanel inputFilePanel;
+	private FilePanel segmentsFolderPanel;
 	private FilePanel outputFilePanel;
 	private JTextArea inputFileStructureTextArea;
 	private JTextArea analysisTextArea;
@@ -48,6 +48,7 @@ class SAPFileDialog {
 
 	// State
 	private File inputFile;
+	private File segmentsFolder;
 	private File outputFile;
 
 	private StringBuilder header;
@@ -110,10 +111,14 @@ class SAPFileDialog {
 		var filePanel = new JPanel();
 		filePanel.setLayout(new BorderLayout());
 
-		inputFilePanel = new FilePanel();
+		inputFilePanel = new FilePanel(true);
 		inputFilePanel.filePathLabel.setText("Input File");
 
-		outputFilePanel = new FilePanel();
+		segmentsFolderPanel = new FilePanel(false);
+		segmentsFolderPanel.filePathLabel.setText("Segments Folder");
+		segmentsFolderPanel.button.setText("Open Folder");
+
+		outputFilePanel = new FilePanel(true);
 		outputFilePanel.filePathLabel.setText("Output File");
 
 		var contentPanel = new JPanel();
@@ -142,9 +147,9 @@ class SAPFileDialog {
 		var filePathsPanel = new JPanel();
 		filePathsPanel.setLayout(new BorderLayout());
 		filePathsPanel.add(inputFilePanel, BorderLayout.NORTH);
+		filePathsPanel.add(segmentsFolderPanel, BorderLayout.CENTER);
 		filePathsPanel.add(outputFilePanel, BorderLayout.SOUTH);
 		filePanel.add(filePathsPanel, BorderLayout.NORTH);
-
 		filePanel.add(contentPanel, BorderLayout.CENTER);
 
 		frame.add(toolbar, BorderLayout.NORTH);
@@ -173,15 +178,6 @@ class SAPFileDialog {
 			}
 		});
 
-		new FileDrop(frame, new FileDrop.Listener() {
-			public void filesDropped(java.io.File[] files) {
-				// handle file drop
-				for (var file : files) {
-					editor.processFile(file);
-				}
-			} // end filesDropped
-		}); // end FileDrop.Listener
-
 		fileChooser = new JFileChooser();
 
 		dataToUI();
@@ -195,13 +191,14 @@ class SAPFileDialog {
 	}
 
 	private void dataToUI() {
-		var title = new StringBuilder(TITLE).append(" - ").append(inputFile.getName()).append(" - ");
+		var title = new StringBuilder(inputFile.getName()).append(" - ");
 
 		title.append(asapFile.getTitle()).append(" by ").append(asapFile.getAuthor());
 
-		saveButton.setEnabled(outputFile != null && asapFile.getASAPInfo()!=null);
+		saveButton.setEnabled(outputFile != null && asapFile.getASAPInfo() != null);
 		frame.setTitle(title.toString());
 		inputFilePanel.setFile(inputFile);
+		segmentsFolderPanel.setFile(segmentsFolder);
 		outputFilePanel.setFile(outputFile);
 
 		analysisTextArea.setText(header.toString());
@@ -241,11 +238,16 @@ class SAPFileDialog {
 			}
 		} else if (fileExtension.equals(".xex")) {
 			var writer = new StringWriter();
-			newASAPFile = asapFileLogic.loadXEXFile(fileProcessor, inputFile, new PrintWriter(writer), messageQueue);
+			var xexResult = asapFileLogic.loadXEXFile(fileProcessor, inputFile, new PrintWriter(writer), messageQueue);
+
 			header.append(writer.toString());
-			if (asapFile != null) {
+			if (xexResult != null) {
+				segmentsFolder = xexResult.segmentsFolder;
+				newASAPFile=xexResult.asapFile;
 				outputFile = FileUtility.changeFileExtension(inputFile, ".sap");
+				outputFile = new File(outputFile.getParentFile(), ASAPFile.normalizeFileName(outputFile.getName()));
 			} else {
+				segmentsFolder = null;
 				outputFile = null;
 
 			}
