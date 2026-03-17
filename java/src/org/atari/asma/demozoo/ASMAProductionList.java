@@ -32,6 +32,7 @@ public class ASMAProductionList {
 			final var messageQueue = production.getMessageQueue();
 			final var urlFilePaths = production.getASMAURLFilePaths();
 			final var fileExtensions = production.getFileExtensionsSet();
+			final var tags=production.getTagsSet();
 			if (production.download_links.length == 0) {
 				messageQueue.sendInfo("DMO-001", "Music has no download link.");
 			} else {
@@ -48,6 +49,12 @@ public class ASMAProductionList {
 									"Music has ASAP file extension but no ASMA download link.");
 						} else {
 							messageQueue.sendWarning("DMO-002", "Music has no ASMA download link.");
+						}
+						
+						
+						if (fileExtensions.contains("neo") && !tags.contains("neo-tracker")) {
+							messageQueue.sendWarning("DMO-009", "Music has \"neo\" file extension but has no \"neo-tracker\" tag.");
+	
 						}
 					}
 					break;

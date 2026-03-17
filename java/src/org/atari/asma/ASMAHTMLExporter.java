@@ -72,7 +72,6 @@ public class ASMAHTMLExporter {
 			break;
 		case WARNING:
 			color = "color:#FF8C00;";
-
 			break;
 		case INFO:
 			break;
@@ -296,7 +295,10 @@ public class ASMAHTMLExporter {
 		Arrays.sort(sortedProductions, new Comparator<Production>() {
 			public int compare(Production o1, Production o2) {
 				int result;
-				result = o1.getAuthorNicksString().compareTo(o2.getAuthorNicksString());
+				result = -o1.getMessageQueue().compareTo(o2.getMessageQueue());
+				if (result == 0) {
+					result = o1.getAuthorNicksString().compareTo(o2.getAuthorNicksString());
+				}
 				if (result == 0) {
 					result = o1.title.compareTo(o2.title);
 				}
