@@ -1,0 +1,18 @@
+
+class ASTILCover
+{
+	int startSeconds;
+	int endSeconds;
+	string titleAndSource;
+	string artist;
+	internal string comment;
+}
+
+public class ASTIL
+{
+    public static string GetMessage()
+    {
+        ASTILCover() cover = { comment = "Test2" };
+        return cover.comment;
+    }
+}
