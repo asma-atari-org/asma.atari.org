@@ -18,6 +18,8 @@ public class SAPFileList {
 	private DefaultListModel<String> listModel;
 	private JFrame frame;
 
+	private boolean eventActive;
+
 	public SAPFileList() {
 
 		sapFileDialogMap = new TreeMap<String, SAPFileDialog>();
@@ -36,24 +38,27 @@ public class SAPFileList {
 		panel.add(scrollPane);
 		frame.add(panel);
 
-		
 		jList.addListSelectionListener(new ListSelectionListener() {
-			
+
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
-				var dialog=getDialog( listModel.get(e.getFirstIndex()));
-				var frame=dialog.getFrame();
-				frame.requestFocus();
-				
+
+				if (!eventActive) {
+					var index = e.getFirstIndex();
+					var dialog = getDialog(listModel.get(index));
+					var frame = dialog.getFrame();
+					frame.requestFocus();
+				}
+
 			}
 		});
 		// Set the JFrame properties
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setTitle("SAPFileEditor - Files Opened");
 		frame.setLocationRelativeTo(null);
+		frame.pack();
 		frame.setVisible(true);
 	}
-	
 
 	public JFrame getFrame() {
 		return frame;
@@ -65,16 +70,20 @@ public class SAPFileList {
 
 	public void putDialog(String path, SAPFileDialog dialog) {
 		sapFileDialogMap.put(path, dialog);
+		eventActive = true;
+
 		listModel.addElement(path);
+		eventActive = false;
 		frame.pack();
 
 	}
 
 	public void removeDialog(String path) {
 		sapFileDialogMap.remove(path);
+		eventActive = true;
 		listModel.removeElement(path);
+		eventActive = false;
 
 	}
-
 
 }

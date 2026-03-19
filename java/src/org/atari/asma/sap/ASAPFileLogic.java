@@ -316,8 +316,8 @@ public class ASAPFileLogic {
 				File segmentFile = FileUtility.changeFileExtension(inputFile, "");
 				String startAddressString = ByteUtility.getWordHexString(segment.startAddress);
 				String endAddressString = ByteUtility.getWordHexString(segment.endAddress);
-				segmentFile = new File(segmentsFolderPath.toString(), inputFile.getName() + "-Segment-" + i + "-$"
-						+ startAddressString + "-" + endAddressString + ".obx");
+				segmentFile = new File(segmentsFolderPath.toString(),
+						"Segment-" + i + "-$" + startAddressString + "-" + endAddressString + ".obx");
 
 				Files.write(segmentFile.toPath(), segment.toByteArray(true), StandardOpenOption.CREATE);
 
@@ -424,7 +424,9 @@ public class ASAPFileLogic {
 			rmtContent[5] = (byte) (endAddress >> 8);
 			System.arraycopy(segment.content, entry.offset, rmtContent, 6, length);
 			File rmtFile = FileUtility.changeFileExtension(segmentFile, "");
-			rmtFile = new File(rmtFile.getAbsolutePath() + "-$" + startAddressString + ".rmt");
+			rmtFile = new File(
+					rmtFile.getAbsolutePath() + "-$" + startAddressString + "-$" + endAddressString + ".rmt");
+
 			try {
 				Files.write(rmtFile.toPath(), rmtContent, StandardOpenOption.CREATE);
 				messageQueue.sendInfo("Opening " + rmtFile.getAbsolutePath() + " in separate window.");

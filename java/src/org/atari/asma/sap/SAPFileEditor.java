@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -65,17 +64,17 @@ public class SAPFileEditor implements SAPFileProcessor {
 			files[i] = new File(args[i]);
 		}
 
-		if (files.length == 0) {
-			JFileChooser chooser = new JFileChooser();
-			chooser.setDialogTitle("SAPFileEditor - Select files");
-			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			chooser.setMultiSelectionEnabled(true);
-			int returnVal = chooser.showOpenDialog(null);
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				files = chooser.getSelectedFiles();
-			}
-
-		}
+//		if (files.length == 0) {
+//			JFileChooser chooser = new JFileChooser();
+//			chooser.setDialogTitle("SAPFileEditor - Select files");
+//			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+//			chooser.setMultiSelectionEnabled(true);
+//			int returnVal = chooser.showOpenDialog(null);
+//			if (returnVal == JFileChooser.APPROVE_OPTION) {
+//				files = chooser.getSelectedFiles();
+//			}
+//
+//		}
 		runFilesOrFolders(files);
 
 	};
