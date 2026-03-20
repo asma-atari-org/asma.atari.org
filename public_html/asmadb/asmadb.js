@@ -2740,7 +2740,6 @@ const asma = {"composerInfos": [
 , {"filePath": "Composers/Lis_Piotr/Yo_Falcons.sap", "fileSize": 8836, "title": "Yo, Falcons!", "author": "Piotr Lis (LiSU)", "date": "02/06/2018", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2, "demozooID": 187654}
 , {"filePath": "Composers/Lis_Piotr/Zasluzene_tretie_miesto.sap", "fileSize": 7102, "title": "Zasluzene tretie miesto", "author": "Piotr Lis (LiSU)", "date": "16/03/2019", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2, "demozooID": 201074}
 , {"filePath": "Composers/Lis_Piotr/Zilch.sap", "fileSize": 3338, "title": "Zilch", "author": "Piotr Lis (LiSU)", "date": "02/06/2018", "typeLetter": "B", "originalModuleExt": "rmt", "songs": 2, "demozooID": 388191}
-, {"filePath": "Composers/Lis_Piotr/produkty.sap", "fileSize": 9818, "title": "i produkty jego", "author": "Piotr Lis (LiSU)", "date": "05/07/2024", "typeLetter": "B", "originalModuleExt": "rmt", "channels": 2}
 , {"filePath": "Composers/Loos_Uwe/ABBUC_25.sap", "fileSize": 5146, "title": "ABBUC 25", "author": "Uwe Loos", "date": "1991 <?>", "typeLetter": "B", "originalModuleExt": "sap", "demozooID": 123027}
 , {"filePath": "Composers/Loos_Uwe/ABBUC_28.sap", "fileSize": 8335, "title": "ABBUC 28", "author": "Uwe Loos", "date": "1992 <?>", "typeLetter": "D", "originalModuleExt": "sap", "demozooID": 123028}
 , {"filePath": "Composers/Loos_Uwe/Das_Omen.sap", "fileSize": 17222, "title": "Das Omen", "author": "Uwe Loos", "date": "1989", "typeLetter": "D", "originalModuleExt": "sap", "demozooID": 123029}
