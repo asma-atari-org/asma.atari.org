@@ -6,22 +6,28 @@ import java.nio.charset.Charset;
 
 import org.atari.asma.sap.ASAPFileUtility;
 
+import net.sf.asap.PokeyStatesList;
+
 public class SAPRFile {
 
 	public static String CRLF = "\r\n";
-
-	public String author = "<?>";
-	public String name = "<?>";
+	public static String HEADER="SAP"+CRLF;
+	
+	public String author;
+	public String name;
 	public boolean stereo;
 	public boolean ntsc;
 	public int millis;
 	public boolean loop;
-	public byte[] content;
+	public PokeyStatesList statesList;
 
-	public void write(OutputStream os) throws IOException {
-		if (content == null) {
-			throw new IOException("No content set.");
-		}
+	public SAPRFile() {
+		author = "<?>";
+		name = "<?>";
+		statesList = new PokeyStatesList(0);
+	}
+
+	private String getHeader() {
 		String timeString = null;
 		if (millis > 0) {
 			timeString = ASAPFileUtility.getTimeString(millis);
@@ -44,24 +50,24 @@ public class SAPRFile {
 		if (timeString != null) {
 			builder.append("TIME " + timeString + CRLF);
 		}
-		builder.append(CRLF);
-		os.write(builder.toString().getBytes(Charset.forName("ASCII")));
-
-		os.write(content);
+		return builder.toString();
 	}
 
-	public void setContent(byte[] content) {
-		if (content == null) {
-			throw new IllegalArgumentException("Parameter must not be null");
-		}
-		int contentSize = content.length;
-		int frameSize = ASAPFileUtility.getFrameSize(stereo);
-		if (contentSize % frameSize != 0) {
-			throw new IllegalArgumentException(
-					"Content size " + contentSize + " is no multiple of the frame size " + frameSize + ".");
-		}
-		this.content = content;
+	public void setStatesList(PokeyStatesList statesList) {
+		stereo = statesList.pokeys > 1;
+		this.statesList = statesList;
 
+	}
+
+	public void write(OutputStream os) throws IOException {
+		var builder = getHeader() + CRLF;
+		os.write(builder.toString().getBytes(Charset.forName("ASCII")));
+		statesList.write(os);
+
+	}
+
+	public String toString() {
+		return getHeader();
 	}
 
 }
