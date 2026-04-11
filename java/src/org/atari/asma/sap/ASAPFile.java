@@ -1,8 +1,5 @@
 package org.atari.asma.sap;
 
-import java.util.Set;
-import java.util.TreeSet;
-
 import net.sf.asap.ASAPInfo;
 
 public class ASAPFile {
@@ -14,18 +11,12 @@ public class ASAPFile {
 	public final static String ATASCII_CHARACTERS = UPPPER_LETTERS + LOWER_LETTERS + NUMBERS + SPECICAL_CHARACTERS
 			+ "|";
 
-	private static Set<String> orginalFileExtensions = null;
-
 	public static boolean isOriginalModuleFileExtension(String fileExtension) {
-		if (orginalFileExtensions == null) {
-			orginalFileExtensions = new TreeSet<String>();
-			for (var s : new String[] { ".dmc", ".cmc", ".cm3", ".cmr", ".cms", ".dlt", ".mpd", ".mpt", ".rmt", ".tmc",
-					".tm2", ".fc" }) {
-				orginalFileExtensions.add(s);
-			}
+		var result = fileExtension.startsWith(".");
+		if (result) {
+			result = ASAPInfo.isOurExt(fileExtension.substring(1));
 		}
-		return orginalFileExtensions.contains(fileExtension);
-
+		return result;
 	}
 
 	public static boolean isStringEmpty(String s) {
@@ -33,20 +24,22 @@ public class ASAPFile {
 	}
 
 	public static String normalizeFileName(String fileName) {
-		var builder=new StringBuilder(fileName.length());
-		int index=fileName.lastIndexOf(".");
-		if (index<0) {index=fileName.length(); }
-		for (int i=0;i<index;i++) {
-			var c=fileName.charAt(i);
-			if (c==' ' || c=='-') {
-				c='_';
+		var builder = new StringBuilder(fileName.length());
+		int index = fileName.lastIndexOf(".");
+		if (index < 0) {
+			index = fileName.length();
+		}
+		for (int i = 0; i < index; i++) {
+			var c = fileName.charAt(i);
+			if (c == ' ' || c == '-') {
+				c = '_';
 			}
-			if ("0123456789_ABCDEFGHIHJKLMNOPQRSTUVWXYZabcdefghihjklmnopqrstuvwxyz".indexOf(c)<0) {
+			if ("0123456789_ABCDEFGHIHJKLMNOPQRSTUVWXYZabcdefghihjklmnopqrstuvwxyz".indexOf(c) < 0) {
 				continue;
 			}
 			builder.append(c);
 		}
-		if (index<fileName.length()) {
+		if (index < fileName.length()) {
 			builder.append(fileName.substring(index).toLowerCase());
 		}
 		return builder.toString();
