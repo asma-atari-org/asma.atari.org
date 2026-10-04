@@ -7,7 +7,7 @@ Written 2026-10-04.
 ## The chain for this project
 
 The edited `asap.fu` and `pokey.fu` in the `asap-code` clone
-(`C:\jac\system\Windows\Programming\Repositories\Tools\asap-code`) were
+(`C:\jac\system\Fusion\Programming\Repositories\Tools\asap-code`) were
 compiled with `make java/asap.jar`. That produced
 `java/src/net/sf/asap/ASAP.java` and the classes beside it, including
 `PokeyStates` and `PokeyStatesList`, and packed them into `java/asap.jar` on
