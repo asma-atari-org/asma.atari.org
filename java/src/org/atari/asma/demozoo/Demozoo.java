@@ -28,7 +28,9 @@ public class Demozoo {
 		public static final int ATARI_2600 = 54;
 	};
 
+
 	private static class ProductionsFetcher {
+		private final int DELAY = 400;
 
 		private final static int MAX_PAGES = 1000;
 
@@ -92,7 +94,6 @@ public class Demozoo {
 		}
 
 		private ProductionsPage fetchPage(String url, List<Production> productionList) {
-			final int DELAY = 100;
 			try {
 				var response = RestClient.sendGetRequest(url);
 				ProductionsPage productionsPage = Serializer.deserialize(response.content, ProductionsPage.class);
