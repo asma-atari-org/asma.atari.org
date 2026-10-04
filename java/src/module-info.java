@@ -6,7 +6,7 @@ module asma.atari.org {
 	exports org.atari.asma.sap.player;
 	exports org.atari.asma;
 
-	requires transitive asap;
 	requires com.google.gson;
 	requires transitive java.desktop;
+	requires transitive asap;
 }

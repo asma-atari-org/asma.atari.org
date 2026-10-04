@@ -11,8 +11,8 @@ import net.sf.asap.PokeyStatesList;
 public class SAPRFile {
 
 	public static String CRLF = "\r\n";
-	public static String HEADER="SAP"+CRLF;
-	
+	public static String HEADER = "SAP" + CRLF;
+
 	public String author;
 	public String name;
 	public boolean stereo;
@@ -24,7 +24,7 @@ public class SAPRFile {
 	public SAPRFile() {
 		author = "<?>";
 		name = "<?>";
-		statesList = new PokeyStatesList(0);
+		statesList = new PokeyStatesList();
 	}
 
 	private String getHeader() {
@@ -54,15 +54,32 @@ public class SAPRFile {
 	}
 
 	public void setStatesList(PokeyStatesList statesList) {
-		stereo = statesList.pokeys > 1;
+		stereo = statesList.getPokeys() > 1;
 		this.statesList = statesList;
 
 	}
 
 	public void write(OutputStream os) throws IOException {
+		var wrapper = new net.sf.asap.OutputStream() {
+
+			@Override
+			public void write(int b) throws net.sf.asap.IOException {
+				try {
+					os.write(b);
+				} catch (IOException ex) {
+					throw new net.sf.asap.IOException(ex.getMessage());
+				}
+
+			}
+		};
+
 		var builder = getHeader() + CRLF;
 		os.write(builder.toString().getBytes(Charset.forName("ASCII")));
-		statesList.write(os);
+		try {
+			statesList.write(wrapper);
+		} catch (net.sf.asap.IOException ex) {
+			throw new IOException(ex.getMessage());
+		}
 
 	}
 

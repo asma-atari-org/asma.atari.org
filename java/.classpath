@@ -11,7 +11,7 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/asap.jar" sourcepath="lib/asap-8.0.0-java-src.zip">
+	<classpathentry kind="lib" path="lib/asap-code/java/asap.jar" sourcepath="lib/asap-code/java/src">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>

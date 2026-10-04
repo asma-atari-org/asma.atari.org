@@ -31,16 +31,20 @@ public class SAPRFileLogic {
 		}
 		try {
 			asap.playSong(0, -1);
-		} catch (ASAPArgumentException e) {
-			throw new IOException(e.getMessage());
-		} catch (ASAPFormatException e) {
-			throw new IOException(e.getMessage());
+		} catch (ASAPArgumentException ex) {
+			throw new IOException(ex.getMessage());
+		} catch (ASAPFormatException ex) {
+			throw new IOException(ex.getMessage());
 
 		}
 
 		int frames = fps * seconds;
 		for (int i = 0; i < frames; i++) {
-			asap.doFrameDump(saprFile.statesList.statesList);
+			try {
+				asap.doFrameDump(saprFile.statesList.statesList);
+			} catch (net.sf.asap.IOException ex) {
+				throw new IOException(ex.getMessage());
+			}
 		}
 		return saprFile;
 
@@ -81,11 +85,30 @@ public class SAPRFileLogic {
 			}
 			length++;
 			if (length == 5 && !line.equals(SAPRFile.HEADER)) {
-				throw new IOException("Not a SAP file. Magic bytes are "+line+".");
+				throw new IOException("Not a SAP file. Magic bytes are " + line + ".");
 			}
 		}
-		result.statesList = new PokeyStatesList(result.stereo ? 2 : 1);
-		result.statesList.read(is);
+		result.statesList = new PokeyStatesList();
+		result.statesList.init(result.stereo ? 2 : 1);
+
+		var wrapper = new net.sf.asap.InputStream() {
+
+			@Override
+			public int read() throws net.sf.asap.IOException {
+				try {
+					return is.read();
+				} catch (IOException ex) {
+					throw new net.sf.asap.IOException(ex.getMessage());
+				}
+
+			}
+		};
+
+		try {
+			result.statesList.read(wrapper);
+		} catch (net.sf.asap.IOException ex) {
+			throw new IOException(ex.getMessage());
+		}
 
 		// log("INFO: Loaded SAP-R " + lines + " with " +
 		// result.frameList.size() + " lines.");

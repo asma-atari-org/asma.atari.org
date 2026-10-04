@@ -1,7 +1,6 @@
 package org.atari.asma.sap;
 
 import java.awt.Desktop;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -50,6 +49,7 @@ public class ASAPRenderer {
 			try {
 				saprInputFile = saprFileLogic.loadSAPR(inputFile, content);
 			} catch (IOException e) {
+				log("ERROR: Error for "+inputFile.getAbsolutePath());
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return;
@@ -116,7 +116,7 @@ public class ASAPRenderer {
 		int size = statesList.size();
 		final int extra = 1;
 		boolean stereo = false;
-		if (statesList.pokeys > 1) {
+		if (statesList.size() > 1) {
 			for (int i = 0; i < size; i++) {
 				var frame = statesList.get(i);
 				if (!frame.get(extra).isSilent()) {
@@ -129,13 +129,14 @@ public class ASAPRenderer {
 
 			}
 		}
-		if (statesList.pokeys > 1 && !stereo) {
+		if (statesList.getPokeys() > 1 && !stereo) {
 			log("INFO: Converting STEREO to MONO.");
 
-			var tempStatesList = new PokeyStatesList(1);
-
+			var tempStatesList = new PokeyStatesList();
+			tempStatesList.init(1);
 			for (int i = 0; i < size; i++) {
-				var states = new PokeyStates(1);
+				var states = new PokeyStates();
+				states.init(1);
 				states.get(0).fillFrom(statesList.get(i).get(0));
 				tempStatesList.add(states);
 			}
@@ -195,7 +196,8 @@ public class ASAPRenderer {
 			}
 		}
 
-		result.statesList=new PokeyStatesList(statesList.pokeys);
+		result.statesList=new PokeyStatesList();
+		result.statesList.init(statesList.getPokeys());
 		for (int i = startIndex; i <= endIndex; i++) {
 			result.statesList.add(statesList.get(i));
 		}
