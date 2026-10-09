@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.atari.asma.asap.ASAPRenderer"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="org.atari.asma.tools"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="C:\jac\system\WWW\Sites\asma.atari.org\asma-tools\test\RMT\Buddy\7th_Point-RMT134.sapr"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="asma-tools"/>
+</launchConfiguration>

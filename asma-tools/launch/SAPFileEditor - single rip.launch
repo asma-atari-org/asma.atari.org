@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.atari.asma.editor.SAPFileEditor"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="org.atari.asma.tools"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="C:\Users\JAC\Desktop\ASMA-Input\Test\ALMOND.XEX"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="asma-tools"/>
+</launchConfiguration>
