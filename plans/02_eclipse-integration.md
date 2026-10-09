@@ -8,7 +8,9 @@ Eclipse and reproduced the committed database byte-identically
 (`DemozooImporter.launch` gets verified on the next regular Demozoo refresh).
 The launch files now live in `launch/` at the repository root, because files
 nested in the module folders were indexed twice by Eclipse via the parent
-project. Only item 3 (two housekeeping decisions) remains open. Handles open item 3 of [01_maven-migration.md](01_maven-migration.md):
+project. Item 3 first decision (2026-10-10): the three `.bat` launch
+configurations stay - Eclipse is the normal way these scripts are started.
+Only the launch4j question remains open. Handles open item 3 of [01_maven-migration.md](01_maven-migration.md):
 the launch configurations and the Fusion/ASTIL external builder, which lost their
 home when the hand-maintained Eclipse project was replaced by the m2e import.
 
@@ -71,10 +73,9 @@ builder anyway.
 
 ### 3. Housekeeping
 
-- Move `asma-tools/launch/checkout.bat.launch`, `upload.bat.launch` and
-  `index.bat.launch` unchanged; they are workspace conveniences for the
-  website operation, not build steps. Optionally delete them - both scripts
-  run fine from a normal terminal.
+- ~~Keep or delete the `checkout.bat.launch`, `upload.bat.launch` and
+  `index.bat.launch` configurations.~~ Decided 2026-10-10: keep them in
+  `launch/` - Eclipse is the normal way these scripts are started.
 - Delete `asma-tools/build/SAPFileEditor.xml` only after deciding whether the
   launch4j exe is still wanted; if it is, a later step could wrap launch4j in
   a Maven profile too (`launch4j-maven-plugin`).
