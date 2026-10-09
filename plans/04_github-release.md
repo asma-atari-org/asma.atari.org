@@ -1,6 +1,9 @@
 # Plan: GitHub releases for the editor and the library
 
-Written 2026-10-10. Automate tagged releases on
+Written 2026-10-10. **Executed 2026-10-10**: steps 1-4 are done (assembly zip,
+both workflows, launch4j removed, release ritual in the README). The workflows
+run on the next push; the first actual release happens with the first `v*` tag.
+Step 5 (website download from the release) stays optional/later. Automate tagged releases on
 `github.com/asma-atari-org/asma.atari.org`: a GitHub Release carrying the
 SAPFileEditor binaries, and the same tag feeding JitPack for `asma-lib`
 (the open publishing item of [01_maven-migration.md](01_maven-migration.md)).

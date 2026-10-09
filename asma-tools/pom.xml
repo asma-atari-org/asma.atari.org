@@ -69,6 +69,30 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- Packs target/SAPFileEditor.zip (fat jar + Windows starter), the
+				distributable that used to be assembled by ant from the Eclipse
+				export. Runs after the shade execution in the same phase. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>sap-file-editor-zip</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/assembly/SAPFileEditor-zip.xml</descriptor>
+							</descriptors>
+							<finalName>SAPFileEditor</finalName>
+							<appendAssemblyId>false</appendAssemblyId>
+							<attach>false</attach>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 </project>

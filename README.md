@@ -29,12 +29,30 @@ The link is created by the "bat\checkout.bat" script if it is missing.
 mvn install
 ```
 
-builds both modules, runs the tests, and produces `asma-tools/target/SAPFileEditor.jar`,
-the runnable fat jar of the SAP file editor. The Windows launcher executable is built
-separately with launch4j using `asma-tools/build/SAPFileEditor.xml`.
+builds both modules, runs the tests, and produces `asma-tools/target/SAPFileEditor.jar`
+(the runnable fat jar of the SAP file editor) and `SAPFileEditor.zip` (the jar plus a
+Windows starter script, the distributable download).
 
 The `ASMAExporter` generates `public_html/asmadb/asmadb.js` (for the website),
 `asmadb.json` (plain JSON for API consumers) and `asmadb.html` from the SVN checkout.
+
+## Release
+
+Pushing a tag `v*` triggers `.github/workflows/release.yml`, which builds, tests and
+publishes a GitHub release with `SAPFileEditor.jar` and `SAPFileEditor.zip` attached.
+The same tag can be consumed via JitPack as
+`com.github.asma-atari-org.asma.atari.org:asma-lib:<tag>`.
+
+Release ritual:
+
+```
+mvn versions:set -DnewVersion=1.0.0 && git commit -am "Release 1.0.0"
+git tag v1.0.0 && git push origin main v1.0.0
+mvn versions:set -DnewVersion=1.1.0-SNAPSHOT && git commit -am "Start 1.1.0-SNAPSHOT"
+git push
+```
+
+Pushes to `main` are built and tested by `.github/workflows/build.yml`.
 
 Folder "examples"
 The example files from https://asap.sourceforge.net/examples.zip

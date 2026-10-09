@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 http://maven.apache.org/xsd/assembly-2.2.0.xsd">
+	<!-- The distributable SAPFileEditor.zip: the runnable fat jar plus a
+		Windows starter. Replaces the Eclipse/ant/launch4j packaging. -->
+	<id>dist</id>
+	<formats>
+		<format>zip</format>
+	</formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
+	<files>
+		<file>
+			<source>${project.build.directory}/SAPFileEditor.jar</source>
+			<destName>SAPFileEditor.jar</destName>
+		</file>
+		<file>
+			<source>${project.basedir}/src/assembly/SAPFileEditor.bat</source>
+			<destName>SAPFileEditor.bat</destName>
+			<lineEnding>crlf</lineEnding>
+		</file>
+	</files>
+</assembly>
