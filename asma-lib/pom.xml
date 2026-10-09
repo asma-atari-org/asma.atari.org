@@ -27,4 +27,46 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<!-- Regenerates ASTIL.java from ASTIL.fu with the Fusion transpiler.
+			Replaces the former Eclipse external builder (Fusion.launch).
+			Usage: mvn -Pastil generate-sources
+			The transpiler location can be overridden with -Dfut.executable=... -->
+		<profile>
+			<id>astil</id>
+			<properties>
+				<fut.executable>C:\jac\system\Windows\Tools\FUT\Fusion\fut.exe</fut.executable>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>3.2.0</version>
+						<executions>
+							<execution>
+								<id>generate-astil</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>${fut.executable}</executable>
+									<workingDirectory>${project.basedir}/src/main/java/org/atari/asma/stil</workingDirectory>
+									<arguments>
+										<argument>-o</argument>
+										<argument>ASTIL.java</argument>
+										<argument>-n</argument>
+										<argument>org.atari.asma.stil</argument>
+										<argument>ASTIL.fu</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

@@ -1,6 +1,10 @@
 # Proposal: Eclipse integration after the Maven migration
 
-Written 2026-10-09. Handles open item 3 of [01_maven-migration.md](01_maven-migration.md):
+Written 2026-10-09. Item 2 was implemented the same day: the `astil` profile
+exists in `asma-lib/pom.xml`, verified to regenerate `ASTIL.java` byte-identical
+to the committed version, and the orphaned `Fusion.launch`/`.externalToolBuilders`
+were removed. Items 1 and 3 remain open (item 1 needs a run from Eclipse,
+item 3 is a decision). Handles open item 3 of [01_maven-migration.md](01_maven-migration.md):
 the launch configurations and the Fusion/ASTIL external builder, which lost their
 home when the hand-maintained Eclipse project was replaced by the m2e import.
 
