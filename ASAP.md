@@ -38,6 +38,15 @@ it only needed a way to read the shadow byte, which its own patch adds. This
 project starts from a finished module file, so it needs the player itself to
 hand out the registers frame by frame, which is what the addition does.
 
+## Status in this repository
+
+Since the Maven migration on 2026-10-09, the patched jar is committed in this
+repository as `maven-repo/net/sf/asap/asap/8.0.0-asma/asap-8.0.0-asma.jar` and
+consumed by the `asma-tools` module as the Maven dependency
+`net.sf.asap:asap:8.0.0-asma`. That removes the build-time reach into the clone,
+but the edited `asap.fu` and `pokey.fu` sources remain uncommitted in the clone
+(see below) and should still get their own repository with a Maven build.
+
 ## One practical consequence
 
 Those edits are the only copy of that work. They are uncommitted in a clone

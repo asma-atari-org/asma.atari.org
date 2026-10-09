@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.atari.asma</groupId>
+	<artifactId>asma-parent</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<name>ASMA Parent</name>
+	<description>Atari SAP Music Archive (ASMA) - parent of the library and the site tools</description>
+	<url>https://asma.atari.org</url>
+
+	<modules>
+		<module>asma-lib</module>
+		<module>asma-tools</module>
+	</modules>
+
+	<properties>
+		<maven.compiler.release>21</maven.compiler.release>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<!-- The patched ASAP build (see ASAP.md) is not available in any public
+		repository. It is provided as a file-based repository inside this
+		repository until the ASAP fork gets its own repository and build. -->
+	<repositories>
+		<repository>
+			<id>asma-local-repo</id>
+			<url>file:///${maven.multiModuleProjectDirectory}/maven-repo</url>
+		</repository>
+	</repositories>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.atari.asma</groupId>
+				<artifactId>asma-lib</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.code.gson</groupId>
+				<artifactId>gson</artifactId>
+				<version>2.9.1</version>
+			</dependency>
+			<dependency>
+				<groupId>net.sf.asap</groupId>
+				<artifactId>asap</artifactId>
+				<version>8.0.0-asma</version>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter</artifactId>
+				<version>5.10.2</version>
+				<scope>test</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.13.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>3.2.5</version>
+					<configuration>
+						<!-- Run tests on the classpath to avoid JPMS test patching. -->
+						<useModulePath>false</useModulePath>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-shade-plugin</artifactId>
+					<version>3.5.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>3.4.1</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>

@@ -27,7 +27,8 @@ set SITE_ASMADB_FOLDER=%SITE_HTML_FOLDER%\asmadb
 set SITE_ASMADB_JS=%SITE_ASMADB_FOLDER%\asmadb.js
 set SITE_ASMA_ZIP_FILE=%SITE_ASMADB_FOLDER%\asma.zip
 
-set JAVA_FOLDER=%SITE_FOLDER%\java
+rem Fat jar built by "mvn install", contains the exporter and the editor.
+set TOOLS_JAR=%SITE_FOLDER%\asma-tools\target\SAPFileEditor.jar
 
 cd %SVN_FOLDER%
 echo ASMA - Atari SAP Music Archive >%SVN_ASMA_TEXT_FILE%
@@ -69,7 +70,7 @@ if not exist %WUDSN_SITE_HTML_FOLDER%. (
 echo.
 rem Run the exporter to update the JSON database.
 rem java --version 
-%JDK_HOME%\bin\java -cp "%JAVA_FOLDER%\bin;%JAVA_FOLDER%\lib\asap.jar;%JAVA_FOLDER%\lib\gson-2.9.1.jar" org.atari.asma.ASMAExporter %SVN_TRUNK_ASMA_FOLDER% %SITE_ASMADB_JS%
+%JDK_HOME%\bin\java -cp "%TOOLS_JAR%" org.atari.asma.exporter.ASMAExporter %SVN_TRUNK_ASMA_FOLDER% %SITE_ASMADB_JS%
 if ERRORLEVEL 1 (
     echo ERROR: ASMAExporter failed.
     exit /b 1

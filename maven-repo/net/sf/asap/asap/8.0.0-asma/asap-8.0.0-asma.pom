@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>net.sf.asap</groupId>
+	<artifactId>asap</artifactId>
+	<version>8.0.0-asma</version>
+	<packaging>jar</packaging>
+	<name>ASAP (patched ASMA build)</name>
+	<description>Another Slight Atari Player, locally built on 2026-04-14 from the asap-code clone
+		with the POKEY frame dump API (PokeyStates/PokeyStatesList) added for ASMA. See ASAP.md.</description>
+	<url>https://asap.sourceforge.net</url>
+</project>
