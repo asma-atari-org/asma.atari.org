@@ -62,13 +62,26 @@ between the two base revisions, so the patch is the same on either base):
   starting point for a future rebuild against current ASAP.
 
 The clone has a personal SourceForge fork remote
-(`ssh://git.code.sf.net/u/peterdell/asap`). Pushing both branches there is
-still pending (needs an SSH key loaded).
+(`ssh://git.code.sf.net/u/peterdell/asap`). Both branches were pushed there on 2026-10-09.
 
-## One practical consequence
+## One practical consequence (historical)
 
-Those edits are the only copy of that work. They are uncommitted in a clone
-that was fast-forwarded on 2026-10-04 by six months, from 2026-04-13 to the
-upstream state of 2026-09-22. The jar this project depends on is therefore
-older than the sources now in the tree, and rebuilding it would mix the April
-additions with everything upstream changed since.
+When this document was written, those edits were the only copy of that work:
+uncommitted in a clone that was fast-forwarded on 2026-10-04 by six months,
+from 2026-04-13 to the upstream state of 2026-09-22, so the jar was older than
+the sources in the tree and a rebuild would have mixed the April additions
+with everything upstream changed since. This is resolved: the patch is
+committed on the branches above and pushed to the fork, `asma-8.0.0` pins the
+reproducible state of the jar, and `sapr-dump` is the deliberate starting
+point for a rebuild against current ASAP.
+
+## The second clone
+
+`C:\jac\system\Fusion\Programming\Repositories\Tools\asap` is a clone of the
+personal SourceForge fork itself (`origin` = `u/peterdell/asap`, `upstream` =
+the official `p/asap/code`). It has the branch `pokey-register-shadow` checked
+out - the RMT-side patch that exposes the POKEY audio registers and
+single-frame stepping on top of upstream master of 2026-09-22. The fork is the
+hub holding all personal branches (`asma-8.0.0`, `sapr-dump`,
+`pokey-register-shadow`, `android-background`); `asap-code` pushes to it via
+the `fork` remote, `asap` via `origin`.

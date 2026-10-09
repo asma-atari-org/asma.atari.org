@@ -175,8 +175,7 @@ Open items:
   committed there as branch `sapr-dump`. Added branch `asma-8.0.0` (patch
   pinned at the jar's exact base revision plus a Maven build that reproduces
   `net.sf.asap:asap:8.0.0-asma` from committed sources). See the updated
-  `ASAP.md`. Still pending: pushing both branches to the SourceForge fork
-  (needs an SSH key loaded).
+  `ASAP.md`. Both branches are pushed to the SourceForge fork.
 - Publish asma-lib via JitPack (tag a release) once the API has settled.
 - Eclipse launch configurations and the Fusion/ASTIL builder: proposal in
   [02_eclipse-integration.md](02_eclipse-integration.md).
