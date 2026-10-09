@@ -43,9 +43,27 @@ hand out the registers frame by frame, which is what the addition does.
 Since the Maven migration on 2026-10-09, the patched jar is committed in this
 repository as `maven-repo/net/sf/asap/asap/8.0.0-asma/asap-8.0.0-asma.jar` and
 consumed by the `asma-tools` module as the Maven dependency
-`net.sf.asap:asap:8.0.0-asma`. That removes the build-time reach into the clone,
-but the edited `asap.fu` and `pokey.fu` sources remain uncommitted in the clone
-(see below) and should still get their own repository with a Maven build.
+`net.sf.asap:asap:8.0.0-asma`.
+
+## Status in the asap-code clone
+
+The patch is no longer uncommitted working-tree state. The clone
+(`C:\jac\system\Fusion\Programming\Repositories\Tools\asap-code`) now has two
+branches, both carrying the identical `FillPokeyState / DoFrameDump` commit
+(+281 lines in `asap.fu`/`pokey.fu`; upstream never touched those two files
+between the two base revisions, so the patch is the same on either base):
+
+- `asma-8.0.0` - the patch pinned at `44765da` (2026-03-19, the exact base of
+  the jar built on 2026-04-14), plus a Maven build (`pom.xml`) over the
+  committed fut-generated Java sources and the embedded 6502 player binaries.
+  `mvn install` there produces `net.sf.asap:asap:8.0.0-asma` with content
+  identical to the jar committed here - no MSYS2/fut/make needed.
+- `sapr-dump` - the same patch on top of upstream master of 2026-09-22, the
+  starting point for a future rebuild against current ASAP.
+
+The clone has a personal SourceForge fork remote
+(`ssh://git.code.sf.net/u/peterdell/asap`). Pushing both branches there is
+still pending (needs an SSH key loaded).
 
 ## One practical consequence
 

@@ -169,10 +169,14 @@ actual dependency graph:
 
 Open items:
 
-- Give the ASAP fork its own repository with a Maven build (`ASAP.md`).
+- ~~Give the ASAP fork its own repository with a Maven build (`ASAP.md`).~~
+  Done 2026-10-09, differently than planned: the asap-code clone already was
+  a fork (SourceForge remote `u/peterdell/asap`) and the patch had been
+  committed there as branch `sapr-dump`. Added branch `asma-8.0.0` (patch
+  pinned at the jar's exact base revision plus a Maven build that reproduces
+  `net.sf.asap:asap:8.0.0-asma` from committed sources). See the updated
+  `ASAP.md`. Still pending: pushing both branches to the SourceForge fork
+  (needs an SSH key loaded).
 - Publish asma-lib via JitPack (tag a release) once the API has settled.
-- The Eclipse `.launch` files in `asma-tools/launch` were updated to the new
-  project/class names but are untested until the workspace is re-imported
-  via m2e. The Fusion external builder for `ASTIL.fu` lives in
-  `asma-lib/.externalToolBuilders/Fusion.launch` and must be re-attached
-  manually in Eclipse if ASTIL regeneration is needed.
+- Eclipse launch configurations and the Fusion/ASTIL builder: proposal in
+  [02_eclipse-integration.md](02_eclipse-integration.md).
