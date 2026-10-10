@@ -1,15 +1,11 @@
-<IfModule mod_expires.c>
-# Enable expiration control
-ExpiresActive On
- 
-# Default expiration: 1 hour after request
-ExpiresDefault "now plus 1 hour"
-</IfModule>
+# Default caching: 1 hour. This host does not process mod_expires
+# (no Expires headers were ever sent), so the policy is set via
+# mod_headers, which is verified to work here. The asmadb directory
+# overrides this with "no-cache" for the application files.
+Header set Cache-Control "max-age=3600"
 
-# Referrer-Policy: New, allow external players to use the files directly.
-<IfModule mod_headers.c>
+# Allow external players to use the files directly.
 Header set Access-Control-Allow-Origin "*"
-</IfModule>
 
 <FilesMatch ".(ttt|sap)$">
 Header set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
