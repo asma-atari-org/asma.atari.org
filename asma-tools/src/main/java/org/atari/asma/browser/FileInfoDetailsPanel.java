@@ -33,11 +33,12 @@ public final class FileInfoDetailsPanel extends JPanel {
 	private final JTextField fileSizeField;
 	private final JTextField demozooIDField;
 
-	private int row;
+	// Fields are laid out in two label/field column pairs, filled row by row.
+	private int fieldIndex;
 
 	public FileInfoDetailsPanel() {
 		setLayout(new GridBagLayout());
-		row = 0;
+		fieldIndex = 0;
 		titleField = addField(DataTypes.FileInfo_Title);
 		authorField = addField(DataTypes.FileInfo_Author);
 		dateField = addField(DataTypes.FileInfo_Date);
@@ -55,22 +56,25 @@ public final class FileInfoDetailsPanel extends JPanel {
 		JTextField field = new JTextField();
 		field.setEditable(false);
 
+		int gridx = (fieldIndex % 2) * 2;
+		int gridy = fieldIndex / 2;
+
 		GridBagConstraints labelConstraints = new GridBagConstraints();
-		labelConstraints.gridx = 0;
-		labelConstraints.gridy = row;
+		labelConstraints.gridx = gridx;
+		labelConstraints.gridy = gridy;
 		labelConstraints.anchor = GridBagConstraints.WEST;
 		labelConstraints.insets = new Insets(2, 4, 2, 8);
 		add(ElementFactory.createLabel(dataType, field), labelConstraints);
 
 		GridBagConstraints fieldConstraints = new GridBagConstraints();
-		fieldConstraints.gridx = 1;
-		fieldConstraints.gridy = row;
+		fieldConstraints.gridx = gridx + 1;
+		fieldConstraints.gridy = gridy;
 		fieldConstraints.weightx = 1.0;
 		fieldConstraints.fill = GridBagConstraints.HORIZONTAL;
-		fieldConstraints.insets = new Insets(2, 0, 2, 4);
+		fieldConstraints.insets = new Insets(2, 0, 2, gridx == 0 ? 16 : 4);
 		add(field, fieldConstraints);
 
-		row++;
+		fieldIndex++;
 		return field;
 	}
 
