@@ -18,3 +18,15 @@ jobs:
           cache: maven
       - name: Build and test
         run: mvn -B clean verify
+
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Run JavaScript tests
+        run: node --test "js-test/*.test.js"
+      - name: Check asma.js module syntax
+        run: node --input-type=module --check < public_html/asmadb/asma.js

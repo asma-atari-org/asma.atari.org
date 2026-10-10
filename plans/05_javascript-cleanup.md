@@ -10,9 +10,14 @@ holds the actionable findings. Status: section 1 done (2026-10-10), sections
 All six fixes below are applied; while fixing `checkDayOfMonth`, a seventh
 latent bug was found and fixed: the 31-day check omitted June (`'06'`).
 Script cache busters in `asmadb/index.html` were bumped for `ui.js`,
-`file.js` and `asma.js`. Verified statically (no JavaScript runtime is
-installed on this machine); one manual smoke test via `index.bat` -
-search, play, author dialog, details toggle - is still advisable.
+`file.js` and `asma.js`. Regression tests exist since the same day in
+`js-test/` (Node.js LTS, built-in test runner, `node --test
+"js-test/*.test.js"`; the loader runs the classic scripts in a VM context
+like browser script tags). They cover the date validation, URL file path
+scheme, author splitting, composer proxies and encodeHTML quoting, and run
+in CI as the `javascript` job of `build.yml`. One manual smoke test via
+`index.bat` - search, play, author dialog, details toggle - is still
+advisable, since `asma.js` itself is DOM-coupled and only syntax-checked.
 
 - **`file.js` `FileInfoList.checkDayOfMonth`**: `switch (month)` must be
   `switch (day)` - the cases are day values (`"01"`-`"31"`). As written, days

@@ -52,7 +52,9 @@ mvn versions:set -DnewVersion=1.1.0-SNAPSHOT && git commit -am "Start 1.1.0-SNAP
 git push
 ```
 
-Pushes to `main` are built and tested by `.github/workflows/build.yml`.
+Pushes to `main` are built and tested by `.github/workflows/build.yml`,
+including the JavaScript regression tests in `js-test` (Node.js LTS,
+built-in test runner): `node --test "js-test/*.test.js"`.
 
 Folder "examples"
 The example files from https://asap.sourceforge.net/examples.zip

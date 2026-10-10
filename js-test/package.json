@@ -1,0 +1,6 @@
+{
+	"name": "asma-js-test",
+	"private": true,
+	"type": "module",
+	"description": "Regression tests for the hand-written JavaScript in public_html/asmadb, run with the built-in Node.js test runner: node --test js-test"
+}
