@@ -30,7 +30,6 @@ public final class FileInfoDetailsPanel extends JPanel {
 	private final JTextField hardwareField;
 	private final JTextField formatField;
 	private final JTextField channelsField;
-	private final JTextField songsField;
 	private final JTextField filePathField;
 	private final JTextField fileSizeField;
 	private final JTextField demozooIDField;
@@ -40,26 +39,38 @@ public final class FileInfoDetailsPanel extends JPanel {
 	// Full-width rows below the fields, for the replay controls.
 	private int extraRowCount;
 
-	public FileInfoDetailsPanel() {
+	/**
+	 * @param songsComponent
+	 *            The component displayed for the songs, the song buttons of
+	 *            the replay controls, not <code>null</code>.
+	 */
+	public FileInfoDetailsPanel(JComponent songsComponent) {
+		if (songsComponent == null) {
+			throw new IllegalArgumentException("Parameter 'songsComponent' must not be null.");
+		}
 		setLayout(new GridBagLayout());
 		fieldIndex = 0;
 		titleField = addField(DataTypes.FileInfo_Title);
 		authorField = addField(DataTypes.FileInfo_Author);
 		dateField = addField(DataTypes.FileInfo_Date);
-		demozooIDField = addField(DataTypes.FileInfo_DemozooID);
 		channelsField = addField(DataTypes.FileInfo_Channels);
-		songsField = addField(DataTypes.FileInfo_Songs);
+		addComponent(DataTypes.FileInfo_Songs, songsComponent);
 		hardwareField = addField(DataTypes.FileInfo_Hardware);
 		formatField = addField(DataTypes.FileInfo_OriginalModuleExt);
 		filePathField = addField(DataTypes.FileInfo_FilePath);
 		fileSizeField = addField(DataTypes.FileInfo_FileSize);
+		demozooIDField = addField(DataTypes.FileInfo_DemozooID);
 		setFileInfo(null);
 	}
 
 	private JTextField addField(DataType dataType) {
 		JTextField field = new JTextField();
 		field.setEditable(false);
+		addComponent(dataType, field);
+		return field;
+	}
 
+	private void addComponent(DataType dataType, JComponent field) {
 		int gridx = (fieldIndex % 2) * 2;
 		int gridy = fieldIndex / 2;
 
@@ -79,7 +90,6 @@ public final class FileInfoDetailsPanel extends JPanel {
 		add(field, fieldConstraints);
 
 		fieldIndex++;
-		return field;
 	}
 
 	private int getNextExtraRow() {
@@ -127,7 +137,6 @@ public final class FileInfoDetailsPanel extends JPanel {
 			hardwareField.setText("");
 			formatField.setText("");
 			channelsField.setText("");
-			songsField.setText("");
 			filePathField.setText("");
 			fileSizeField.setText("");
 			demozooIDField.setText("");
@@ -139,11 +148,6 @@ public final class FileInfoDetailsPanel extends JPanel {
 		hardwareField.setText(fileInfo.hardware);
 		formatField.setText(fileInfo.originalModuleExt);
 		channelsField.setText(fileInfo.getChannelsText());
-		String songsText = String.valueOf(fileInfo.songs);
-		if (fileInfo.songs > 1) {
-			songsText += " (default " + (fileInfo.defaultSongIndex + 1) + ")";
-		}
-		songsField.setText(songsText);
 		filePathField.setText(fileInfo.filePath);
 		fileSizeField.setText(fileInfo.fileSize + " bytes");
 		demozooIDField.setText(fileInfo.getDemozooID() == 0 ? "" : String.valueOf(fileInfo.getDemozooID()));

@@ -9,7 +9,6 @@ import com.wudsn.tools.base.repository.NLS;
  */
 public final class Texts extends NLS {
 
-	public static String Replay_PlaySong;
 	public static String Replay_PlayingTime;
 
 	static {
