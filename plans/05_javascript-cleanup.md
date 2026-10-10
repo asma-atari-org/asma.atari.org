@@ -42,6 +42,17 @@ advisable, since `asma.js` itself is DOM-coupled and only syntax-checked.
   row. Fix by escaping `"` and `'` in `encodeHTML` and routing the attribute
   values through it.
 
+## 1b. Playing time slider (found and fixed 2026-10-10)
+
+Reported as "dragging the slider no longer works". Diagnosis: the engine seek
+path was healthy (verified with Node against the real ASAP module); the played
+file simply had no TIME tag, so `getDuration()` returned -1, the slider's
+`max` stayed 0 and a range input with `min=max=0` is visible but frozen. A
+sweep of 4000 archive files found only 14 without a duration. Fixes: the
+slider is hidden while playing a file without a duration, and the 500 ms
+refresh no longer overwrites the thumb position while the user is dragging
+(tracked via pointerdown/up/cancel). Verified manually in the browser.
+
 ## 2. Modernization (optional, no urgency)
 
 - `asapweb.js` uses the deprecated `ScriptProcessorNode`; the replacement is

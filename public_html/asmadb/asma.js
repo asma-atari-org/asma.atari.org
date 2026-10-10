@@ -191,6 +191,11 @@ class ASMA {
 		}
 
 		// Setup main window
+		this.playingTimeSliderDragging = false;
+		let playingTimeSlider = UI.getElementById("playingTimeSlider");
+		playingTimeSlider.addEventListener("pointerdown", () => { this.playingTimeSliderDragging = true; });
+		playingTimeSlider.addEventListener("pointerup", () => { this.playingTimeSliderDragging = false; });
+		playingTimeSlider.addEventListener("pointercancel", () => { this.playingTimeSliderDragging = false; });
 		window.setInterval(this.refreshCurrentASAPInfo, 500, this);
 		window.addEventListener('popstate', (event) => { asmaInstance.onWindowPopState(event.state); });
 
@@ -749,6 +754,9 @@ class ASMA {
 
 			case SongState.PLAYING:
 				windowTitleString = songTitleString;
+				// Without a duration (no TIME tag) there is nothing to seek in,
+				// and a range input with min=max=0 would be visible but frozen.
+				sliderVisible = false;
 				for (let i = 0; i < this.currentFileInfo.songs; i++) {
 					let id = this.getPlaySongButtonId(i);
 					let playSongButton = UI.getElementById(id);
@@ -782,6 +790,7 @@ class ASMA {
 					}
 					if (duration > 0) {
 						durationString += " / " + Util.getDurationString(duration);
+						sliderVisible = true;
 						sliderMin = 0;
 						sliderMax = duration;
 						sliderValue = position;
@@ -806,7 +815,10 @@ class ASMA {
 		playingTimeSlider.style.display = (sliderVisible ? "" : "none");
 		playingTimeSlider.min = sliderMin;
 		playingTimeSlider.max = sliderMax;
-		playingTimeSlider.value = sliderValue;
+		// Do not yank the thumb away from the user while they are dragging.
+		if (!this.playingTimeSliderDragging) {
+			playingTimeSlider.value = sliderValue;
+		}
 	}
 
 	/*
