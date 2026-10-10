@@ -1,0 +1,9 @@
+# The application scripts and the generated database must never be served
+# stale: "no-cache" means "cache, but revalidate before use", so the browser
+# keeps the files and gets a cheap 304 unless an upload changed them. This
+# replaces the former hand-maintained "?version=" query parameters.
+<IfModule mod_headers.c>
+<FilesMatch "\.(js|css|json)$">
+Header set Cache-Control "no-cache"
+</FilesMatch>
+</IfModule>

@@ -63,9 +63,16 @@ refresh no longer overwrites the thumb position while the user is dragging
   but the script-tag approach is what makes `file://` mode work, so a change
   would need a fallback. Questionable trade-off; current approach is
   defensible.
-- `asmadb.js` has no `?version=` cache buster and relies on the 1-hour
-  `.htaccess` expiry. The exporter could append a content hash or date to the
-  script URL in the generated pages if staleness ever becomes an issue.
+- ~~`asmadb.js` has no `?version=` cache buster and relies on the 1-hour
+  `.htaccess` expiry.~~ Done 2026-10-10, for all scripts: a new
+  `asmadb/.htaccess` sets `Cache-Control: no-cache` (cache but revalidate,
+  cheap 304s) for `*.js`/`*.css`/`*.json`, and the hand-maintained
+  `?version=` parameters were removed from `asmadb/index.html` - that
+  convention had already failed silently (`file.js`/`ui.js` carried no
+  parameter at all). Heavy rarely-changing assets (images, fonts, the
+  `/asma/` files) keep the 1-hour default. Verify the response headers
+  once after the next FTP upload (local python http.server ignores
+  `.htaccess`).
 
 ## 3. Validation consolidation - DONE 2026-10-10
 
