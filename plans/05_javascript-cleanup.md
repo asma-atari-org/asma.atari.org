@@ -2,9 +2,17 @@
 
 Written 2026-10-10, based on a review of the player application. The structural
 analysis lives in [public_html/README.md](../public_html/README.md); this plan
-holds the actionable findings. Status: open.
+holds the actionable findings. Status: section 1 done (2026-10-10), sections
+2-3 open.
 
-## 1. Bug fixes (small, isolated, verify via index.bat)
+## 1. Bug fixes (small, isolated, verify via index.bat) - DONE 2026-10-10
+
+All six fixes below are applied; while fixing `checkDayOfMonth`, a seventh
+latent bug was found and fixed: the 31-day check omitted June (`'06'`).
+Script cache busters in `asmadb/index.html` were bumped for `ui.js`,
+`file.js` and `asma.js`. Verified statically (no JavaScript runtime is
+installed on this machine); one manual smoke test via `index.bat` -
+search, play, author dialog, details toggle - is still advisable.
 
 - **`file.js` `FileInfoList.checkDayOfMonth`**: `switch (month)` must be
   `switch (day)` - the cases are day values (`"01"`-`"31"`). As written, days

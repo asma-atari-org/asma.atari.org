@@ -152,7 +152,7 @@ class FileInfoList {
 				break;
 			case '??/????':       // MM/YYYY
 				monthFrom = date.substring(0, 2);
-				yearFrom = date.substring(3, 5);
+				yearFrom = date.substring(3, 7);
 				break;
 			case '??-??/????':    // MM-MM/YYYY
 				monthFrom = date.substring(0, 2);
@@ -179,7 +179,7 @@ class FileInfoList {
 
 	static checkDayOfMonth(day, month, year) {
 		FileInfoList.checkMonthOfYear(month, year);
-		switch (month) {
+		switch (day) {
 			case "01":
 			case "02":
 			case "03":
@@ -216,7 +216,7 @@ class FileInfoList {
 				};
 				break;
 			case "31":
-				if (month == '02' || month == '04' || month == '09' || month == '11') {
+				if (month == '02' || month == '04' || month == '06' || month == '09' || month == '11') {
 					throw `Day ${day} is invalid`
 				};
 				break;

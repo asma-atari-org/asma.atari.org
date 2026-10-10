@@ -28,7 +28,7 @@ UI.openTabbedPaneTab = function(tabbedPaneName, evt, tabID) {
 };
 
 UI.encodeHTML = function(text){
- return text.replace(/[\u00A0-\u9999<>\&]/g, ((i) => `&#${i.charCodeAt(0)};`));
+ return text.replace(/[\u00A0-\u9999<>&"']/g, ((i) => `&#${i.charCodeAt(0)};`));
 };
 
 // Assume a div named "...Result" containing a sortable table "...Table" with the default sort header column "...TableSortHeader"

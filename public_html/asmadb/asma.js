@@ -285,11 +285,11 @@ class ASMA {
 	}
 
 	setSearchField(id, searchParameters) {
-		let label = document.getElementById(id + "Label");
-		UI.setVisible("searchAuthorLabel", this.detailsMode);
+		let label = UI.getElementById(id + "Label");
+		UI.setVisible(id + "Label", this.detailsMode);
 		let field = UI.getElementById(id);
 		field.placeholder = (this.detailsMode ? "" : label.innerHTML);
-		UI.setVisible("searchAuthor", this.detailsMode || searchParameters[id] != "");
+		UI.setVisible(id, this.detailsMode || searchParameters[id] != "");
 	}
 
 	setSearchParameters(searchParameters) {
@@ -444,7 +444,7 @@ class ASMA {
 			let dateParts = fileInfo.date.split("/").reverse();
 			let dateSortKey = dateParts.join("/");
 			resultHTML += "<tr id=\"searchResultIndex" + fileInfo.getFileIndex() + "\" onclick=\"asmaInstance.playOrStopAtIndex(" + fileInfo.getFileIndex() + "," + fileInfo.defaultSongIndex + ")\">";
-			resultHTML += "<td class=\"search_result_cell\" title=\"" + fileInfo.getFilePath() + "\" sorttable_customkey=\"" + fileInfo.title + "\">" + UI.encodeHTML(fileInfo.title) + "</td>";
+			resultHTML += "<td class=\"search_result_cell\" title=\"" + UI.encodeHTML(fileInfo.getFilePath()) + "\" sorttable_customkey=\"" + UI.encodeHTML(fileInfo.title) + "\">" + UI.encodeHTML(fileInfo.title) + "</td>";
 			resultHTML += "<td class=\"search_result_cell\">" + UI.encodeHTML(fileInfo.author) + "</td>";
 			if (this.detailsMode || searchDate != "") {
 				resultHTML += "<td class=\"search_result_cell\" style=\"text-align:right\"sorttable_customkey=\"" + dateSortKey + "\">" + UI.encodeHTML(fileInfo.date) + "</td>";
@@ -544,8 +544,8 @@ class ASMA {
 			UI.getElementById("hardware").innerHTML = UI.encodeHTML(hardware);
 			UI.getElementById("originalModuleFormat").innerHTML = "";
 			UI.getElementById("songList").innerHTML = "";
-			replayFrequency.innerhtml = "";
-			addresses.innerhtml = "";
+			replayFrequency.innerHTML = "";
+			addresses.innerHTML = "";
 			UI.getElementById("filePath").innerHTML = "";
 			UI.getElementById("fileSize").innerHTML = "";
 			UI.getElementById("demozooID").innerHTML = "";
@@ -582,8 +582,8 @@ class ASMA {
 				UI.getElementById("channels").innerHTML = this.currentFileInfo.getChannelsText();
 				UI.getElementById("originalModuleFormat").innerHTML = this.currentFileInfo.getOriginalModuleFormatText();
 				UI.getElementById("songList").innerHTML = "";
-				replayFrequency.innerhtml = "";
-				addresses.innerhtml = "";
+				replayFrequency.innerHTML = "";
+				addresses.innerHTML = "";
 			} else {
 				// There is ASAPInfo
 				title = asapInfo.getTitle() == "" ? fileInfo.title : asapInfo.getTitle();
@@ -1065,7 +1065,7 @@ class ASMA {
 			return;
 		}
 		let composerProxies = fileInfo.getComposerProxies();
-		if (composerIndex >= composerProxies.size) {
+		if (composerIndex >= composerProxies.length) {
 			return;
 		}
 		let composerProxy = composerProxies.at(composerIndex);
@@ -1231,7 +1231,7 @@ class ASMA {
 
 			resultHTML += "<tr>";
 			if (this.detailsMode) {
-				resultHTML += "<td sorttable_customkey=\"" + composerProxy.getLastNameSortKey() + "\" title=\"" + UI.encodeHTML(composerProxy.getFolderName()) + "\">" + UI.encodeHTML(composerProxy.getLastNameUnicode()) + "</td>";
+				resultHTML += "<td sorttable_customkey=\"" + UI.encodeHTML(composerProxy.getLastNameSortKey()) + "\" title=\"" + UI.encodeHTML(composerProxy.getFolderName()) + "\">" + UI.encodeHTML(composerProxy.getLastNameUnicode()) + "</td>";
 				resultHTML += "<td class=\"statistic_cell\">" + UI.encodeHTML(composerProxy.getFirstNameUnicode()) + "</td>";
 				resultHTML += "<td class=\"statistic_cell\">" + UI.encodeHTML(composerProxy.getHandles()) + "</td>";
 			} else {
