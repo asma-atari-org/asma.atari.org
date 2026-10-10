@@ -178,4 +178,4 @@ Open items:
   `ASAP.md`. Both branches are pushed to the SourceForge fork.
 - Publish asma-lib via JitPack (tag a release) once the API has settled.
 - Eclipse launch configurations and the Fusion/ASTIL builder: proposal in
-  [02_eclipse-integration.md](02_eclipse-integration.md).
+  [02_ECLIPSE_INTEGRATION.md](02_ECLIPSE_INTEGRATION.md).

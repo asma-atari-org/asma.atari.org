@@ -6,8 +6,8 @@ run on the next push; the first actual release happens with the first `v*` tag.
 Step 5 (website download from the release) stays optional/later. Automate tagged releases on
 `github.com/asma-atari-org/asma.atari.org`: a GitHub Release carrying the
 SAPFileEditor binaries, and the same tag feeding JitPack for `asma-lib`
-(the open publishing item of [01_maven-migration.md](01_maven-migration.md)).
-Decision from [02_eclipse-integration.md](02_eclipse-integration.md):
+(the open publishing item of [01_MAVEN_MIGRATION.md](01_MAVEN_MIGRATION.md)).
+Decision from [02_ECLIPSE_INTEGRATION.md](02_ECLIPSE_INTEGRATION.md):
 the launch4j `.exe` is not needed in the current process, so the release
 ships the fat jar; launch4j is dropped.
 

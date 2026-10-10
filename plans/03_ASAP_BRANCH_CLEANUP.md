@@ -2,7 +2,7 @@
 
 Written 2026-10-10. To be executed when Fox merges the pull request for
 `pokey-register-shadow` into the official ASAP repository. Background in
-[02_eclipse-integration.md](02_eclipse-integration.md)'s sibling discussions
+[02_ECLIPSE_INTEGRATION.md](02_ECLIPSE_INTEGRATION.md)'s sibling discussions
 and `ASAP.md`; current fork state (`u/peterdell/asap`): `master`,
 `pokey-register-shadow` (the open PR), `sapr-dump` (ASMA POKEY dump patch),
 `asma-8.0.0` (pinned, reproducible source of the shipped

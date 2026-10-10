@@ -12,7 +12,7 @@ project. Item 3 first decision (2026-10-10): the three `.bat` launch
 configurations stay - Eclipse is the normal way these scripts are started.
 The launch4j question was settled by plan 04 (2026-10-10): the exe is not
 needed, launch4j was removed, the zip is built by Maven and released via
-GitHub Actions. This plan is fully done. Handles open item 3 of [01_maven-migration.md](01_maven-migration.md):
+GitHub Actions. This plan is fully done. Handles open item 3 of [01_MAVEN_MIGRATION.md](01_MAVEN_MIGRATION.md):
 the launch configurations and the Fusion/ASTIL external builder, which lost their
 home when the hand-maintained Eclipse project was replaced by the m2e import.
 
@@ -80,7 +80,7 @@ builder anyway.
   `launch/` - Eclipse is the normal way these scripts are started.
 - ~~Delete `asma-tools/build/SAPFileEditor.xml` only after deciding whether the
   launch4j exe is still wanted.~~ Decided and done 2026-10-10 via
-  [04_github-release.md](04_github-release.md): exe dropped, launch4j removed.
+  [04_GITHUB_RELEASE.md](04_GITHUB_RELEASE.md): exe dropped, launch4j removed.
 
 ## Effort
 

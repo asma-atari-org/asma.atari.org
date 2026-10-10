@@ -47,7 +47,7 @@
 			<!-- The shared foundation of the WUDSN tool family (DIS6502, RMT,
 				The!Cart Studio). Not on Maven Central: built from the GitHub
 				repository wudsn/wudsn-base (the CI workflows install it first,
-				like RMT does). See plans/06_wudsn-base-migration.md. -->
+				like RMT does). See plans/06_WUDSN_BASE_MIGRATION.md. -->
 			<dependency>
 				<groupId>com.wudsn.tools</groupId>
 				<artifactId>com.wudsn.tools.base</artifactId>
