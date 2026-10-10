@@ -18,6 +18,11 @@ public final class Actions extends NLS {
 	public static Action MainMenu_Database_LoadFromWebsite;
 	public static Action MainMenu_Help_About;
 
+	public static Action Replay_Play;
+	public static Action Replay_Pause;
+	public static Action Replay_Stop;
+	public static Action Replay_Shuffle;
+
 	static {
 		initializeClass(Actions.class, null);
 	}

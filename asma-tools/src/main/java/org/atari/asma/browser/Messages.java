@@ -19,6 +19,8 @@ public final class Messages extends NLS {
 	public static Message E002;
 	/** No local database was found: the candidate paths. */
 	public static Message E003;
+	/** A file could not be played: the file path, the reason. */
+	public static Message E004;
 
 	static {
 		initializeClass(Messages.class, null);

@@ -4,6 +4,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -35,6 +37,8 @@ public final class FileInfoDetailsPanel extends JPanel {
 
 	// Fields are laid out in two label/field column pairs, filled row by row.
 	private int fieldIndex;
+	// Full-width rows below the fields, for the replay controls.
+	private int extraRowCount;
 
 	public FileInfoDetailsPanel() {
 		setLayout(new GridBagLayout());
@@ -76,6 +80,43 @@ public final class FileInfoDetailsPanel extends JPanel {
 
 		fieldIndex++;
 		return field;
+	}
+
+	private int getNextExtraRow() {
+		return (fieldIndex + 1) / 2 + extraRowCount++;
+	}
+
+	/** Adds a labeled row below the fields, spanning the remaining columns. */
+	public void addRow(String labelText, JComponent component) {
+		int gridy = getNextExtraRow();
+
+		GridBagConstraints labelConstraints = new GridBagConstraints();
+		labelConstraints.gridx = 0;
+		labelConstraints.gridy = gridy;
+		labelConstraints.anchor = GridBagConstraints.WEST;
+		labelConstraints.insets = new Insets(2, 4, 2, 8);
+		add(new JLabel(labelText), labelConstraints);
+
+		GridBagConstraints componentConstraints = new GridBagConstraints();
+		componentConstraints.gridx = 1;
+		componentConstraints.gridy = gridy;
+		componentConstraints.gridwidth = 3;
+		componentConstraints.weightx = 1.0;
+		componentConstraints.fill = GridBagConstraints.HORIZONTAL;
+		componentConstraints.anchor = GridBagConstraints.WEST;
+		componentConstraints.insets = new Insets(2, 0, 2, 4);
+		add(component, componentConstraints);
+	}
+
+	/** Adds an unlabeled row below the fields, spanning all columns. */
+	public void addFullWidthRow(JComponent component) {
+		GridBagConstraints constraints = new GridBagConstraints();
+		constraints.gridx = 0;
+		constraints.gridy = getNextExtraRow();
+		constraints.gridwidth = 4;
+		constraints.anchor = GridBagConstraints.WEST;
+		constraints.insets = new Insets(2, 0, 2, 4);
+		add(component, constraints);
 	}
 
 	public void setFileInfo(FileInfo fileInfo) {

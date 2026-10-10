@@ -4,10 +4,15 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -30,11 +35,12 @@ import com.wudsn.tools.base.gui.StatusBar;
  * ASMABrowser - browses the database of the Atari SAP Music Archive
  * (https://asma.atari.org) in a details panel and an attribute table,
  * loaded via the {@link ASMAClient} from the local generated database or
- * from the website. See plans/07.
+ * from the website, with replay controls like the website player. See
+ * plans/07.
  *
  * @author Peter Dell
  */
-public final class ASMABrowser implements ActionListener {
+public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 
 	private static final String TITLE = "ASMABrowser - Atari SAP Music Archive";
 
@@ -62,10 +68,14 @@ public final class ASMABrowser implements ActionListener {
 	private final ASMAClient client;
 	private JFrame frame;
 	private FileInfoDetailsPanel detailsPanel;
+	private ReplayControls replayControls;
 	private FileInfoFilterPanel filterPanel;
 	private FileInfoListPanel fileInfoListPanel;
 	private StatusBar statusBar;
 	private java.util.List<FileInfo> allFileInfos;
+	// The archive folder next to a locally loaded database, null when loaded from the website.
+	private File localArchiveFolder;
+	private final Random random;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -87,6 +97,7 @@ public final class ASMABrowser implements ActionListener {
 		messageQueue = new MessageQueue();
 		client = new ASMAClient();
 		allFileInfos = new java.util.ArrayList<FileInfo>();
+		random = new Random();
 	}
 
 	private void run() {
@@ -95,6 +106,10 @@ public final class ASMABrowser implements ActionListener {
 		frame.setJMenuBar(createMenuBar());
 
 		detailsPanel = new FileInfoDetailsPanel();
+		replayControls = new ReplayControls(this);
+		detailsPanel.addRow(Texts.Replay_PlaySong, replayControls.getSongButtonsPanel());
+		detailsPanel.addRow(Texts.Replay_PlayingTime, replayControls.getPlayingTimePanel());
+		detailsPanel.addFullWidthRow(replayControls.getButtonPanel());
 		filterPanel = new FileInfoFilterPanel(selection -> applySelection(selection));
 		fileInfoListPanel = new FileInfoListPanel(new InMemoryAttributeTablePreferences());
 		statusBar = new StatusBar();
@@ -103,6 +118,15 @@ public final class ASMABrowser implements ActionListener {
 		fileInfoListPanel.getTable().getSelectionModel().addListSelectionListener(event -> {
 			if (!event.getValueIsAdjusting()) {
 				updateDetailsPanel();
+			}
+		});
+		// A double click plays the file, like a click in the website player's result list.
+		fileInfoListPanel.getTable().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent event) {
+				if (event.getClickCount() == 2) {
+					replayControls.playSelected();
+				}
 			}
 		});
 
@@ -151,7 +175,8 @@ public final class ASMABrowser implements ActionListener {
 	public void actionPerformed(ActionEvent event) {
 		switch (event.getActionCommand()) {
 		case Commands.EXIT:
-			frame.dispose();
+			// The replay timer would keep the event dispatch thread alive after a dispose.
+			frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			break;
 		case Commands.RELOAD_LOCAL:
 			loadLocalDatabase();
@@ -177,6 +202,7 @@ public final class ASMABrowser implements ActionListener {
 			fileInfo = fileInfoListPanel.getTableModel().getFileInfo(table.convertRowIndexToModel(viewRow));
 		}
 		detailsPanel.setFileInfo(fileInfo);
+		replayControls.setSelectedFileInfo(fileInfo);
 	}
 
 	private void applySelection(FileInfo.Selection selection) {
@@ -218,8 +244,12 @@ public final class ASMABrowser implements ActionListener {
 			ASMAClient.Database database;
 			if (fromWebsite != null) {
 				database = client.loadDatabase();
+				localArchiveFolder = null;
 			} else {
-				database = client.loadDatabase(new File(source));
+				File databaseFile = new File(source).getAbsoluteFile();
+				database = client.loadDatabase(databaseFile);
+				// public_html/asmadb/asmadb.js -> public_html/asma
+				localArchiveFolder = new File(databaseFile.getParentFile().getParentFile(), "asma");
 			}
 			allFileInfos = database.fileInfos;
 			applySelection(filterPanel.getSelection());
@@ -229,5 +259,39 @@ public final class ASMABrowser implements ActionListener {
 		}
 		statusBar.displayMessageQueue(messageQueue);
 		updateDetailsPanel();
+	}
+
+	// ReplayControls.Host: local archive files first, the website otherwise.
+	@Override
+	public byte[] loadContent(FileInfo fileInfo) throws IOException {
+		if (localArchiveFolder != null) {
+			File file = new File(localArchiveFolder, fileInfo.filePath);
+			if (file.isFile()) {
+				return Files.readAllBytes(file.toPath());
+			}
+		}
+		return client.downloadFile(fileInfo);
+	}
+
+	@Override
+	public FileInfo selectRandomFileInfo() {
+		var tableModel = fileInfoListPanel.getTableModel();
+		int rowCount = tableModel.getRowCount();
+		if (rowCount == 0) {
+			return null;
+		}
+		int modelRow = random.nextInt(rowCount);
+		var table = fileInfoListPanel.getTable();
+		int viewRow = table.convertRowIndexToView(modelRow);
+		table.setRowSelectionInterval(viewRow, viewRow);
+		table.scrollRectToVisible(table.getCellRect(viewRow, 0, true));
+		return tableModel.getFileInfo(modelRow);
+	}
+
+	@Override
+	public void showPlaybackError(FileInfo fileInfo, String reason) {
+		messageQueue.clear();
+		messageQueue.sendMessage(this, null, Messages.E004, fileInfo == null ? "" : fileInfo.filePath, reason);
+		statusBar.displayMessageQueue(messageQueue);
 	}
 }
