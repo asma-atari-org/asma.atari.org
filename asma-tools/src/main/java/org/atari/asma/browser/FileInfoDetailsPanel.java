@@ -43,10 +43,16 @@ public final class FileInfoDetailsPanel extends JPanel {
 	 * @param songsComponent
 	 *            The component displayed for the songs, the song buttons of
 	 *            the replay controls, not <code>null</code>.
+	 * @param playingTimeComponent
+	 *            The playing time display of the replay controls, not
+	 *            <code>null</code>.
 	 */
-	public FileInfoDetailsPanel(JComponent songsComponent) {
+	public FileInfoDetailsPanel(JComponent songsComponent, JComponent playingTimeComponent) {
 		if (songsComponent == null) {
 			throw new IllegalArgumentException("Parameter 'songsComponent' must not be null.");
+		}
+		if (playingTimeComponent == null) {
+			throw new IllegalArgumentException("Parameter 'playingTimeComponent' must not be null.");
 		}
 		setLayout(new GridBagLayout());
 		fieldIndex = 0;
@@ -54,7 +60,8 @@ public final class FileInfoDetailsPanel extends JPanel {
 		authorField = addField(DataTypes.FileInfo_Author);
 		dateField = addField(DataTypes.FileInfo_Date);
 		channelsField = addField(DataTypes.FileInfo_Channels);
-		addComponent(DataTypes.FileInfo_Songs, songsComponent);
+		addComponent(ElementFactory.createLabel(DataTypes.FileInfo_Songs, songsComponent), songsComponent);
+		addComponent(new JLabel(Texts.Replay_PlayingTime), playingTimeComponent);
 		hardwareField = addField(DataTypes.FileInfo_Hardware);
 		formatField = addField(DataTypes.FileInfo_OriginalModuleExt);
 		filePathField = addField(DataTypes.FileInfo_FilePath);
@@ -66,11 +73,11 @@ public final class FileInfoDetailsPanel extends JPanel {
 	private JTextField addField(DataType dataType) {
 		JTextField field = new JTextField();
 		field.setEditable(false);
-		addComponent(dataType, field);
+		addComponent(ElementFactory.createLabel(dataType, field), field);
 		return field;
 	}
 
-	private void addComponent(DataType dataType, JComponent field) {
+	private void addComponent(JLabel label, JComponent field) {
 		int gridx = (fieldIndex % 2) * 2;
 		int gridy = fieldIndex / 2;
 
@@ -79,7 +86,7 @@ public final class FileInfoDetailsPanel extends JPanel {
 		labelConstraints.gridy = gridy;
 		labelConstraints.anchor = GridBagConstraints.WEST;
 		labelConstraints.insets = new Insets(2, 4, 2, 8);
-		add(ElementFactory.createLabel(dataType, field), labelConstraints);
+		add(label, labelConstraints);
 
 		GridBagConstraints fieldConstraints = new GridBagConstraints();
 		fieldConstraints.gridx = gridx + 1;
@@ -94,28 +101,6 @@ public final class FileInfoDetailsPanel extends JPanel {
 
 	private int getNextExtraRow() {
 		return (fieldIndex + 1) / 2 + extraRowCount++;
-	}
-
-	/** Adds a labeled row below the fields, spanning the remaining columns. */
-	public void addRow(String labelText, JComponent component) {
-		int gridy = getNextExtraRow();
-
-		GridBagConstraints labelConstraints = new GridBagConstraints();
-		labelConstraints.gridx = 0;
-		labelConstraints.gridy = gridy;
-		labelConstraints.anchor = GridBagConstraints.WEST;
-		labelConstraints.insets = new Insets(2, 4, 2, 8);
-		add(new JLabel(labelText), labelConstraints);
-
-		GridBagConstraints componentConstraints = new GridBagConstraints();
-		componentConstraints.gridx = 1;
-		componentConstraints.gridy = gridy;
-		componentConstraints.gridwidth = 3;
-		componentConstraints.weightx = 1.0;
-		componentConstraints.fill = GridBagConstraints.HORIZONTAL;
-		componentConstraints.anchor = GridBagConstraints.WEST;
-		componentConstraints.insets = new Insets(2, 0, 2, 4);
-		add(component, componentConstraints);
 	}
 
 	/** Adds an unlabeled row below the fields, spanning all columns. */

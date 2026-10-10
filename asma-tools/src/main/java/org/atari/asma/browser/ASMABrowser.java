@@ -111,8 +111,8 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 		frame.setJMenuBar(createMenuBar());
 
 		replayControls = new ReplayControls(this);
-		detailsPanel = new FileInfoDetailsPanel(replayControls.getSongButtonsPanel());
-		detailsPanel.addRow(Texts.Replay_PlayingTime, replayControls.getPlayingTimePanel());
+		detailsPanel = new FileInfoDetailsPanel(replayControls.getSongButtonsPanel(),
+				replayControls.getPlayingTimePanel());
 		detailsPanel.addFullWidthRow(replayControls.getButtonPanel());
 		filterPanel = new FileInfoFilterPanel(selection -> applySelection(selection));
 		fileInfoListPanel = new FileInfoListPanel(new InMemoryAttributeTablePreferences());
