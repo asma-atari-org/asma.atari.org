@@ -62,8 +62,10 @@ public final class ASMABrowser implements ActionListener {
 	private final ASMAClient client;
 	private JFrame frame;
 	private FileInfoDetailsPanel detailsPanel;
+	private FileInfoFilterPanel filterPanel;
 	private FileInfoListPanel fileInfoListPanel;
 	private StatusBar statusBar;
+	private java.util.List<FileInfo> allFileInfos;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -84,6 +86,7 @@ public final class ASMABrowser implements ActionListener {
 	private ASMABrowser() {
 		messageQueue = new MessageQueue();
 		client = new ASMAClient();
+		allFileInfos = new java.util.ArrayList<FileInfo>();
 	}
 
 	private void run() {
@@ -92,6 +95,7 @@ public final class ASMABrowser implements ActionListener {
 		frame.setJMenuBar(createMenuBar());
 
 		detailsPanel = new FileInfoDetailsPanel();
+		filterPanel = new FileInfoFilterPanel(selection -> applySelection(selection));
 		fileInfoListPanel = new FileInfoListPanel(new InMemoryAttributeTablePreferences());
 		statusBar = new StatusBar();
 
@@ -102,8 +106,12 @@ public final class ASMABrowser implements ActionListener {
 			}
 		});
 
+		var northPanel = new javax.swing.JPanel(new BorderLayout());
+		northPanel.add(detailsPanel, BorderLayout.CENTER);
+		northPanel.add(filterPanel, BorderLayout.SOUTH);
+
 		frame.getContentPane().setLayout(new BorderLayout());
-		frame.getContentPane().add(detailsPanel, BorderLayout.NORTH);
+		frame.getContentPane().add(northPanel, BorderLayout.NORTH);
 		frame.getContentPane().add(fileInfoListPanel, BorderLayout.CENTER);
 		frame.getContentPane().add(statusBar.getComponent(), BorderLayout.SOUTH);
 
@@ -171,6 +179,18 @@ public final class ASMABrowser implements ActionListener {
 		detailsPanel.setFileInfo(fileInfo);
 	}
 
+	private void applySelection(FileInfo.Selection selection) {
+		var selectedFileInfos = new java.util.ArrayList<FileInfo>(allFileInfos.size());
+		for (FileInfo fileInfo : allFileInfos) {
+			if (selection.matches(fileInfo)) {
+				selectedFileInfos.add(fileInfo);
+			}
+		}
+		fileInfoListPanel.getTableModel().setFileInfos(selectedFileInfos);
+		filterPanel.setCountText(selectedFileInfos.size(), allFileInfos.size());
+		updateDetailsPanel();
+	}
+
 	// The local candidates cover starting in the repository root and in the
 	// asma-lib/asma-tools module folders.
 	private void loadLocalDatabase() {
@@ -201,7 +221,8 @@ public final class ASMABrowser implements ActionListener {
 			} else {
 				database = client.loadDatabase(new File(source));
 			}
-			fileInfoListPanel.getTableModel().setFileInfos(database.fileInfos);
+			allFileInfos = database.fileInfos;
+			applySelection(filterPanel.getSelection());
 			messageQueue.sendMessage(this, null, Messages.I001, String.valueOf(database.fileInfos.size()), source);
 		} catch (IOException ex) {
 			messageQueue.sendMessage(this, null, Messages.E002, source, ex.getMessage());

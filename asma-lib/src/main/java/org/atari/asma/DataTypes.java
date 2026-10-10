@@ -24,6 +24,8 @@ public final class DataTypes extends NLS {
 	public static DataType FileInfo_FileSize = new DataType(MemorySize.class);
 	public static DataType FileInfo_DemozooID = new DataType(Integer.class);
 
+	public static DataType FileInfoSelection_Keyword = new DataType(String.class);
+
 	static {
 		initializeClass(DataTypes.class, null);
 	}

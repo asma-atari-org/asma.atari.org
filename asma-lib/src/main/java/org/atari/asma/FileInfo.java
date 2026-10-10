@@ -10,6 +10,68 @@ import com.wudsn.tools.base.repository.Attribute;
 public final class FileInfo {
 
 	/**
+	 * A selection (filter) over file infos, mirroring the search form of the
+	 * website player (asma.js). Empty strings mean "no restriction"; a
+	 * <code>null</code> hardware means all hardware, channels 0 means all
+	 * channel counts. String matching is a case-insensitive "contains"; the
+	 * keyword matches against file path, title, author and date.
+	 */
+	public static record Selection(String keyword, String filePath, String title, String author, String date,
+			String hardware, int channels, String format) {
+
+		public static final Selection ALL = new Selection("", "", "", "", "", null, 0, "");
+
+		public Selection {
+			keyword = normalize(keyword);
+			filePath = normalize(filePath);
+			title = normalize(title);
+			author = normalize(author);
+			date = normalize(date);
+			format = normalize(format);
+		}
+
+		private static String normalize(String value) {
+			return (value == null) ? "" : value.toLowerCase();
+		}
+
+		private static boolean contains(String value, String part) {
+			return value != null && value.toLowerCase().contains(part);
+		}
+
+		public boolean matches(FileInfo fileInfo) {
+			if (fileInfo == null) {
+				throw new IllegalArgumentException("Parameter 'fileInfo' must not be null.");
+			}
+			if (!keyword.isEmpty() && !(contains(fileInfo.filePath, keyword) || contains(fileInfo.title, keyword)
+					|| contains(fileInfo.author, keyword) || contains(fileInfo.date, keyword))) {
+				return false;
+			}
+			if (!filePath.isEmpty() && !contains(fileInfo.filePath, filePath)) {
+				return false;
+			}
+			if (!title.isEmpty() && !contains(fileInfo.title, title)) {
+				return false;
+			}
+			if (!author.isEmpty() && !contains(fileInfo.author, author)) {
+				return false;
+			}
+			if (!date.isEmpty() && !contains(fileInfo.date, date)) {
+				return false;
+			}
+			if (hardware != null && !hardware.equals(fileInfo.hardware)) {
+				return false;
+			}
+			if (channels != 0 && fileInfo.channels != channels) {
+				return false;
+			}
+			if (!format.isEmpty() && !contains(fileInfo.originalModuleExt, format)) {
+				return false;
+			}
+			return true;
+		}
+	}
+
+	/**
 	 * The attributes of a file info, bound to the gson field names, for use
 	 * with WUDSN Base's attribute tables. See plans/07.
 	 */
