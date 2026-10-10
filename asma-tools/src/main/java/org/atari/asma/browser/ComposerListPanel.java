@@ -52,7 +52,8 @@ public final class ComposerListPanel extends AttributeTablePanel {
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(Composer.Attributes.COUNTRY, Column.VISIBLE | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
-			addColumn(Composer.Attributes.DEMOZOO_ID, Column.VISIBLE | Column.SORTABLE);
+			addColumn(Composer.Attributes.DEMOZOO_ID, Column.VISIBLE | Column.SORTABLE, null,
+					new IdentifierCellRenderer(), null);
 			addColumn(Composer.Attributes.FILE_COUNT, Column.VISIBLE | Column.SORTABLE);
 			addColumn(Composer.Attributes.FOLDER_NAME, Column.HIDDEN | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);

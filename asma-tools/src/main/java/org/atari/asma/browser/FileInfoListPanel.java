@@ -69,7 +69,8 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 			addColumn(FileInfo.Attributes.FILE_SIZE, Column.HIDDEN | Column.SORTABLE);
 			addColumn(FileInfo.Attributes.HARDWARE, Column.HIDDEN | Column.SORTABLE);
 			addColumn(FileInfo.Attributes.DEFAULT_SONG_INDEX, Column.HIDDEN | Column.SORTABLE);
-			addColumn(FileInfo.Attributes.DEMOZOO_ID, Column.HIDDEN | Column.SORTABLE);
+			addColumn(FileInfo.Attributes.DEMOZOO_ID, Column.HIDDEN | Column.SORTABLE, null,
+					new IdentifierCellRenderer(), null);
 		}
 
 		public void setFileInfos(List<FileInfo> fileInfos) {
