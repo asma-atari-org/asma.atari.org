@@ -1,7 +1,11 @@
 package org.atari.asma.browser;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import org.atari.asma.FileInfo;
 
@@ -48,7 +52,17 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(FileInfo.Attributes.DATE, Column.VISIBLE | Column.SORTABLE);
 			addColumn(FileInfo.Attributes.ORIGINAL_MODULE_EXT, Column.VISIBLE | Column.SORTABLE);
-			addColumn(FileInfo.Attributes.CHANNELS, Column.VISIBLE | Column.SORTABLE);
+			// The value stays numeric for sorting; the renderer shows the website's text.
+			addColumn(FileInfo.Attributes.CHANNELS, Column.VISIBLE | Column.SORTABLE, null,
+					new DefaultTableCellRenderer() {
+						@Override
+						public Component getTableCellRendererComponent(JTable table, Object value,
+								boolean isSelected, boolean hasFocus, int row, int column) {
+							super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+							setText(getFileInfo(table.convertRowIndexToModel(row)).getChannelsText());
+							return this;
+						}
+					}, null);
 			addColumn(FileInfo.Attributes.SONGS, Column.VISIBLE | Column.SORTABLE);
 			addColumn(FileInfo.Attributes.FILE_PATH, Column.HIDDEN | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);

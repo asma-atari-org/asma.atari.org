@@ -119,6 +119,17 @@ public final class FileInfo {
 		messageQueue = new MessageQueue();
 	}
 
+	/**
+	 * Gets the channels as display text, like getChannelsText() in the
+	 * website's file.js: the POKEY channels for Atari 800, TIA for 2600.
+	 */
+	public String getChannelsText() {
+		if (ATARI2600.equals(hardware)) {
+			return "Mono (2)";
+		}
+		return (channels == 1) ? "Mono (4)" : "Stereo (8)";
+	}
+
 	public String getFolderPath() {
 		String result = "";
 		var index = filePath.lastIndexOf("/");

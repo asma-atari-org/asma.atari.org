@@ -138,7 +138,7 @@ public final class FileInfoDetailsPanel extends JPanel {
 		dateField.setText(fileInfo.date);
 		hardwareField.setText(fileInfo.hardware);
 		formatField.setText(fileInfo.originalModuleExt);
-		channelsField.setText(String.valueOf(fileInfo.channels));
+		channelsField.setText(fileInfo.getChannelsText());
 		String songsText = String.valueOf(fileInfo.songs);
 		if (fileInfo.songs > 1) {
 			songsText += " (default " + (fileInfo.defaultSongIndex + 1) + ")";
