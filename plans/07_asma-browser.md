@@ -1,9 +1,11 @@
-# Plan: FileInfoList table panel in a dialog (The!Cart Studio style)
+# Plan: ASMABrowser application with the FileInfoList table panel
 
-Written 2026-10-10. Goal: a dialog in the SAPFileEditor that displays the
-ASMA `FileInfoList` in a column-configurable, sortable table built on WUDSN
-Base's `AttributeTable` machinery - the same pattern The!Cart Studio uses
-for its workbook entries list. This doubles as the pilot for plan 06
+Written 2026-10-10. Goal: a standalone application **ASMABrowser** on WUDSN
+Base whose main window displays the ASMA `FileInfoList` in a
+column-configurable, sortable table built on base's `AttributeTable`
+machinery - the same pattern The!Cart Studio uses for its workbook entries
+list. The table lives in a reusable panel, which can additionally be shown
+in a dialog from the SAPFileEditor. This doubles as the pilot for plan 06
 phase 3 (editor GUI onto base). Status: open.
 
 **Working rule (inherited from plan 06): non-mechanical steps and the open
@@ -46,13 +48,30 @@ decisions below are proposed and confirmed with the user first.**
      Demozoo ID.
    - Case-insensitive comparators for the string columns, like TCS.
    - Row source: `java.util.List<FileInfo>`.
-4. **`org.atari.asma.editor.FileInfoListDialog`** on base's `ModalDialog`
-   (the OK-only variant exists since 2026-10), hosting the panel, opened
-   from a new SAPFileEditor button/menu entry "Browse ASMA Database...".
-5. **Data source**: load via `ASMAClient` - default the local generated
+4. **The ASMABrowser application** (`org.atari.asma.browser`, asma-tools),
+   shaped like DIS6502's main class (a plain final class, not a subclass -
+   base's `Application` is a singleton):
+   - `ASMABrowser` main class: `Application.createInstance(url, jarFileName,
+     mainClass)` with the asma.atari.org URL for the version/update check,
+     `ApplicationSettings` for window state and the table preferences,
+     a main window (JFrame) hosting the `FileInfoListPanel`, a `StatusBar`
+     with the base `MessageQueue` display.
+   - `Actions extends NLS` + `Actions.properties` for the main menu per the
+     RULES doc pattern (`ElementFactory`); initially: File > Exit,
+     Database > Reload / Load from Website, Help > About.
+   - `AREA = "BRW"` messages repository once the application has own
+     messages (plan 06 phase 2 conventions).
+   - Packaging: a second shade execution in asma-tools producing
+     `target/ASMABrowser.jar` beside `SAPFileEditor.jar`; both attach to
+     the GitHub release (plan 04 workflow).
+5. **`org.atari.asma.editor.FileInfoListDialog`** on base's `ModalDialog`
+   (the OK-only variant exists since 2026-10), hosting the same panel,
+   opened from a new SAPFileEditor button/menu entry
+   "Browse ASMA Database...".
+6. **Data source**: load via `ASMAClient` - default the local generated
    database (`public_html/asmadb/asmadb.js` relative to the repository),
    with fallback/option `https://asma.atari.org/asmadb/asmadb.json`.
-   Loading errors go to the existing message queue display.
+   Loading errors go to the message queue display.
 
 ## Open decisions (ask before implementing)
 
@@ -60,19 +79,22 @@ decisions below are proposed and confirmed with the user first.**
   pattern, entity-near; makes asma-lib's NLS resources mandatory) versus
   keeping asma-lib free of repository classes and putting both into
   asma-tools next to the panel.
-- `AttributeTablePreferences` wants an `ApplicationSettings`; the
-  SAPFileEditor has no base `Application` wiring yet. Minimal settings
-  wiring now, or defaults without persistence until plan 06 phase 3?
 - Row interaction: selection/double-click action (play the file? copy the
-  URL? open in browser player?) or display-only for the first draft.
-- German `DataTypes_de.properties` now or later.
+  URL? open in the browser player at `#/<filePath>`?) or display-only for
+  the first draft.
+- German `DataTypes_de.properties`/`Actions_de.properties` now or later.
+- (Resolved by the application decision: `AttributeTablePreferences`
+  persists via ASMABrowser's `ApplicationSettings`; the SAPFileEditor
+  dialog variant uses defaults until plan 06 phase 3 wires it too.)
 
 ## Steps
 
 1. DataTypes + properties + Attributes (mechanical once placement is
    decided), unit-testable via NLS load in asma-lib tests.
-2. Panel + table model + dialog + editor menu entry (asma-tools).
-3. Wire data source via ASMAClient; manual test against the local
+2. Panel + table model (asma-tools).
+3. ASMABrowser application: main class, Actions/menu, settings, status
+   bar, shaded `ASMABrowser.jar`.
+4. Wire data source via ASMAClient; manual test against the local
    database (6405 rows - also a size sanity check for the table).
-4. Optional polish: column chooser defaults, preferences persistence,
-   row action.
+5. SAPFileEditor dialog variant reusing the panel.
+6. Optional polish: column chooser defaults, row action, release upload.
