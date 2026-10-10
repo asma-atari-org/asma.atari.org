@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
@@ -14,12 +15,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 
@@ -114,6 +118,16 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 		detailsPanel = new FileInfoDetailsPanel(replayControls.getSongButtonsPanel(),
 				replayControls.getPlayingTimePanel());
 		detailsPanel.addFullWidthRow(replayControls.getButtonPanel());
+		// Escape anywhere in the window stops playing, like the Stop button.
+		var rootPane = frame.getRootPane();
+		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+				"stop");
+		rootPane.getActionMap().put("stop", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				replayControls.stop();
+			}
+		});
 		filterPanel = new FileInfoFilterPanel(selection -> applySelection(selection));
 		fileInfoListPanel = new FileInfoListPanel(new InMemoryAttributeTablePreferences());
 		statusBar = new StatusBar();

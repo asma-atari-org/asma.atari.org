@@ -103,7 +103,7 @@ final class ReplayControls {
 		pauseButton = ElementFactory.createButton(Actions.Replay_Pause, true);
 		pauseButton.addActionListener(event -> togglePause());
 		stopButton = ElementFactory.createButton(Actions.Replay_Stop, true);
-		stopButton.addActionListener(event -> stopAndEndShuffle());
+		stopButton.addActionListener(event -> stop());
 		shuffleButton = ElementFactory.createButton(Actions.Replay_Shuffle, true);
 		shuffleButton.addActionListener(event -> startShuffle());
 		buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
@@ -198,7 +198,8 @@ final class ReplayControls {
 		updateControls();
 	}
 
-	private void stopAndEndShuffle() {
+	/** Stops playing and ends the shuffle mode, like the Stop button. */
+	void stop() {
 		if (player.isPlaying()) {
 			player.stop();
 			stopped = true;
@@ -228,7 +229,7 @@ final class ReplayControls {
 				return;
 			}
 		}
-		stopAndEndShuffle();
+		stop();
 	}
 
 	private void rebuildSongButtons() {
