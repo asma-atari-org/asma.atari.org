@@ -67,14 +67,30 @@ refresh no longer overwrites the thumb position while the user is dragging
   `.htaccess` expiry. The exporter could append a content hash or date to the
   script URL in the generated pages if staleness ever becomes an issue.
 
-## 3. Validation consolidation (direction, needs decision)
+## 3. Validation consolidation - DONE 2026-10-10
+
+Executed as scoped below. Results of the first exporter run with the new
+checks over the full archive: 0 errors (every date is valid under the
+stricter ported checks, SAP-110) and 24 SAP-111 warnings (files without a
+TIME tag for the default song) - the data-quality list for the team. The
+database outputs stayed byte-identical.
 
 Date validation exists only in JS (`file.js`, partly broken - see above);
 path/name validation exists only in Java (`FileInfoList.checkFileInfos`,
 SAP-1xx codes). Validation belongs on the exporter side, where errors actually
-block a release. Proposal: port the date checks into the Java
-`FileInfoList.checkFileInfos` (new SAP-1xx code), then reduce the JS side to
-display-only (or drop `FileInfoList.check` there entirely).
+block a release and reach the team, instead of running on every page load and
+reporting into a console nobody watches. Scope:
+
+1. Port the date checks (including the section-1 fixes) into the Java
+   `FileInfoList.checkFileInfos` in asma-lib as `SAP-110`, with JUnit tests
+   ported from `js-test/file.test.js`.
+2. New check from the slider analysis (section 1b): warn in
+   `FileInfoScanner` when a SAP file has no TIME tag for the default song
+   (`SAP-111`, warning not error - endless loops are legitimate). Would have
+   surfaced the 14 duration-less files as a data-quality list long ago.
+3. Drop `FileInfoList.check`/`checkDate` from `file.js` entirely and migrate
+   its js-test cases to the Java side. Display logic (encodeHTML, proxies,
+   URL scheme) stays in JS with its tests.
 
 ## 4. Keep-in-sync list
 

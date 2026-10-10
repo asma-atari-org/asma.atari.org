@@ -42,6 +42,108 @@ public class FileInfoList {
 		writer.endArray();
 	}
 
+	// Checks a date against the ASMA date patterns: DD/MM/YYYY (preferred),
+	// DD-DD/MM/YYYY, MM/YYYY, MM-MM/YYYY, YYYY, YYYY-YYYY, each optionally
+	// followed by " <?>" for unsure dates. Throws IllegalArgumentException
+	// with the reason if the date is invalid. Ported from the former check
+	// in the website's file.js.
+	public static void checkDate(String date) {
+		final String UNSURE = " <?>";
+		if (date == null || date.isEmpty()) {
+			return;
+		}
+		if (date.endsWith(UNSURE)) {
+			date = date.substring(0, date.lastIndexOf(UNSURE));
+		}
+
+		String pattern = date.replaceAll("[0-9]", "?");
+
+		switch (pattern) {
+		case "??/??/????": { // DD/MM/YYYY (preferred)
+			String dayFrom = date.substring(0, 2);
+			String monthFrom = date.substring(3, 5);
+			String yearFrom = date.substring(6, 10);
+			checkDayOfMonth(dayFrom, monthFrom, yearFrom);
+			break;
+		}
+		case "??-??/??/????": { // DD-DD/MM/YYYY
+			String dayFrom = date.substring(0, 2);
+			String dayTo = date.substring(3, 5);
+			if (dayFrom.compareTo(dayTo) > 0) {
+				throw new IllegalArgumentException("Day-from " + dayFrom + " is after day-to " + dayTo + ".");
+			}
+			String monthFrom = date.substring(6, 8);
+			String yearFrom = date.substring(9, 13);
+			checkDayOfMonth(dayFrom, monthFrom, yearFrom);
+			checkDayOfMonth(dayTo, monthFrom, yearFrom);
+			break;
+		}
+		case "??/????": { // MM/YYYY
+			String monthFrom = date.substring(0, 2);
+			String yearFrom = date.substring(3, 7);
+			checkMonthOfYear(monthFrom, yearFrom);
+			break;
+		}
+		case "??-??/????": { // MM-MM/YYYY
+			String monthFrom = date.substring(0, 2);
+			String monthTo = date.substring(3, 5);
+			if (monthFrom.compareTo(monthTo) > 0) {
+				throw new IllegalArgumentException("Month-from " + monthFrom + " is after month-to " + monthTo + ".");
+			}
+			String yearFrom = date.substring(6, 10);
+			checkMonthOfYear(monthFrom, yearFrom);
+			checkMonthOfYear(monthTo, yearFrom);
+			break;
+		}
+		case "????": { // YYYY
+			checkYear(date);
+			break;
+		}
+		case "????-????": { // YYYY-YYYY
+			String yearFrom = date.substring(0, 4);
+			String yearTo = date.substring(5, 9);
+			if (yearFrom.compareTo(yearTo) > 0) {
+				throw new IllegalArgumentException("Year-from " + yearFrom + " is after year-to " + yearTo + ".");
+			}
+			checkYear(yearFrom);
+			checkYear(yearTo);
+			break;
+		}
+		default:
+			throw new IllegalArgumentException("Invalid pattern \"" + pattern + "\".");
+		}
+	}
+
+	private static void checkDayOfMonth(String day, String month, String year) {
+		checkMonthOfYear(month, year);
+		int dayInt = Integer.parseInt(day);
+		if (dayInt < 1 || dayInt > 31) {
+			throw new IllegalArgumentException("Day " + day + " is invalid.");
+		}
+		// Leap years are deliberately ignored, so day 29 is always allowed.
+		if (dayInt == 30 && month.equals("02")) {
+			throw new IllegalArgumentException("Day " + day + " is invalid for month " + month + ".");
+		}
+		if (dayInt == 31 && (month.equals("02") || month.equals("04") || month.equals("06") || month.equals("09")
+				|| month.equals("11"))) {
+			throw new IllegalArgumentException("Day " + day + " is invalid for month " + month + ".");
+		}
+	}
+
+	private static void checkMonthOfYear(String month, String year) {
+		checkYear(year);
+		int monthInt = Integer.parseInt(month);
+		if (monthInt < 1 || monthInt > 12) {
+			throw new IllegalArgumentException("Month " + month + " is invalid.");
+		}
+	}
+
+	private static void checkYear(String year) {
+		if (Integer.parseInt(year) > java.time.Year.now().getValue()) {
+			throw new IllegalArgumentException("Year " + year + " is in the future.");
+		}
+	}
+
 	public void checkFileInfos(ComposerList composerList, ASMAProductionList productionList) {
 	
 		// According to the STIL specification there are 9 characters for a tag must at must 90 characters for a value.
@@ -71,6 +173,13 @@ public class FileInfoList {
 							+ " has a folder path with the invalid character \"" + c + "\" (0x"+Long.toHexString(c)+") at index " + i + ".");
 
 				}
+			}
+
+			try {
+				checkDate(fileInfo.date);
+			} catch (IllegalArgumentException ex) {
+				messageQueue.sendError("SAP-110",
+						"File " + fileInfo.filePath + " has an invalid date \"" + fileInfo.date + "\". " + ex.getMessage());
 			}
 
 			final var filePath = fileInfo.filePath;

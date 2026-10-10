@@ -130,7 +130,7 @@ public class FileInfoScanner {
 				messageQueue.sendInfo("Error reading '" + file.getAbsolutePath() + "'. See above.");
 				return null;
 			}
-			readFromSAPFile(fileInfo, sapFile);
+			readFromSAPFile(fileInfo, sapFile, messageQueue);
 
 			STILEntry stilEntry = stil.getSTILEntry("/" + filePath);
 			if (stilEntry != null) {
@@ -160,7 +160,7 @@ public class FileInfoScanner {
 
 	// Formerly FileInfo.readFromSAPFile(ASAPFile), moved here to keep the
 	// FileInfo model class free of the ASAP dependency.
-	private static void readFromSAPFile(FileInfo fileInfo, ASAPFile sapFile) {
+	private static void readFromSAPFile(FileInfo fileInfo, ASAPFile sapFile, MessageQueue messageQueue) {
 
 		var asapInfo = sapFile.getASAPInfo();
 		fileInfo.title = asapInfo.getTitleOrFilename();
@@ -185,6 +185,14 @@ public class FileInfoScanner {
 		fileInfo.channels = asapInfo.getChannels();
 		fileInfo.songs = asapInfo.getSongs();
 		fileInfo.defaultSongIndex = asapInfo.getDefaultSong();
+
+		// Without a TIME tag the website player cannot show a total time or a
+		// seek slider, and shuffle mode falls back to a fixed maximum.
+		// A warning only: endlessly looping tunes are legitimate.
+		if (asapInfo.getDuration(asapInfo.getDefaultSong()) <= 0) {
+			messageQueue.sendWarning("SAP-111",
+					"File " + fileInfo.filePath + " has no TIME tag for the default song.");
+		}
 
 		fileInfo.setDemozooID(0);
 	}
