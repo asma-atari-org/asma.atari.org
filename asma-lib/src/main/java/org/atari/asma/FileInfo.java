@@ -5,7 +5,33 @@ import java.io.IOException;
 import org.atari.asma.util.JSONWriter;
 import org.atari.asma.util.MessageQueue;
 
+import com.wudsn.tools.base.repository.Attribute;
+
 public final class FileInfo {
+
+	/**
+	 * The attributes of a file info, bound to the gson field names, for use
+	 * with WUDSN Base's attribute tables. See plans/07.
+	 */
+	public static final class Attributes {
+		public static final Attribute FILE_PATH = new Attribute("filePath", DataTypes.FileInfo_FilePath);
+		public static final Attribute TITLE = new Attribute("title", DataTypes.FileInfo_Title);
+		public static final Attribute AUTHOR = new Attribute("author", DataTypes.FileInfo_Author);
+		public static final Attribute DATE = new Attribute("date", DataTypes.FileInfo_Date);
+		public static final Attribute HARDWARE = new Attribute("hardware", DataTypes.FileInfo_Hardware);
+		public static final Attribute ORIGINAL_MODULE_EXT = new Attribute("originalModuleExt",
+				DataTypes.FileInfo_OriginalModuleExt);
+		public static final Attribute CHANNELS = new Attribute("channels", DataTypes.FileInfo_Channels);
+		public static final Attribute SONGS = new Attribute("songs", DataTypes.FileInfo_Songs);
+		public static final Attribute DEFAULT_SONG_INDEX = new Attribute("defaultSongIndex",
+				DataTypes.FileInfo_DefaultSongIndex);
+		public static final Attribute FILE_SIZE = new Attribute("fileSize", DataTypes.FileInfo_FileSize);
+		public static final Attribute DEMOZOO_ID = new Attribute("demozooID", DataTypes.FileInfo_DemozooID);
+
+		private Attributes() {
+		}
+	}
+
 	public static String ATARI800 = "ATARI800"; // Default
 	public static String ATARI2600 = "ATARI2600";
 

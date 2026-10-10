@@ -6,7 +6,15 @@ column-configurable, sortable table built on base's `AttributeTable`
 machinery - the same pattern The!Cart Studio uses for its workbook entries
 list. The table lives in a reusable panel, which can additionally be shown
 in a dialog from the SAPFileEditor. This doubles as the pilot for plan 06
-phase 3 (editor GUI onto base). Status: open.
+phase 3 (editor GUI onto base).
+
+**Status: steps 1-4 executed 2026-10-10.** Decisions taken: DataTypes and
+FileInfo.Attributes live in asma-lib next to the model (family pattern);
+a details panel like the web player sits above the table and follows the
+selection; no German translation; the browser's message area is `ASB`.
+Still open: step 5 (SAPFileEditor dialog variant), preferences persistence
+via ApplicationSettings (currently in-memory, marked TODO), and the
+optional polish of step 6.
 
 **Working rule (inherited from plan 06): non-mechanical steps and the open
 decisions below are proposed and confirmed with the user first.**

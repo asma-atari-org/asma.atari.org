@@ -6,7 +6,9 @@ module org.atari.asma {
 	exports org.atari.asma.stil;
 	exports org.atari.asma.util;
 
-	opens org.atari.asma to com.google.gson;
+	// Opened unconditionally: gson deserializes the model, WUDSN Base's NLS
+	// reflects on the repository classes and loads their .properties resources.
+	opens org.atari.asma;
 	opens org.atari.asma.demozoo to com.google.gson;
 	opens org.atari.asma.demozoo.model to com.google.gson;
 
