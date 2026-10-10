@@ -26,6 +26,15 @@ public final class DataTypes extends NLS {
 
 	public static DataType FileInfoSelection_Keyword = new DataType(String.class);
 
+	public static DataType Composer_FolderName = new DataType(String.class);
+	public static DataType Composer_LastName = new DataType(String.class);
+	public static DataType Composer_FirstName = new DataType(String.class);
+	public static DataType Composer_Handles = new DataType(String.class);
+	public static DataType Composer_Country = new DataType(String.class);
+	public static DataType Composer_DemozooID = new DataType(Integer.class);
+	public static DataType Composer_Groups = new DataType(String.class);
+	public static DataType Composer_FileCount = new DataType(Integer.class);
+
 	static {
 		initializeClass(DataTypes.class, null);
 	}

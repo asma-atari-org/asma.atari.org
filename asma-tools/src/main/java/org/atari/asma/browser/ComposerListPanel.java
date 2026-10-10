@@ -1,0 +1,140 @@
+package org.atari.asma.browser;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.atari.asma.Composer;
+
+import com.wudsn.tools.base.common.StringUtility;
+import com.wudsn.tools.base.gui.AttributeTableModel;
+import com.wudsn.tools.base.gui.AttributeTablePanel;
+import com.wudsn.tools.base.gui.AttributeTablePreferences;
+
+/**
+ * Panel displaying a list of {@link Composer} instances in a
+ * column-configurable, sortable attribute table, built like the
+ * {@link FileInfoListPanel}. The columns follow the Composers tab of the
+ * website player's About dialog.
+ *
+ * @author Peter Dell
+ */
+public final class ComposerListPanel extends AttributeTablePanel {
+
+	public static final class TableModel extends AttributeTableModel {
+
+		public static final class Columns {
+			public static final int LAST_NAME = 0;
+			public static final int FIRST_NAME = 1;
+			public static final int HANDLES = 2;
+			public static final int COUNTRY = 3;
+			public static final int DEMOZOO_ID = 4;
+			public static final int FILE_COUNT = 5;
+			public static final int FOLDER_NAME = 6;
+			public static final int GROUPS = 7;
+
+			private Columns() {
+			}
+		}
+
+		private List<Composer> composers;
+		private Map<String, Integer> fileCountByFolderName;
+
+		public TableModel() {
+			composers = new ArrayList<Composer>();
+			fileCountByFolderName = new HashMap<String, Integer>();
+			addColumn(Composer.Attributes.LAST_NAME, Column.FIXED | Column.SORTABLE,
+					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
+			addColumn(Composer.Attributes.FIRST_NAME, Column.VISIBLE | Column.SORTABLE,
+					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
+			addColumn(Composer.Attributes.HANDLES, Column.VISIBLE | Column.SORTABLE,
+					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
+			addColumn(Composer.Attributes.COUNTRY, Column.VISIBLE | Column.SORTABLE,
+					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
+			addColumn(Composer.Attributes.DEMOZOO_ID, Column.VISIBLE | Column.SORTABLE);
+			addColumn(Composer.Attributes.FILE_COUNT, Column.VISIBLE | Column.SORTABLE);
+			addColumn(Composer.Attributes.FOLDER_NAME, Column.HIDDEN | Column.SORTABLE,
+					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
+			addColumn(Composer.Attributes.GROUPS, Column.HIDDEN | Column.SORTABLE,
+					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
+		}
+
+		/**
+		 * @param composers
+		 *            The composers, not <code>null</code>.
+		 * @param fileCountByFolderName
+		 *            The number of files per composer folder name, not
+		 *            <code>null</code>.
+		 */
+		public void setComposers(List<Composer> composers, Map<String, Integer> fileCountByFolderName) {
+			if (composers == null) {
+				throw new IllegalArgumentException("Parameter 'composers' must not be null.");
+			}
+			if (fileCountByFolderName == null) {
+				throw new IllegalArgumentException("Parameter 'fileCountByFolderName' must not be null.");
+			}
+			this.composers = composers;
+			this.fileCountByFolderName = fileCountByFolderName;
+			fireTableDataChanged();
+		}
+
+		@Override
+		public int getRowCount() {
+			return composers.size();
+		}
+
+		// Like the website: the Unicode spelling when there is one.
+		private static String getUnicodeOrDefault(String unicodeValue, String value) {
+			return (unicodeValue != null && !unicodeValue.isEmpty()) ? unicodeValue : value;
+		}
+
+		private static Integer parseDemozooID(String demozooID) {
+			try {
+				return Integer.valueOf(demozooID.trim());
+			} catch (NumberFormatException | NullPointerException ex) {
+				return null;
+			}
+		}
+
+		@Override
+		public Object getValueAt(int row, int column) {
+			Composer composer = composers.get(row);
+			switch (column) {
+			case Columns.LAST_NAME:
+				return getUnicodeOrDefault(composer.lastNameUnicode, composer.lastName);
+			case Columns.FIRST_NAME:
+				return getUnicodeOrDefault(composer.firstNameUnicode, composer.firstName);
+			case Columns.HANDLES:
+				return composer.handles;
+			case Columns.COUNTRY:
+				return composer.country;
+			case Columns.DEMOZOO_ID:
+				return parseDemozooID(composer.demozooID);
+			case Columns.FILE_COUNT:
+				return fileCountByFolderName.getOrDefault(composer.folderName, Integer.valueOf(0));
+			case Columns.FOLDER_NAME:
+				return composer.folderName;
+			case Columns.GROUPS:
+				return composer.groups;
+			default:
+				throw new IllegalArgumentException("Invalid column " + column + ".");
+			}
+		}
+	}
+
+	private final TableModel tableModel;
+
+	public ComposerListPanel(AttributeTablePreferences preferences) {
+		this(new TableModel(), preferences);
+	}
+
+	private ComposerListPanel(TableModel tableModel, AttributeTablePreferences preferences) {
+		super(tableModel, preferences, "composerList");
+		this.tableModel = tableModel;
+	}
+
+	public TableModel getTableModel() {
+		return tableModel;
+	}
+}

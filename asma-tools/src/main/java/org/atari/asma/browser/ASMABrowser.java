@@ -53,6 +53,7 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 		public static final String EXIT = "exit";
 		public static final String RELOAD_LOCAL = "reloadLocal";
 		public static final String LOAD_FROM_WEBSITE = "loadFromWebsite";
+		public static final String COMPOSERS = "composers";
 		public static final String ABOUT = "about";
 
 		private Commands() {
@@ -78,6 +79,9 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 	private FileInfoListPanel fileInfoListPanel;
 	private StatusBar statusBar;
 	private java.util.List<FileInfo> allFileInfos;
+	private java.util.List<org.atari.asma.Composer> allComposers;
+	// Shared by all attribute tables, each under its own preferences prefix.
+	private final AttributeTablePreferences attributeTablePreferences;
 	// The archive folder next to a locally loaded database, null when loaded from the website.
 	private File localArchiveFolder;
 	private final Random random;
@@ -102,6 +106,8 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 		messageQueue = new MessageQueue();
 		client = new ASMAClient();
 		allFileInfos = new java.util.ArrayList<FileInfo>();
+		allComposers = new java.util.ArrayList<org.atari.asma.Composer>();
+		attributeTablePreferences = new InMemoryAttributeTablePreferences();
 		random = new Random();
 	}
 
@@ -129,7 +135,7 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 			}
 		});
 		filterPanel = new FileInfoFilterPanel(selection -> applySelection(selection));
-		fileInfoListPanel = new FileInfoListPanel(new InMemoryAttributeTablePreferences());
+		fileInfoListPanel = new FileInfoListPanel(attributeTablePreferences);
 		statusBar = new StatusBar();
 
 		fileInfoListPanel.getTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -174,6 +180,8 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 		JMenu databaseMenu = ElementFactory.createMenu(Actions.MainMenu_Database);
 		databaseMenu.add(createMenuItem(Actions.MainMenu_Database_ReloadLocal, Commands.RELOAD_LOCAL));
 		databaseMenu.add(createMenuItem(Actions.MainMenu_Database_LoadFromWebsite, Commands.LOAD_FROM_WEBSITE));
+		databaseMenu.addSeparator();
+		databaseMenu.add(createMenuItem(Actions.MainMenu_Database_Composers, Commands.COMPOSERS));
 		menuBar.add(databaseMenu);
 
 		JMenu helpMenu = ElementFactory.createMenu(com.wudsn.tools.base.Actions.MainMenu_Help);
@@ -202,6 +210,10 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 		case Commands.LOAD_FROM_WEBSITE:
 			loadDatabaseFromWebsite();
 			break;
+		case Commands.COMPOSERS:
+			new ComposerListDialog(frame, attributeTablePreferences, allComposers, getFileCountByComposerFolderName())
+					.open();
+			break;
 		case Commands.ABOUT:
 			JOptionPane.showMessageDialog(frame,
 					TITLE + "\nLocal version " + Application.getInstance().getLocalVersion(), "About",
@@ -221,6 +233,22 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 		}
 		detailsPanel.setFileInfo(fileInfo);
 		replayControls.setSelectedFileInfo(fileInfo);
+	}
+
+	// Counts the files per folder in "Composers/<folderName>/...".
+	private Map<String, Integer> getFileCountByComposerFolderName() {
+		final String prefix = "Composers/";
+		Map<String, Integer> result = new HashMap<String, Integer>();
+		for (FileInfo fileInfo : allFileInfos) {
+			String filePath = fileInfo.filePath;
+			if (filePath.startsWith(prefix)) {
+				int index = filePath.indexOf('/', prefix.length());
+				if (index > 0) {
+					result.merge(filePath.substring(prefix.length(), index), Integer.valueOf(1), Integer::sum);
+				}
+			}
+		}
+		return result;
 	}
 
 	private void applySelection(FileInfo.Selection selection) {
@@ -270,6 +298,7 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 				localArchiveFolder = new File(databaseFile.getParentFile().getParentFile(), "asma");
 			}
 			allFileInfos = database.fileInfos;
+			allComposers = database.composerInfos;
 			applySelection(filterPanel.getSelection());
 			messageQueue.sendMessage(this, null, Messages.I001, String.valueOf(database.fileInfos.size()), source);
 		} catch (IOException ex) {

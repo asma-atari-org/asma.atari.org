@@ -3,12 +3,33 @@ package org.atari.asma;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.wudsn.tools.base.repository.Attribute;
+
 public class Composer {
+
+	/**
+	 * The attributes of a composer, bound to the gson field names, for use
+	 * with WUDSN Base's attribute tables. FILE_COUNT is derived from the file
+	 * infos, not a field. See plans/07.
+	 */
+	public static final class Attributes {
+		public static final Attribute FOLDER_NAME = new Attribute("folderName", DataTypes.Composer_FolderName);
+		public static final Attribute LAST_NAME = new Attribute("lastName", DataTypes.Composer_LastName);
+		public static final Attribute FIRST_NAME = new Attribute("firstName", DataTypes.Composer_FirstName);
+		public static final Attribute HANDLES = new Attribute("handles", DataTypes.Composer_Handles);
+		public static final Attribute COUNTRY = new Attribute("country", DataTypes.Composer_Country);
+		public static final Attribute DEMOZOO_ID = new Attribute("demozooID", DataTypes.Composer_DemozooID);
+		public static final Attribute GROUPS = new Attribute("groups", DataTypes.Composer_Groups);
+		public static final Attribute FILE_COUNT = new Attribute("fileCount", DataTypes.Composer_FileCount);
+
+		private Attributes() {
+		}
+	}
 
 	public String folderName = "";
 	public String lastName = "";
 	public String firstName = "";
-	public String lastnNameUnicode = "";
+	public String lastNameUnicode = "";
 	public String firstNameUnicode = "";
 	public String handles = "";
 	public String country = "";
