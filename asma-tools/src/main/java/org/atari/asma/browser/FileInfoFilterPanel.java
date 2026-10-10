@@ -33,7 +33,6 @@ public final class FileInfoFilterPanel extends JPanel {
 
 	private final Consumer<FileInfo.Selection> selectionConsumer;
 	private final JTextField keywordField;
-	private final JTextField filePathField;
 	private final JTextField titleField;
 	private final JTextField authorField;
 	private final JTextField dateField;
@@ -50,7 +49,6 @@ public final class FileInfoFilterPanel extends JPanel {
 		setLayout(new FlowLayout(FlowLayout.LEFT, 8, 2));
 
 		keywordField = addTextField(DataTypes.FileInfoSelection_Keyword, 12);
-		filePathField = addTextField(DataTypes.FileInfo_FilePath, 10);
 		titleField = addTextField(DataTypes.FileInfo_Title, 10);
 		authorField = addTextField(DataTypes.FileInfo_Author, 10);
 		dateField = addTextField(DataTypes.FileInfo_Date, 6);
@@ -98,7 +96,7 @@ public final class FileInfoFilterPanel extends JPanel {
 	}
 
 	public FileInfo.Selection getSelection() {
-		return new FileInfo.Selection(keywordField.getText(), filePathField.getText(), titleField.getText(),
+		return new FileInfo.Selection(keywordField.getText(), "", titleField.getText(),
 				authorField.getText(), dateField.getText(), HARDWARE_VALUES[hardwareComboBox.getSelectedIndex()],
 				CHANNELS_VALUES[channelsComboBox.getSelectedIndex()], formatField.getText());
 	}
