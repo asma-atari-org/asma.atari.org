@@ -10,7 +10,9 @@ The launch files now live in `launch/` at the repository root, because files
 nested in the module folders were indexed twice by Eclipse via the parent
 project. Item 3 first decision (2026-10-10): the three `.bat` launch
 configurations stay - Eclipse is the normal way these scripts are started.
-Only the launch4j question remains open. Handles open item 3 of [01_maven-migration.md](01_maven-migration.md):
+The launch4j question was settled by plan 04 (2026-10-10): the exe is not
+needed, launch4j was removed, the zip is built by Maven and released via
+GitHub Actions. This plan is fully done. Handles open item 3 of [01_maven-migration.md](01_maven-migration.md):
 the launch configurations and the Fusion/ASTIL external builder, which lost their
 home when the hand-maintained Eclipse project was replaced by the m2e import.
 
@@ -76,9 +78,9 @@ builder anyway.
 - ~~Keep or delete the `checkout.bat.launch`, `upload.bat.launch` and
   `index.bat.launch` configurations.~~ Decided 2026-10-10: keep them in
   `launch/` - Eclipse is the normal way these scripts are started.
-- Delete `asma-tools/build/SAPFileEditor.xml` only after deciding whether the
-  launch4j exe is still wanted; if it is, a later step could wrap launch4j in
-  a Maven profile too (`launch4j-maven-plugin`).
+- ~~Delete `asma-tools/build/SAPFileEditor.xml` only after deciding whether the
+  launch4j exe is still wanted.~~ Decided and done 2026-10-10 via
+  [04_github-release.md](04_github-release.md): exe dropped, launch4j removed.
 
 ## Effort
 
