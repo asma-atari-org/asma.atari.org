@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -103,6 +104,10 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 	private void run() {
 		frame = new JFrame(TITLE);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		// Converted from public_html/img/favicon.ico (16x16), plus a pixel-exact 32x32 for the taskbar.
+		frame.setIconImages(java.util.List.of(
+				new ImageIcon(ASMABrowser.class.getResource("ASMABrowser-16.png")).getImage(),
+				new ImageIcon(ASMABrowser.class.getResource("ASMABrowser-32.png")).getImage()));
 		frame.setJMenuBar(createMenuBar());
 
 		detailsPanel = new FileInfoDetailsPanel();
