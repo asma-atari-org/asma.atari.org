@@ -59,8 +59,14 @@ public API changes of asma-lib, or data contract decisions stops and asks.**
 
 2. **MessageQueue and NLS messages** (NON-MECHANICAL - propose design,
    ask first): replace the ASMA MessageQueue world with the base one; a
-   `Messages` repository class per the RULES doc for all SAP/COM/DMO/EXP
+   `Messages` repository class per the RULES doc for all SAP/COM/DMZ/EXP
    codes with `.properties`; adapt all senders and the GUI/console output.
+   Base conventions decided in WUDSN Base plan 01 (2026-10-10): the
+   repository classes declare `public static final String AREA`, exactly
+   3 upper-case letters; the display accessor is `getIdentifier()`
+   (`<AREA>-<number>`). The Demozoo area is `DMZ`, so the visible Demozoo
+   codes change from today's `DMO-xxx` to `DMZ-xxx`; all other ASMA codes
+   (`SAP`, `COM`, `EXP`) stay identical.
 
 3. **Editor GUI onto base** (NON-MECHANICAL - ask first, optional):
    `ElementFactory`/`Actions`/`ModalDialog`/`AttributeTablePanel` for
