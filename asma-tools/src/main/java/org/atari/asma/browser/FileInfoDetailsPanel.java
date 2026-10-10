@@ -42,13 +42,13 @@ public final class FileInfoDetailsPanel extends JPanel {
 		titleField = addField(DataTypes.FileInfo_Title);
 		authorField = addField(DataTypes.FileInfo_Author);
 		dateField = addField(DataTypes.FileInfo_Date);
+		demozooIDField = addField(DataTypes.FileInfo_DemozooID);
 		hardwareField = addField(DataTypes.FileInfo_Hardware);
 		formatField = addField(DataTypes.FileInfo_OriginalModuleExt);
 		channelsField = addField(DataTypes.FileInfo_Channels);
 		songsField = addField(DataTypes.FileInfo_Songs);
 		filePathField = addField(DataTypes.FileInfo_FilePath);
 		fileSizeField = addField(DataTypes.FileInfo_FileSize);
-		demozooIDField = addField(DataTypes.FileInfo_DemozooID);
 		setFileInfo(null);
 	}
 
