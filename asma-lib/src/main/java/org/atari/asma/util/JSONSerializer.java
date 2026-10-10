@@ -2,7 +2,7 @@ package org.atari.asma.util;
 
 import com.google.gson.GsonBuilder;
 
-public class Serializer {
+public class JSONSerializer {
 
 	public static String serialize(Object object) {
 		var gson = new GsonBuilder().create();

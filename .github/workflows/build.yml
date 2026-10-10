@@ -11,11 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout WUDSN-Base
+        uses: actions/checkout@v4
+        with:
+          repository: wudsn/wudsn-base
+          path: wudsn-base
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
           cache: maven
+      - name: Install WUDSN-Base into the local Maven repo
+        run: mvn -B -ntp install
+        working-directory: wudsn-base
       - name: Build and test
         run: mvn -B clean verify
 

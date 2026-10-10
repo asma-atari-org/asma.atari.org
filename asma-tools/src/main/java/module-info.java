@@ -6,6 +6,7 @@ module org.atari.asma.tools {
 
 	requires transitive org.atari.asma;
 	requires com.google.gson;
+	requires com.wudsn.tools.base;
 	requires transitive asap;
 	requires transitive java.desktop;
 }

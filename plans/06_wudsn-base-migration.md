@@ -41,16 +41,21 @@ public API changes of asma-lib, or data contract decisions stops and asks.**
 
 ## Phases
 
-1. **Mechanical utilities swap** (no confirmation needed per step, but any
-   API mismatch found stops and asks):
-   - Add `com.wudsn.tools:com.wudsn.tools.base` to the parent
-     dependencyManagement and to asma-lib/asma-tools.
-   - Replace usages of ASMA `FileUtility`/`StringUtility`/`MemoryUtility`/
-     `ByteUtility` methods by base equivalents where semantics are identical;
-     delete the ASMA classes that become empty.
-   - `requires com.wudsn.tools.base;` in the module-infos (automatic module).
-   - CI: checkout + install wudsn-base in `build.yml` and `release.yml`.
-   - Verify: `mvn clean install` green, exporter output byte-identical.
+1. **Groundwork** - DONE 2026-10-10, with a scope correction: the API
+   comparison showed the utility classes are name-twins but API-strangers
+   (base `FileUtility.readBytes` throws the NLS-coupled `CoreException`;
+   base `StringUtility` has none of ASMA's methods; hex formats differ and
+   partly feed artifacts). Per the working rule this was escalated; decision:
+   **keep all ASMA utility classes untouched until phase 2**, where
+   `CoreException`/`Message` arrive as one coherent design. Executed:
+   - `com.wudsn.tools:com.wudsn.tools.base:1.0.0-SNAPSHOT` in the parent
+     dependencyManagement and in asma-lib/asma-tools.
+   - `requires (transitive) com.wudsn.tools.base;` in both module-infos
+     (automatic module).
+   - CI: checkout `wudsn/wudsn-base` + `mvn install` before the build in
+     `build.yml` and `release.yml` (RMT's proven pattern).
+   - `mvn clean install` green; the shaded SAPFileEditor.jar now bundles the
+     base classes (unused until phase 2).
 
 2. **MessageQueue and NLS messages** (NON-MECHANICAL - propose design,
    ask first): replace the ASMA MessageQueue world with the base one; a

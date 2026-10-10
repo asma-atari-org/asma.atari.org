@@ -18,7 +18,7 @@ import org.atari.asma.demozoo.model.ProductionsPage;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MemoryUtility;
 import org.atari.asma.util.MessageQueue;
-import org.atari.asma.util.Serializer;
+import org.atari.asma.util.JSONSerializer;
 import org.atari.asma.util.StringUtility;
 
 public class Demozoo {
@@ -76,7 +76,7 @@ public class Demozoo {
 				var response = RestClient.sendGetRequest(productionsPageResult.url);
 
 				if (response.isSuccess()) {
-					Production production = Serializer.deserialize(response.content, Production.class);
+					Production production = JSONSerializer.deserialize(response.content, Production.class);
 					productionList.add(production);
 					return production;
 				} else {
@@ -96,7 +96,7 @@ public class Demozoo {
 		private ProductionsPage fetchPage(String url, List<Production> productionList) {
 			try {
 				var response = RestClient.sendGetRequest(url);
-				ProductionsPage productionsPage = Serializer.deserialize(response.content, ProductionsPage.class);
+				ProductionsPage productionsPage = JSONSerializer.deserialize(response.content, ProductionsPage.class);
 				for (int i = 0; i < productionsPage.results.length; i++) {
 					var production = fetchProduction(productionsPage, i);
 					if (production == null) {
@@ -166,7 +166,7 @@ public class Demozoo {
 
 		messageQueue.sendInfo("DMO-104", "Saving to '" + outputFile.getAbsolutePath() + "'.");
 		try {
-			var content = Serializer.serialize(database);
+			var content = JSONSerializer.serialize(database);
 			var writer = new FileWriter(outputFile, StandardCharsets.UTF_8);
 			writer.write(content);
 			writer.close();
@@ -181,7 +181,7 @@ public class Demozoo {
 	public Database loadDatabase(File inputFile, MessageQueue messageQueue) {
 
 		var content = FileUtility.readAsString(inputFile);
-		var database = Serializer.deserialize(content, Database.class);
+		var database = JSONSerializer.deserialize(content, Database.class);
 
 		return database;
 	}

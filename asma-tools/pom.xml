@@ -26,6 +26,10 @@
 			<artifactId>gson</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.wudsn.tools</groupId>
+			<artifactId>com.wudsn.tools.base</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>net.sf.asap</groupId>
 			<artifactId>asap</artifactId>
 		</dependency>

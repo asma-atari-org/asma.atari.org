@@ -11,4 +11,6 @@ module org.atari.asma {
 	opens org.atari.asma.demozoo.model to com.google.gson;
 
 	requires transitive com.google.gson;
+	// Automatic module of the WUDSN Base library, see plans/06.
+	requires transitive com.wudsn.tools.base;
 }

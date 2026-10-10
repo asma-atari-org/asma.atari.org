@@ -8,7 +8,7 @@ import java.util.TreeMap;
 import org.atari.asma.FileInfo;
 import org.atari.asma.FileInfoList;
 import org.atari.asma.demozoo.model.Production;
-import org.atari.asma.util.Serializer;
+import org.atari.asma.util.JSONSerializer;
 
 public class ASMAProductionList {
 
@@ -144,6 +144,6 @@ public class ASMAProductionList {
 
 	public String getJSONString() {
 		var productionArray = productionList.toArray(new ASMAProduction[productionList.size()]);
-		return Serializer.serialize(productionArray);
+		return JSONSerializer.serialize(productionArray);
 	}
 }
