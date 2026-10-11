@@ -10,7 +10,8 @@ Written 2026-10-11. Goal, as stated by the user:
 - Since there are several classes per entity, **subpackages per entity**.
 
 **Status: P1-P8 confirmed 2026-10-11 as recommended; steps 1-6 executed
-2026-10-11.** Deviations from the proposal, decided during implementation:
+2026-10-11.** **Section 5 (details panels for composers and groups,
+STIL) added 2026-10-11: proposal, decisions S1-S3 open.** Deviations from the proposal, decided during implementation:
 
 - Tabs have no mnemonics: Alt+F belongs to the File menu, and the filter
   labels of the tabs already use most other letters (e.g. C for Channels
@@ -169,6 +170,61 @@ Points to watch:
   `browser.composer` dialogs and selection panels, plus `ASMAClient`;
   `ASMABrowser` itself stays the standalone application.
 
+### 5. Details panels for composers and groups (added 2026-10-11)
+
+Requirement (user, 2026-10-11): the Composers and Groups tabs also get a
+details panel, like the Files tab, where the display and later the editing
+of STIL information will be added.
+
+**Background - STIL in ASMA.** `asma/Docs/STIL.txt` is the "SAP Tune
+Information List" (format of the HVSC STIL, UTF-8): entries per file
+(`/Composers/Aki/Robots.sap` with TITLE/ARTIST/COMMENT, also per song) and
+per folder (`/Composers/Duesterhoeft_Stephan/` with a COMMENT about the
+composer - 10 composer folders today, no group folders yet). asma-lib
+already parses it (`org.atari.asma.STIL`, `getSTILEntry(path)`), but only
+the exporter uses it (`ASMAExporter`, message EXP-001); `asmadb.json`
+carries no STIL data, and `FileInfo` has TODOs for STIL comments and
+per-song details.
+
+**Phase A - details panels now (no STIL yet):**
+
+- `ComposerDetailsPanel` (`browser.composer`) and `GroupDetailsPanel`
+  (`browser.group`), built like `FileInfoDetailsPanel`: read-only fields
+  in two label/field column pairs with fixed-width cells, following the
+  table selection, empty without a selection.
+  - Composer: First Name / Last Name, Handles / Folder Name, Country /
+    Demozoo ID, Groups / File Count. Names in the Unicode spelling where
+    there is one (as in the table).
+  - Group: Name / Folder Name, Composers (full width), Demozoo ID / File
+    Count.
+- A full-width row at the bottom of each details panel is reserved for
+  the STIL area (phase B), via the existing `addFullWidthRow` pattern.
+- The details panel sits above the filter row, as in the Files tab, and
+  is part of the reusable unit, so the dialogs show it too (see S1).
+
+**Phase B - STIL display (later, separate step):**
+
+- The browser needs STIL data at runtime. `ASMAClient` gets
+  `loadSTIL()` / `loadSTIL(File)`, reading `asma/Docs/STIL.txt` from the
+  website or from the local archive next to a locally loaded database,
+  parsed with the existing `STIL` class (see S3).
+- Details panels show the folder entry's COMMENT
+  (`/Composers/<folderName>/`, `/Groups/<folderName>/`) in a multi-line,
+  read-only text area. The same mechanism later serves the file details
+  (the `FileInfo` TODOs: COMMENT, TITLE/ARTIST per song).
+
+**Phase C - STIL editing (later, own plan):**
+
+- Only when the database was loaded from a local file whose archive
+  folder is an SVN working copy; editing on website data is not possible.
+- Needs a STIL writer that keeps the file's order, the `###` section
+  headers, the indentation and the line length limit (see
+  `FileInfoList`'s STIL note: tag width 9, values up to 90 characters),
+  plus validation; the user commits to SVN as usual.
+- Whether editing happens in place in the details panel or in an input
+  dialog ("Edit STIL..."), and for which entities, is decided in that
+  plan.
+
 ## Open decisions
 
 - **P1 - Subpackage names**: `browser.file` / `browser.composer` /
@@ -193,6 +249,18 @@ Points to watch:
 - **P8 - Cross-tab navigation** (e.g. a composer's files): not part of
   this plan (recommended; the analogous D6 of plan 08 was rejected).
 
+- **S1 - Unit containing the details panel** (phase A): the
+  `ComposerSelectionPanel` / `GroupSelectionPanel` get the details panel
+  on top, so tab and dialog show it automatically (recommended, fewer
+  classes), or a separate composite per entity like `FileInfoPlayerPanel`
+  (keeps a details-free selection panel for compact dialogs).
+- **S2 - Demozoo link** (phase A): a button "Open in Demozoo" in the
+  composer and group details that opens the scener/group page in the
+  browser (recommended; the IDs are there already), or none.
+- **S3 - STIL source** (phase B): the client loads `Docs/STIL.txt` itself
+  (recommended; no change of the `asmadb.json` contract), or the exporter
+  adds the folder comments to `asmadb.json`.
+
 ## Steps (after confirmation)
 
 1. Move the classes into the subpackages (mechanical), adjust
@@ -206,3 +274,12 @@ Points to watch:
 6. Verify: `mvn install`, launch the browser (both tabs, loading, replay,
    Escape), open both dialogs in `choose` mode; update plans 07/08 cross references.
 7. Commit with explicit paths.
+
+## Steps for section 5 (after confirmation of S1-S3)
+
+1. Phase A: `ComposerDetailsPanel`, `GroupDetailsPanel`, wiring into the
+   selection panels (S1), Demozoo button (S2); verify in tabs and dialogs.
+2. Phase B: `ASMAClient.loadSTIL`, STIL area in the details panels,
+   tests with the real `STIL.txt` (e.g. the Duesterhoeft_Stephan folder
+   comment).
+3. Phase C: separate plan for STIL editing.
