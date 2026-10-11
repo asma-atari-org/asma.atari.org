@@ -11,6 +11,7 @@ import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.atari.asma.FileInfo;
+import org.atari.asma.gui.PlainNumberCellRenderer;
 
 import com.wudsn.tools.base.common.StringUtility;
 import com.wudsn.tools.base.gui.AttributeTableModel;

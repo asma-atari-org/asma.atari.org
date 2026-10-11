@@ -33,6 +33,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.atari.asma.ASMAClient;
 import org.atari.asma.FileInfo;
+import org.atari.asma.composer.ComposerListDialog;
 
 import com.wudsn.tools.base.common.Application;
 import com.wudsn.tools.base.common.MessageQueue;
@@ -217,8 +218,7 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 			loadFromLocalFile();
 			break;
 		case Commands.COMPOSERS:
-			new ComposerListDialog(frame, attributeTablePreferences, allComposers, getFileCountByComposerFolderName())
-					.open();
+			ComposerListDialog.browse(frame, attributeTablePreferences, allComposers, getFileCountByComposerFolderName());
 			break;
 		case Commands.ABOUT:
 			JOptionPane.showMessageDialog(frame,

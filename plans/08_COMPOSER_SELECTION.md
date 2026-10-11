@@ -7,9 +7,9 @@ asma-lib - the same structure the file info list already has with
 
 **Status: decisions D1-D5 confirmed 2026-10-11 as recommended (combined
 Name field, Country as text field, no file count filter, shared
-`FilterPanel<S>`, filters reset on reopening); D6 rejected. New requirement:
-the composer list must be reusable outside the ASMABrowser (see "Reuse"
-below); its packaging is to be confirmed before implementation.**
+`FilterPanel<S>`, filters reset on reopening); D6 rejected. R1-R3
+confirmed as proposed. Steps 2-6 executed 2026-10-11; the choose mode has no
+caller yet (it is for the future submission tool).**
 
 **Working rule (inherited from plans 06/07): the open decisions below are
 confirmed with the user before the non-mechanical steps are executed.**

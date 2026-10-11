@@ -1,4 +1,4 @@
-package org.atari.asma.browser;
+package org.atari.asma.composer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.swing.SwingConstants;
 
 import org.atari.asma.Composer;
+import org.atari.asma.gui.PlainNumberCellRenderer;
 
 import com.wudsn.tools.base.common.StringUtility;
 import com.wudsn.tools.base.gui.AttributeTableModel;
@@ -17,8 +18,8 @@ import com.wudsn.tools.base.gui.AttributeTablePreferences;
 /**
  * Panel displaying a list of {@link Composer} instances in a
  * column-configurable, sortable attribute table, built like the
- * {@link FileInfoListPanel}. The columns follow the Composers tab of the
- * website player's About dialog.
+ * file info list of the ASMABrowser. The columns follow the Composers tab of
+ * the website player's About dialog.
  *
  * @author Peter Dell
  */
@@ -67,19 +68,21 @@ public final class ComposerListPanel extends AttributeTablePanel {
 		 * @param composers
 		 *            The composers, not <code>null</code>.
 		 * @param fileCountByFolderName
-		 *            The number of files per composer folder name, not
-		 *            <code>null</code>.
+		 *            The number of files per composer folder name, or
+		 *            <code>null</code> if unknown; the file count column is
+		 *            empty then.
 		 */
 		public void setComposers(List<Composer> composers, Map<String, Integer> fileCountByFolderName) {
 			if (composers == null) {
 				throw new IllegalArgumentException("Parameter 'composers' must not be null.");
 			}
-			if (fileCountByFolderName == null) {
-				throw new IllegalArgumentException("Parameter 'fileCountByFolderName' must not be null.");
-			}
 			this.composers = composers;
 			this.fileCountByFolderName = fileCountByFolderName;
 			fireTableDataChanged();
+		}
+
+		public Composer getComposer(int row) {
+			return composers.get(row);
 		}
 
 		@Override
@@ -115,7 +118,8 @@ public final class ComposerListPanel extends AttributeTablePanel {
 			case Columns.DEMOZOO_ID:
 				return parseDemozooID(composer.demozooID);
 			case Columns.FILE_COUNT:
-				return fileCountByFolderName.getOrDefault(composer.folderName, Integer.valueOf(0));
+				return (fileCountByFolderName == null) ? null
+						: fileCountByFolderName.getOrDefault(composer.folderName, Integer.valueOf(0));
 			case Columns.FOLDER_NAME:
 				return composer.folderName;
 			case Columns.GROUPS:

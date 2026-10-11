@@ -36,6 +36,9 @@ public final class DataTypes extends NLS {
 	public static DataType Composer_Groups = new DataType(String.class);
 	public static DataType Composer_FileCount = new DataType(Integer.class);
 
+	public static DataType ComposerSelection_Keyword = new DataType(String.class);
+	public static DataType ComposerSelection_Name = new DataType(String.class);
+
 	static {
 		initializeClass(DataTypes.class, null);
 	}
