@@ -130,6 +130,18 @@ public final class FileInfo {
 		return (channels == 1) ? "Mono (4)" : "Stereo (8)";
 	}
 
+	/**
+	 * Gets the songs as display text, like getSongsText() in the website's
+	 * file.js: "1" for a single song, otherwise the song count followed by
+	 * the one-based default song in brackets, e.g. "4 (2)".
+	 */
+	public String getSongsText() {
+		if (songs == 1) {
+			return "1";
+		}
+		return songs + " (" + (defaultSongIndex + 1) + ")";
+	}
+
 	public String getFolderPath() {
 		String result = "";
 		var index = filePath.lastIndexOf("/");

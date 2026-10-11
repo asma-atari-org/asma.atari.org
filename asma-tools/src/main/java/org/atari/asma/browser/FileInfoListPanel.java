@@ -3,8 +3,10 @@ package org.atari.asma.browser;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.atari.asma.FileInfo;
@@ -52,18 +54,11 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(FileInfo.Attributes.DATE, Column.VISIBLE | Column.SORTABLE);
 			addColumn(FileInfo.Attributes.ORIGINAL_MODULE_EXT, Column.VISIBLE | Column.SORTABLE);
-			// The value stays numeric for sorting; the renderer shows the website's text.
+			// The values stay numeric for sorting; the renderers show the website's texts.
 			addColumn(FileInfo.Attributes.CHANNELS, Column.VISIBLE | Column.SORTABLE, null,
-					new DefaultTableCellRenderer() {
-						@Override
-						public Component getTableCellRendererComponent(JTable table, Object value,
-								boolean isSelected, boolean hasFocus, int row, int column) {
-							super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-							setText(getFileInfo(table.convertRowIndexToModel(row)).getChannelsText());
-							return this;
-						}
-					}, null);
-			addColumn(FileInfo.Attributes.SONGS, Column.VISIBLE | Column.SORTABLE);
+					createTextRenderer(FileInfo::getChannelsText, SwingConstants.LEADING), null);
+			addColumn(FileInfo.Attributes.SONGS, Column.VISIBLE | Column.SORTABLE, null,
+					createTextRenderer(FileInfo::getSongsText, SwingConstants.RIGHT), null);
 			addColumn(FileInfo.Attributes.FILE_PATH, Column.HIDDEN | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(FileInfo.Attributes.FILE_SIZE, Column.HIDDEN | Column.SORTABLE);
@@ -71,6 +66,21 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 			addColumn(FileInfo.Attributes.DEFAULT_SONG_INDEX, Column.HIDDEN | Column.SORTABLE);
 			addColumn(FileInfo.Attributes.DEMOZOO_ID, Column.HIDDEN | Column.SORTABLE, null,
 					new IdentifierCellRenderer(), null);
+		}
+
+		private DefaultTableCellRenderer createTextRenderer(Function<FileInfo, String> text,
+				int horizontalAlignment) {
+			DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+				@Override
+				public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+						boolean hasFocus, int row, int column) {
+					super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+					setText(text.apply(getFileInfo(table.convertRowIndexToModel(row))));
+					return this;
+				}
+			};
+			renderer.setHorizontalAlignment(horizontalAlignment);
+			return renderer;
 		}
 
 		public void setFileInfos(List<FileInfo> fileInfos) {

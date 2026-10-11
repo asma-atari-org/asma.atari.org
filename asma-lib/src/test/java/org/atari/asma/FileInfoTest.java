@@ -18,4 +18,15 @@ public class FileInfoTest {
 		fileInfo.channels = 1;
 		assertEquals("Mono (2)", fileInfo.getChannelsText());
 	}
+
+	@Test
+	public void songsTextMatchesTheWebsite() {
+		FileInfo fileInfo = new FileInfo();
+		fileInfo.songs = 1;
+		fileInfo.defaultSongIndex = 0;
+		assertEquals("1", fileInfo.getSongsText());
+		fileInfo.songs = 4;
+		fileInfo.defaultSongIndex = 1;
+		assertEquals("4 (2)", fileInfo.getSongsText());
+	}
 }
