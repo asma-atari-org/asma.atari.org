@@ -13,14 +13,14 @@ public final class FileInfo {
 	/**
 	 * A selection (filter) over file infos, mirroring the search form of the
 	 * website player (asma.js). Empty strings mean "no restriction"; a
-	 * <code>null</code> hardware means all hardware, channels 0 means all
-	 * channel counts. String matching is a case-insensitive "contains"; the
-	 * keyword matches against file path, title, author and date.
+	 * <code>null</code> hardware or channels means all values. String matching
+	 * is a case-insensitive "contains"; the keyword matches against file path,
+	 * title, author and date.
 	 */
 	public static record Selection(String keyword, String filePath, String title, String author, String date,
-			String hardware, int channels, String format) {
+			Hardware hardware, Channels channels, String format) {
 
-		public static final Selection ALL = new Selection("", "", "", "", "", null, 0, "");
+		public static final Selection ALL = new Selection("", "", "", "", "", null, null, "");
 
 		public Selection {
 			keyword = normalize(keyword);
@@ -59,10 +59,10 @@ public final class FileInfo {
 			if (!date.isEmpty() && !contains(fileInfo.date, date)) {
 				return false;
 			}
-			if (hardware != null && !hardware.equals(fileInfo.hardware)) {
+			if (hardware != null && hardware != fileInfo.getHardware()) {
 				return false;
 			}
-			if (channels != 0 && fileInfo.channels != channels) {
+			if (channels != null && channels != fileInfo.getChannels()) {
 				return false;
 			}
 			if (!format.isEmpty() && !contains(fileInfo.originalModuleExt, format)) {
@@ -123,15 +123,25 @@ public final class FileInfo {
 		messageQueue = new MessageQueue();
 	}
 
+	/** The hardware of {@link #hardware}, see plans/13. */
+	public Hardware getHardware() {
+		return Hardware.getInstance(hardware);
+	}
+
+	/**
+	 * The channels as the website shows them, derived from {@link #hardware}
+	 * and {@link #channels}, see plans/13.
+	 */
+	public Channels getChannels() {
+		return Channels.of(getHardware(), channels);
+	}
+
 	/**
 	 * Gets the channels as display text, like getChannelsText() in the
 	 * website's file.js: the POKEY channels for Atari 800, TIA for 2600.
 	 */
 	public String getChannelsText() {
-		if (ATARI2600.equals(hardware)) {
-			return "Mono (2)";
-		}
-		return (channels == 1) ? "Mono (4)" : "Stereo (8)";
+		return getChannels().getText();
 	}
 
 	/**

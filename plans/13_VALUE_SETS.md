@@ -6,7 +6,21 @@ file, instead of being hard-coded in several Java places. This is the
 "Check where WUDSN Base `ValueSet`s can be applied" TODO of plan 07,
 narrowed to the two clear candidates.
 
-**Status: V1-V5 confirmed 2026-10-12 as recommended.** On V2 the user
+**Status: V1-V5 confirmed 2026-10-12 as recommended; steps 1-4 executed
+the same day.**
+
+Verification:
+- `asmadb.js`, `asmadb.json` and `asmadb.html` are byte-identical to the
+  previous export.
+- The filters offer "All" plus the value set texts.
+- Atari 800 / Stereo (8) selects 807 of 6407 files. The database has 5530
+  Mono (4), 807 Stereo (8) and 70 Mono (2) files.
+
+The interim "All" combo box is `FilterPanel.addValueSetComboBox` with
+`getSelectedValue`. It replaces the former string combo box, which had no
+other user.
+
+**Original decision status:** On V2 the user
 added: WUDSN Base should get a `ValueSetSelectionField` next to
 `ValueSetField`. It is a multi-selection field that takes and returns an
 array of ValueSet instances and has an implicit "All" entry. This is

@@ -5,8 +5,10 @@ import java.util.function.Consumer;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
+import org.atari.asma.Channels;
 import org.atari.asma.DataTypes;
 import org.atari.asma.FileInfo;
+import org.atari.asma.Hardware;
 import org.atari.asma.browser.FilterPanel;
 
 /**
@@ -18,18 +20,12 @@ import org.atari.asma.browser.FilterPanel;
  */
 public final class FileInfoFilterPanel extends FilterPanel<FileInfo.Selection> {
 
-	// Combo box entries, index-aligned with the values below.
-	private static final String[] HARDWARE_TEXTS = { "All", "Atari 800", "Atari 2600" };
-	private static final String[] HARDWARE_VALUES = { null, FileInfo.ATARI800, FileInfo.ATARI2600 };
-	private static final String[] CHANNELS_TEXTS = { "All", "Mono (4)", "Stereo (8)" };
-	private static final int[] CHANNELS_VALUES = { 0, 1, 2 };
-
 	private final JTextField keywordField;
 	private final JTextField titleField;
 	private final JTextField authorField;
 	private final JTextField dateField;
-	private final JComboBox<String> hardwareComboBox;
-	private final JComboBox<String> channelsComboBox;
+	private final JComboBox<Object> hardwareComboBox;
+	private final JComboBox<Object> channelsComboBox;
 	private final JTextField formatField;
 
 	public FileInfoFilterPanel(Consumer<FileInfo.Selection> selectionConsumer) {
@@ -39,8 +35,8 @@ public final class FileInfoFilterPanel extends FilterPanel<FileInfo.Selection> {
 		titleField = addTextField(DataTypes.FileInfo_Title, 10);
 		authorField = addTextField(DataTypes.FileInfo_Author, 10);
 		dateField = addTextField(DataTypes.FileInfo_Date, 6);
-		hardwareComboBox = addComboBox(DataTypes.FileInfo_Hardware, HARDWARE_TEXTS);
-		channelsComboBox = addComboBox(DataTypes.FileInfo_Channels, CHANNELS_TEXTS);
+		hardwareComboBox = addValueSetComboBox(DataTypes.FileInfo_Hardware, Hardware.class);
+		channelsComboBox = addValueSetComboBox(DataTypes.FileInfo_Channels, Channels.class);
 		formatField = addTextField(DataTypes.FileInfo_OriginalModuleExt, 4);
 		addCountLabel();
 	}
@@ -53,8 +49,8 @@ public final class FileInfoFilterPanel extends FilterPanel<FileInfo.Selection> {
 	@Override
 	public FileInfo.Selection getSelection() {
 		return new FileInfo.Selection(keywordField.getText(), "", titleField.getText(),
-				authorField.getText(), dateField.getText(), HARDWARE_VALUES[hardwareComboBox.getSelectedIndex()],
-				CHANNELS_VALUES[channelsComboBox.getSelectedIndex()], formatField.getText());
+				authorField.getText(), dateField.getText(), getSelectedValue(hardwareComboBox, Hardware.class),
+				getSelectedValue(channelsComboBox, Channels.class), formatField.getText());
 	}
 
 	public void setCountText(int selectedCount, int totalCount) {

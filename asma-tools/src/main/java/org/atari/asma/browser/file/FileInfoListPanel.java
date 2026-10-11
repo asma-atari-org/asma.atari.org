@@ -61,9 +61,9 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 			addColumn(FileInfo.Attributes.DATE, Column.VISIBLE | Column.SORTABLE, null,
 					createTextRenderer(fileInfo -> fileInfo.date, SwingConstants.RIGHT), null);
 			addColumn(FileInfo.Attributes.ORIGINAL_MODULE_EXT, Column.VISIBLE | Column.SORTABLE);
-			// The values stay numeric for sorting; the renderers show the website's texts.
-			addColumn(FileInfo.Attributes.CHANNELS, Column.VISIBLE | Column.SORTABLE, null,
-					createTextRenderer(FileInfo::getChannelsText, SwingConstants.LEADING), null);
+			// Value sets show their text and sort by their sort key, see plans/13.
+			addColumn(FileInfo.Attributes.CHANNELS, Column.VISIBLE | Column.SORTABLE);
+			// The value stays numeric for sorting; the renderer shows the website's text.
 			addColumn(FileInfo.Attributes.SONGS_AND_DEFAULT_SONG, Column.VISIBLE | Column.SORTABLE, null,
 					createTextRenderer(FileInfo::getSongsText, SwingConstants.LEADING), null);
 			addColumn(FileInfo.Attributes.FILE_PATH, Column.HIDDEN | Column.SORTABLE,
@@ -123,7 +123,7 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 			case Columns.FORMAT:
 				return fileInfo.originalModuleExt;
 			case Columns.CHANNELS:
-				return Integer.valueOf(fileInfo.channels);
+				return fileInfo.getChannels();
 			case Columns.SONGS:
 				return Integer.valueOf(fileInfo.songs);
 			case Columns.FILE_PATH:
@@ -131,7 +131,7 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 			case Columns.FILE_SIZE:
 				return Long.valueOf(fileInfo.fileSize);
 			case Columns.HARDWARE:
-				return fileInfo.hardware;
+				return fileInfo.getHardware();
 			case Columns.DEFAULT_SONG:
 				return Integer.valueOf(fileInfo.defaultSongIndex + 1);
 			case Columns.DEMOZOO_ID:

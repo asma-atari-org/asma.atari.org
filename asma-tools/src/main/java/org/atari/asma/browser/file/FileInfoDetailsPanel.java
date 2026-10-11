@@ -78,7 +78,7 @@ public final class FileInfoDetailsPanel extends DetailsPanel {
 		titleField.setText(fileInfo.title);
 		authorField.setText(fileInfo.author);
 		dateField.setText(fileInfo.date);
-		hardwareField.setText(fileInfo.hardware);
+		hardwareField.setText(fileInfo.getHardware().getText());
 		formatField.setText(fileInfo.originalModuleExt);
 		channelsField.setText(fileInfo.getChannelsText());
 		filePathField.setText(fileInfo.filePath);

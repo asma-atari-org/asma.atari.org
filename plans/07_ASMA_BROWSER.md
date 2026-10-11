@@ -110,7 +110,8 @@ decisions below are proposed and confirmed with the user first.**
 ## TODO
 
 - **Check where WUDSN Base `ValueSet`s can be applied** (recorded
-  2026-10-11). ValueSets are the base library's enumerations with texts
+  2026-10-11). Done 2026-10-12 by plan 13 for hardware and channels; the
+  format and the country were deliberately left out, see there. ValueSets are the base library's enumerations with texts
   from the `.properties` files (The!Cart Studio uses them, e.g. for its
   content types). Candidates in the FileInfo model, today plain strings or
   numbers with hand-written texts:

@@ -23,33 +23,33 @@ public class FileInfoSelectionTest {
 	@Test
 	public void emptySelectionMatchesEverything() {
 		assertTrue(FileInfo.Selection.ALL.matches(createFileInfo()));
-		assertTrue(new FileInfo.Selection(null, null, null, null, null, null, 0, null).matches(createFileInfo()));
+		assertTrue(new FileInfo.Selection(null, null, null, null, null, null, null, null).matches(createFileInfo()));
 	}
 
 	@Test
 	public void keywordMatchesFilePathTitleAuthorAndDateCaseInsensitively() {
 		FileInfo fileInfo = createFileInfo();
-		assertTrue(new FileInfo.Selection("HUMMEL", "", "", "", "", null, 0, "").matches(fileInfo)); // path/author
-		assertTrue(new FileInfo.Selection("sketch", "", "", "", "", null, 0, "").matches(fileInfo)); // title
-		assertTrue(new FileInfo.Selection("2020", "", "", "", "", null, 0, "").matches(fileInfo)); // date
-		assertFalse(new FileInfo.Selection("zybex", "", "", "", "", null, 0, "").matches(fileInfo));
+		assertTrue(new FileInfo.Selection("HUMMEL", "", "", "", "", null, null, "").matches(fileInfo)); // path/author
+		assertTrue(new FileInfo.Selection("sketch", "", "", "", "", null, null, "").matches(fileInfo)); // title
+		assertTrue(new FileInfo.Selection("2020", "", "", "", "", null, null, "").matches(fileInfo)); // date
+		assertFalse(new FileInfo.Selection("zybex", "", "", "", "", null, null, "").matches(fileInfo));
 	}
 
 	@Test
 	public void fieldsFilterIndividually() {
 		FileInfo fileInfo = createFileInfo();
-		assertTrue(new FileInfo.Selection("", "hummel_jakub", "", "", "", null, 0, "").matches(fileInfo));
-		assertTrue(new FileInfo.Selection("", "", "43", "fel", "", null, 0, "").matches(fileInfo));
-		assertFalse(new FileInfo.Selection("", "", "", "yerzmyey", "", null, 0, "").matches(fileInfo));
-		assertFalse(new FileInfo.Selection("", "", "", "", "1995", null, 0, "").matches(fileInfo));
+		assertTrue(new FileInfo.Selection("", "hummel_jakub", "", "", "", null, null, "").matches(fileInfo));
+		assertTrue(new FileInfo.Selection("", "", "43", "fel", "", null, null, "").matches(fileInfo));
+		assertFalse(new FileInfo.Selection("", "", "", "yerzmyey", "", null, null, "").matches(fileInfo));
+		assertFalse(new FileInfo.Selection("", "", "", "", "1995", null, null, "").matches(fileInfo));
 	}
 
 	@Test
 	public void hardwareChannelsAndFormatFilter() {
 		FileInfo fileInfo = createFileInfo();
-		assertTrue(new FileInfo.Selection("", "", "", "", "", FileInfo.ATARI800, 2, "rmt").matches(fileInfo));
-		assertFalse(new FileInfo.Selection("", "", "", "", "", FileInfo.ATARI2600, 0, "").matches(fileInfo));
-		assertFalse(new FileInfo.Selection("", "", "", "", "", null, 1, "").matches(fileInfo));
-		assertFalse(new FileInfo.Selection("", "", "", "", "", null, 0, "ttt").matches(fileInfo));
+		assertTrue(new FileInfo.Selection("", "", "", "", "", Hardware.ATARI800, Channels.STEREO_8, "rmt").matches(fileInfo));
+		assertFalse(new FileInfo.Selection("", "", "", "", "", Hardware.ATARI2600, null, "").matches(fileInfo));
+		assertFalse(new FileInfo.Selection("", "", "", "", "", null, Channels.MONO_4, "").matches(fileInfo));
+		assertFalse(new FileInfo.Selection("", "", "", "", "", null, null, "ttt").matches(fileInfo));
 	}
 }

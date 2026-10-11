@@ -10,6 +10,8 @@ import com.wudsn.tools.base.repository.NLS;
 public final class Texts extends NLS {
 
 	public static String Replay_PlayingTime;
+	/** The filter entry standing for no restriction. */
+	public static String FilterPanel_All;
 	public static String MainWindow_FilesTab;
 	public static String MainWindow_ComposersTab;
 	public static String MainWindow_GroupsTab;

@@ -1,6 +1,8 @@
 package org.atari.asma.browser;
 
 import java.awt.FlowLayout;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import javax.swing.JComboBox;
@@ -12,6 +14,7 @@ import javax.swing.event.DocumentListener;
 
 import com.wudsn.tools.base.gui.ElementFactory;
 import com.wudsn.tools.base.repository.DataType;
+import com.wudsn.tools.base.repository.ValueSet;
 
 /**
  * Base class of the filter panels above the attribute tables: a row of
@@ -62,12 +65,31 @@ public abstract class FilterPanel<S> extends JPanel {
 		return field;
 	}
 
-	protected final JComboBox<String> addComboBox(DataType dataType, String[] texts) {
-		JComboBox<String> comboBox = new JComboBox<String>(texts);
+	/**
+	 * Adds a combo box with an "All" entry, standing for no restriction,
+	 * followed by the values of a value set. Read it with
+	 * {@link #getSelectedValue(JComboBox, Class)}. To be replaced by WUDSN
+	 * Base's planned ValueSetSelectionField, see plans/13.
+	 */
+	protected final <T extends ValueSet> JComboBox<Object> addValueSetComboBox(DataType dataType,
+			Class<T> valueSetClass) {
+		List<Object> items = new ArrayList<Object>();
+		items.add(Texts.FilterPanel_All);
+		items.addAll(ValueSet.getValues(valueSetClass));
+		// A value set shows its text.
+		JComboBox<Object> comboBox = new JComboBox<Object>(items.toArray());
 		add(ElementFactory.createLabel(dataType, comboBox));
 		add(comboBox);
 		comboBox.addActionListener(event -> fireSelectionChanged());
 		return comboBox;
+	}
+
+	/**
+	 * @return The selected value, or <code>null</code> for "All".
+	 */
+	protected static <T extends ValueSet> T getSelectedValue(JComboBox<Object> comboBox, Class<T> valueSetClass) {
+		Object item = comboBox.getSelectedItem();
+		return valueSetClass.isInstance(item) ? valueSetClass.cast(item) : null;
 	}
 
 	protected final void addCountLabel() {
