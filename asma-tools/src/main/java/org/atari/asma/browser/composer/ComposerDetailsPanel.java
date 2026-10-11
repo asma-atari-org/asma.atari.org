@@ -33,8 +33,8 @@ public final class ComposerDetailsPanel extends DetailsPanel {
 		handlesField = addField(DataTypes.Composer_Handles);
 		folderNameField = addField(DataTypes.Composer_FolderName);
 		countryField = addField(DataTypes.Composer_Country);
-		demozooIDField = addDemozooIDField(DataTypes.Composer_DemozooID, new ScenerDemozooIDField());
 		groupsField = addField(DataTypes.Composer_Groups);
+		demozooIDField = addDemozooIDField(DataTypes.Composer_DemozooID, new ScenerDemozooIDField());
 		fileCountField = addField(DataTypes.Composer_FileCount);
 		stilArea = addSTILArea();
 		setComposer(null, 0, "");

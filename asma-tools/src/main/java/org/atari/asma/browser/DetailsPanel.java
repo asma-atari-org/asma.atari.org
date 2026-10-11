@@ -18,17 +18,18 @@ import com.wudsn.tools.base.repository.DataType;
 
 /**
  * Base class of the details panels above the entity lists: read-only fields
- * in two label/field column pairs, filled row by row, followed by full-width
- * rows. The value columns keep their width when the content changes.
+ * in two label/field column pairs, filled row by row, and full-width rows in
+ * between, in the order they are added. The value columns keep their width
+ * when the content changes.
  *
  * @author Peter Dell
  */
 public abstract class DetailsPanel extends JPanel {
 
-	// Fields are laid out in two label/field column pairs, filled row by row.
-	private int fieldIndex;
-	// Full-width rows below the fields.
-	private int extraRowCount;
+	// Fields are laid out in two label/field column pairs, filled row by row;
+	// a full-width row starts a new row.
+	private int row;
+	private int column;
 
 	protected DetailsPanel() {
 		setLayout(new GridBagLayout());
@@ -50,11 +51,8 @@ public abstract class DetailsPanel extends JPanel {
 	}
 
 	protected final void addComponent(JLabel label, JComponent field) {
-		if (extraRowCount > 0) {
-			throw new IllegalStateException("Fields must be added before the full-width rows.");
-		}
-		int gridx = (fieldIndex % 2) * 2;
-		int gridy = fieldIndex / 2;
+		int gridx = column * 2;
+		int gridy = row;
 
 		add(label, createLabelConstraints(gridx, gridy));
 
@@ -66,7 +64,10 @@ public abstract class DetailsPanel extends JPanel {
 		fieldConstraints.insets = new Insets(2, 0, 2, gridx == 0 ? 16 : 4);
 		add(createFixedWidthCell(field), fieldConstraints);
 
-		fieldIndex++;
+		if (++column == 2) {
+			column = 0;
+			row++;
+		}
 	}
 
 	private static GridBagConstraints createLabelConstraints(int gridx, int gridy) {
@@ -105,24 +106,29 @@ public abstract class DetailsPanel extends JPanel {
 		return cell;
 	}
 
-	private int getNextExtraRow() {
-		return (fieldIndex + 1) / 2 + extraRowCount++;
+	// A full-width row starts below a half-filled row.
+	private int getNextFullWidthRow() {
+		if (column != 0) {
+			column = 0;
+			row++;
+		}
+		return row++;
 	}
 
-	/** Adds an unlabeled row below the fields, spanning all columns. */
+	/** Adds an unlabeled row spanning all columns. */
 	public final void addFullWidthRow(JComponent component) {
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.gridx = 0;
-		constraints.gridy = getNextExtraRow();
+		constraints.gridy = getNextFullWidthRow();
 		constraints.gridwidth = 4;
 		constraints.anchor = GridBagConstraints.WEST;
 		constraints.insets = new Insets(2, 0, 2, 4);
 		add(component, constraints);
 	}
 
-	/** Adds a labeled row below the fields, whose value spans the remaining columns. */
+	/** Adds a labeled row whose value spans the remaining columns. */
 	protected final void addFullWidthField(JLabel label, JComponent field) {
-		int gridy = getNextExtraRow();
+		int gridy = getNextFullWidthRow();
 		add(label, createLabelConstraints(0, gridy));
 		GridBagConstraints fieldConstraints = new GridBagConstraints();
 		fieldConstraints.gridx = 1;

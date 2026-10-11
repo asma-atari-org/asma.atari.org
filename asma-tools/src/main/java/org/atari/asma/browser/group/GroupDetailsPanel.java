@@ -26,9 +26,9 @@ public final class GroupDetailsPanel extends DetailsPanel {
 	public GroupDetailsPanel() {
 		nameField = addField(DataTypes.Group_Name);
 		folderNameField = addField(DataTypes.Group_FolderName);
+		composersField = addFullWidthField(DataTypes.Group_Composers);
 		demozooIDField = addDemozooIDField(DataTypes.Group_DemozooID, new GroupDemozooIDField());
 		fileCountField = addField(DataTypes.Group_FileCount);
-		composersField = addFullWidthField(DataTypes.Group_Composers);
 		stilArea = addSTILArea();
 		setGroup(null, "", 0, "");
 	}

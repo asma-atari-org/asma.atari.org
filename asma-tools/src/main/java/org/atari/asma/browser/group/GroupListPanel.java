@@ -34,8 +34,8 @@ public final class GroupListPanel extends AttributeTablePanel {
 			public static final int NAME = 0;
 			public static final int FOLDER_NAME = 1;
 			public static final int COMPOSERS = 2;
-			public static final int FILE_COUNT = 3;
-			public static final int DEMOZOO_ID = 4;
+			public static final int DEMOZOO_ID = 3;
+			public static final int FILE_COUNT = 4;
 
 			private Columns() {
 			}
@@ -56,9 +56,9 @@ public final class GroupListPanel extends AttributeTablePanel {
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(Group.Attributes.COMPOSERS, Column.VISIBLE | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
-			addColumn(Group.Attributes.FILE_COUNT, Column.VISIBLE | Column.SORTABLE);
 			addColumn(Group.Attributes.DEMOZOO_ID, Column.VISIBLE | Column.SORTABLE, null,
 					new PlainNumberCellRenderer(SwingConstants.RIGHT), null);
+			addColumn(Group.Attributes.FILE_COUNT, Column.VISIBLE | Column.SORTABLE);
 		}
 
 		/**
