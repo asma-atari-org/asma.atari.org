@@ -14,10 +14,12 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -25,13 +27,16 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.atari.asma.ASMAClient;
 import org.atari.asma.FileInfo;
 
 import com.wudsn.tools.base.common.Application;
 import com.wudsn.tools.base.common.MessageQueue;
+import com.wudsn.tools.base.common.MessageQueueEntry;
 import com.wudsn.tools.base.gui.AttributeTablePreferences;
 import com.wudsn.tools.base.gui.ElementFactory;
 import com.wudsn.tools.base.gui.StatusBar;
@@ -39,8 +44,8 @@ import com.wudsn.tools.base.gui.StatusBar;
 /**
  * ASMABrowser - browses the database of the Atari SAP Music Archive
  * (https://asma.atari.org) in a details panel and an attribute table,
- * loaded via the {@link ASMAClient} from the local generated database or
- * from the website, with replay controls like the website player. See
+ * loaded via the {@link ASMAClient} from the website or from a local
+ * database file, with replay controls like the website player. See
  * plans/07.
  *
  * @author Peter Dell
@@ -51,8 +56,8 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 
 	private static final class Commands {
 		public static final String EXIT = "exit";
-		public static final String RELOAD_LOCAL = "reloadLocal";
 		public static final String LOAD_FROM_WEBSITE = "loadFromWebsite";
+		public static final String LOAD_FROM_LOCAL_FILE = "loadFromLocalFile";
 		public static final String COMPOSERS = "composers";
 		public static final String ABOUT = "about";
 
@@ -167,7 +172,8 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 		frame.setLocationByPlatform(true);
 		frame.setVisible(true);
 
-		loadLocalDatabase();
+		// The website is the one source that is always there.
+		loadFromWebsite();
 	}
 
 	private JMenuBar createMenuBar() {
@@ -178,8 +184,8 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 		menuBar.add(fileMenu);
 
 		JMenu databaseMenu = ElementFactory.createMenu(Actions.MainMenu_Database);
-		databaseMenu.add(createMenuItem(Actions.MainMenu_Database_ReloadLocal, Commands.RELOAD_LOCAL));
 		databaseMenu.add(createMenuItem(Actions.MainMenu_Database_LoadFromWebsite, Commands.LOAD_FROM_WEBSITE));
+		databaseMenu.add(createMenuItem(Actions.MainMenu_Database_LoadFromLocalFile, Commands.LOAD_FROM_LOCAL_FILE));
 		databaseMenu.addSeparator();
 		databaseMenu.add(createMenuItem(Actions.MainMenu_Database_Composers, Commands.COMPOSERS));
 		menuBar.add(databaseMenu);
@@ -204,11 +210,11 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 			// The replay timer would keep the event dispatch thread alive after a dispose.
 			frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			break;
-		case Commands.RELOAD_LOCAL:
-			loadLocalDatabase();
-			break;
 		case Commands.LOAD_FROM_WEBSITE:
-			loadDatabaseFromWebsite();
+			loadFromWebsite();
+			break;
+		case Commands.LOAD_FROM_LOCAL_FILE:
+			loadFromLocalFile();
 			break;
 		case Commands.COMPOSERS:
 			new ComposerListDialog(frame, attributeTablePreferences, allComposers, getFileCountByComposerFolderName())
@@ -263,49 +269,86 @@ public final class ASMABrowser implements ActionListener, ReplayControls.Host {
 		updateDetailsPanel();
 	}
 
-	// The local candidates cover starting in the repository root and in the
-	// asma-lib/asma-tools module folders.
-	private void loadLocalDatabase() {
-		File[] candidates = { new File("public_html/asmadb/asmadb.js"),
-				new File("../public_html/asmadb/asmadb.js") };
+	private interface DatabaseLoader {
+		ASMAClient.Database load() throws IOException;
+	}
+
+	private void loadFromWebsite() {
+		loadDatabase(client.getBaseURL() + ASMAClient.DATABASE_JSON_PATH, client::loadDatabase, null);
+	}
+
+	// The expected location of the generated database when started from the
+	// repository root or from one of its module folders.
+	private static File getExpectedLocalDatabaseFile() {
+		File[] candidates = { new File("public_html/asmadb/asmadb.json"),
+				new File("../public_html/asmadb/asmadb.json") };
 		for (File file : candidates) {
 			if (file.isFile()) {
-				loadDatabase(file.getPath(), null);
-				return;
+				return file.getAbsoluteFile();
 			}
 		}
-		messageQueue.clear();
-		messageQueue.sendMessage(this, null, Messages.E003,
-				candidates[0].getAbsolutePath() + ", " + candidates[1].getAbsolutePath());
-		statusBar.displayMessageQueue(messageQueue);
+		return candidates[0].getAbsoluteFile();
 	}
 
-	private void loadDatabaseFromWebsite() {
-		loadDatabase(client.getBaseURL() + ASMAClient.DATABASE_JSON_PATH, Boolean.TRUE);
-	}
-
-	private void loadDatabase(String source, Boolean fromWebsite) {
-		messageQueue.clear();
-		try {
-			ASMAClient.Database database;
-			if (fromWebsite != null) {
-				database = client.loadDatabase();
-				localArchiveFolder = null;
-			} else {
-				File databaseFile = new File(source).getAbsoluteFile();
-				database = client.loadDatabase(databaseFile);
-				// public_html/asmadb/asmadb.js -> public_html/asma
-				localArchiveFolder = new File(databaseFile.getParentFile().getParentFile(), "asma");
-			}
-			allFileInfos = database.fileInfos;
-			allComposers = database.composerInfos;
-			applySelection(filterPanel.getSelection());
-			messageQueue.sendMessage(this, null, Messages.I001, String.valueOf(database.fileInfos.size()), source);
-		} catch (IOException ex) {
-			messageQueue.sendMessage(this, null, Messages.E002, source, ex.getMessage());
+	private void loadFromLocalFile() {
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setDialogTitle(Texts.LoadFromLocalFileDialog_Title);
+		fileChooser.setFileFilter(new FileNameExtensionFilter(Texts.LoadFromLocalFileDialog_Filter, "json", "js"));
+		File expectedFile = getExpectedLocalDatabaseFile();
+		if (expectedFile.isFile()) {
+			fileChooser.setSelectedFile(expectedFile);
+		} else if (expectedFile.getParentFile() != null && expectedFile.getParentFile().isDirectory()) {
+			fileChooser.setCurrentDirectory(expectedFile.getParentFile());
 		}
-		statusBar.displayMessageQueue(messageQueue);
-		updateDetailsPanel();
+		if (fileChooser.showOpenDialog(frame) != JFileChooser.APPROVE_OPTION) {
+			return;
+		}
+		File file = fileChooser.getSelectedFile().getAbsoluteFile();
+		loadDatabase(file.getPath(), () -> client.loadDatabase(file), getLocalArchiveFolder(file));
+	}
+
+	// public_html/asmadb/asmadb.json -> public_html/asma, if it exists; without
+	// it, the module files are downloaded from the website.
+	private static File getLocalArchiveFolder(File databaseFile) {
+		File databaseFolder = databaseFile.getParentFile();
+		if (databaseFolder == null || databaseFolder.getParentFile() == null) {
+			return null;
+		}
+		File archiveFolder = new File(databaseFolder.getParentFile(), "asma");
+		return archiveFolder.isDirectory() ? archiveFolder : null;
+	}
+
+	// Loads in the background, so a download does not freeze the window.
+	private void loadDatabase(String source, DatabaseLoader loader, File archiveFolder) {
+		statusBar.displayStatusMessage(new MessageQueueEntry(this, null, Messages.S005, source));
+		new SwingWorker<ASMAClient.Database, Void>() {
+			@Override
+			protected ASMAClient.Database doInBackground() throws IOException {
+				return loader.load();
+			}
+
+			@Override
+			protected void done() {
+				messageQueue.clear();
+				try {
+					ASMAClient.Database database = get();
+					allFileInfos = database.fileInfos;
+					allComposers = database.composerInfos;
+					localArchiveFolder = archiveFolder;
+					applySelection(filterPanel.getSelection());
+					messageQueue.sendMessage(ASMABrowser.this, null, Messages.I001,
+							String.valueOf(database.fileInfos.size()), source);
+				} catch (ExecutionException ex) {
+					Throwable cause = ex.getCause();
+					messageQueue.sendMessage(ASMABrowser.this, null, Messages.E002, source,
+							cause.getMessage() != null ? cause.getMessage() : cause.toString());
+				} catch (InterruptedException ex) {
+					Thread.currentThread().interrupt();
+				}
+				statusBar.displayMessageQueue(messageQueue);
+				updateDetailsPanel();
+			}
+		}.execute();
 	}
 
 	// ReplayControls.Host: local archive files first, the website otherwise.

@@ -17,10 +17,10 @@ public final class Messages extends NLS {
 	public static Message I001;
 	/** The database could not be loaded: the source, the reason. */
 	public static Message E002;
-	/** No local database was found: the candidate paths. */
-	public static Message E003;
 	/** A file could not be played: the file path, the reason. */
 	public static Message E004;
+	/** The database is being loaded: the source. */
+	public static Message S005;
 
 	static {
 		initializeClass(Messages.class, null);

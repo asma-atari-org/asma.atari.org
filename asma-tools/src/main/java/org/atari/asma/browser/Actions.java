@@ -14,8 +14,8 @@ public final class Actions extends NLS {
 
 	public static Action MainMenu_File_Exit;
 	public static Action MainMenu_Database;
-	public static Action MainMenu_Database_ReloadLocal;
 	public static Action MainMenu_Database_LoadFromWebsite;
+	public static Action MainMenu_Database_LoadFromLocalFile;
 	public static Action MainMenu_Database_Composers;
 	public static Action MainMenu_Help_About;
 
