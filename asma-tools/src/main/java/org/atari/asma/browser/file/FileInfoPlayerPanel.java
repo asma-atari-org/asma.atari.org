@@ -4,12 +4,12 @@ import java.awt.BorderLayout;
 import java.io.IOException;
 
 import javax.swing.JPanel;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 
 import org.atari.asma.ASMAClient;
 import org.atari.asma.FileInfo;
 
+import com.wudsn.tools.base.gui.AttributeTable;
 import com.wudsn.tools.base.gui.AttributeTablePreferences;
 
 /**
@@ -116,7 +116,7 @@ public final class FileInfoPlayerPanel extends JPanel {
 		replayControls.dispose();
 	}
 
-	public JTable getTable() {
+	public AttributeTable getTable() {
 		return selectionPanel.getTable();
 	}
 

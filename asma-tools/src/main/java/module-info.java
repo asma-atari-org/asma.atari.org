@@ -17,4 +17,5 @@ module org.atari.asma.tools {
 	requires com.wudsn.tools.base;
 	requires transitive asap;
 	requires transitive java.desktop;
+	requires java.prefs;
 }

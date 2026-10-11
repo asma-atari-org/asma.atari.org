@@ -78,6 +78,8 @@ public final class FileInfoListDialog extends ModalDialog {
 			showModal(playerPanel.getKeywordField());
 		} finally {
 			playerPanel.dispose();
+			// The table layout goes back into the caller's preferences, see plans/11.
+			playerPanel.getTable().saveLayout();
 		}
 	}
 
@@ -87,7 +89,9 @@ public final class FileInfoListDialog extends ModalDialog {
 	 * @param owner
 	 *            The owner window or <code>null</code>.
 	 * @param preferences
-	 *            The table preferences, not <code>null</code>.
+	 *            The table preferences, not <code>null</code>. They receive the
+	 *            table layout when the dialog closes; storing them is up to the
+	 *            caller.
 	 * @param client
 	 *            The client to download the files with, not <code>null</code>.
 	 * @param database

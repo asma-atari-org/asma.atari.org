@@ -7,13 +7,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
@@ -37,10 +37,12 @@ import org.atari.asma.browser.file.FileInfoPlayerPanel;
 import org.atari.asma.browser.group.GroupBrowsePanel;
 
 import com.wudsn.tools.base.common.Application;
+import com.wudsn.tools.base.common.ApplicationSettings;
 import com.wudsn.tools.base.common.MessageQueue;
 import com.wudsn.tools.base.common.MessageQueueEntry;
-import com.wudsn.tools.base.gui.AttributeTablePreferences;
 import com.wudsn.tools.base.gui.ElementFactory;
+import com.wudsn.tools.base.gui.MainWindow;
+import com.wudsn.tools.base.gui.SettingsAttributeTablePreferences;
 import com.wudsn.tools.base.gui.StatusBar;
 
 /**
@@ -69,25 +71,28 @@ public final class ASMABrowser implements ActionListener {
 		}
 	}
 
-	// TODO plans/07: persist via ApplicationSettings instead of in-memory.
-	private static final class InMemoryAttributeTablePreferences implements AttributeTablePreferences {
-		private final Map<String, String> layoutProperties = new HashMap<String, String>();
+	// The settings sections, see plans/11.
+	private static final class Sections {
+		public static final String ATTRIBUTE_TABLES = "AttributeTables";
+		public static final String MAIN_WINDOW = "MainWindow";
 
-		@Override
-		public Map<String, String> getLayoutProperties() {
-			return layoutProperties;
+		private Sections() {
 		}
 	}
 
 	private final MessageQueue messageQueue;
 	private final ASMAClient client;
+	private final ApplicationSettings settings;
+	private final ASMABrowserWindowPreferences windowPreferences;
+	private MainWindow mainWindow;
 	private JFrame frame;
+	private JTabbedPane tabbedPane;
 	private FileInfoPlayerPanel filesPanel;
 	private ComposerBrowsePanel composersPanel;
 	private GroupBrowsePanel groupsPanel;
 	private StatusBar statusBar;
 	// Shared by all attribute tables, each under its own preferences prefix.
-	private final AttributeTablePreferences attributeTablePreferences;
+	private final SettingsAttributeTablePreferences attributeTablePreferences;
 	// The archive folder next to a locally loaded database, null when loaded from the website.
 	private File localArchiveFolder;
 
@@ -110,12 +115,25 @@ public final class ASMABrowser implements ActionListener {
 	private ASMABrowser() {
 		messageQueue = new MessageQueue();
 		client = new ASMAClient();
-		attributeTablePreferences = new InMemoryAttributeTablePreferences();
+		settings = new ApplicationSettings(Preferences.userNodeForPackage(ASMABrowser.class));
+		// Read before the panels are created, because the tables read their layout in their constructor.
+		attributeTablePreferences = new SettingsAttributeTablePreferences(
+				settings.getSection(Sections.ATTRIBUTE_TABLES));
+		windowPreferences = new ASMABrowserWindowPreferences(settings.getSection(Sections.MAIN_WINDOW));
 	}
 
 	private void run() {
-		frame = new JFrame(TITLE);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		mainWindow = new MainWindow();
+		frame = mainWindow.getFrame();
+		frame.setTitle(TITLE);
+		// Closing saves the settings first, see exit().
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		frame.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent event) {
+				exit();
+			}
+		});
 		// Converted from public_html/img/favicon.ico (16x16), plus a pixel-exact 32x32 for the taskbar.
 		frame.setIconImages(java.util.List.of(
 				new ImageIcon(ASMABrowser.class.getResource("ASMABrowser-16.png")).getImage(),
@@ -150,17 +168,17 @@ public final class ASMABrowser implements ActionListener {
 		});
 
 		// No tab mnemonics: Alt+F opens the File menu, and the filter labels use the other letters.
-		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane = new JTabbedPane();
 		tabbedPane.addTab(Texts.MainWindow_FilesTab, filesPanel);
 		tabbedPane.addTab(Texts.MainWindow_ComposersTab, composersPanel);
 		tabbedPane.addTab(Texts.MainWindow_GroupsTab, groupsPanel);
+		tabbedPane.setSelectedIndex(windowPreferences.getSelectedTab(tabbedPane.getTabCount()));
 
 		frame.getContentPane().setLayout(new BorderLayout());
 		frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
 		frame.getContentPane().add(statusBar.getComponent(), BorderLayout.SOUTH);
 
-		frame.setSize(1000, 800);
-		frame.setLocationByPlatform(true);
+		mainWindow.setWindowFromPreferences(windowPreferences);
 		frame.setVisible(true);
 
 		// The website is the one source that is always there.
@@ -196,7 +214,6 @@ public final class ASMABrowser implements ActionListener {
 	public void actionPerformed(ActionEvent event) {
 		switch (event.getActionCommand()) {
 		case Commands.EXIT:
-			// The replay timer would keep the event dispatch thread alive after a dispose.
 			frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			break;
 		case Commands.LOAD_FROM_WEBSITE:
@@ -212,6 +229,30 @@ public final class ASMABrowser implements ActionListener {
 			break;
 		default:
 			throw new IllegalArgumentException("Invalid command " + event.getActionCommand() + ".");
+		}
+	}
+
+	// Saves the settings, then exits; the replay timer would keep the event
+	// dispatch thread alive after a dispose alone.
+	private void exit() {
+		saveSettings();
+		filesPanel.dispose();
+		frame.dispose();
+		System.exit(0);
+	}
+
+	// A failing backing store must not prevent the exit.
+	private void saveSettings() {
+		try {
+			mainWindow.setPreferencesFromWindow(windowPreferences);
+			windowPreferences.setSelectedTab(tabbedPane.getSelectedIndex());
+			filesPanel.getTable().saveLayout();
+			composersPanel.getTable().saveLayout();
+			groupsPanel.getTable().saveLayout();
+			attributeTablePreferences.save();
+			settings.flush();
+		} catch (RuntimeException ex) {
+			System.err.println("Cannot save the settings: " + ex);
 		}
 	}
 

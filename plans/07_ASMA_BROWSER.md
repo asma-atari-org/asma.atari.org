@@ -12,9 +12,9 @@ phase 3 (editor GUI onto base).
 FileInfo.Attributes live in asma-lib next to the model (family pattern);
 a details panel like the web player sits above the table and follows the
 selection; no German translation; the browser's message area is `ASB`.
-Still open: step 5 (SAPFileEditor dialog variant), preferences persistence
-via ApplicationSettings (currently in-memory, marked TODO), and the
-optional polish of step 6.
+Still open: step 5 (SAPFileEditor dialog variant) and the optional polish
+of step 6. Preferences persistence via ApplicationSettings was done
+2026-10-11 by plan 11.
 
 **Working rule (inherited from plan 06): non-mechanical steps and the open
 decisions below are proposed and confirmed with the user first.**

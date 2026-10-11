@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.swing.JPanel;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 
 import org.atari.asma.ASMAClient;
@@ -15,6 +14,7 @@ import org.atari.asma.Composer;
 import org.atari.asma.Group;
 import org.atari.asma.browser.STILSource;
 
+import com.wudsn.tools.base.gui.AttributeTable;
 import com.wudsn.tools.base.gui.AttributeTablePreferences;
 
 /**
@@ -84,7 +84,7 @@ public final class GroupBrowsePanel extends JPanel {
 		return selectionPanel.getSelectedGroup();
 	}
 
-	public JTable getTable() {
+	public AttributeTable getTable() {
 		return selectionPanel.getTable();
 	}
 

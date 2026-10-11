@@ -12,6 +12,7 @@ import javax.swing.ListSelectionModel;
 
 import org.atari.asma.FileInfo;
 
+import com.wudsn.tools.base.gui.AttributeTable;
 import com.wudsn.tools.base.gui.AttributeTablePreferences;
 
 /**
@@ -110,7 +111,7 @@ public final class FileInfoSelectionPanel extends JPanel {
 		return tableModel.getFileInfo(modelRow);
 	}
 
-	public JTable getTable() {
+	public AttributeTable getTable() {
 		return listPanel.getTable();
 	}
 

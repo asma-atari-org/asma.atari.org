@@ -56,19 +56,29 @@ public final class GroupListDialog extends ModalDialog {
 		}
 	}
 
+	// The table layout goes back into the caller's preferences, see plans/11.
+	private void showAndSaveLayout() {
+		try {
+			showModal(browsePanel.getKeywordField());
+		} finally {
+			browsePanel.getTable().saveLayout();
+		}
+	}
+
 	/**
 	 * Shows the groups for browsing.
 	 *
 	 * @param owner
 	 *            The owner window or <code>null</code>.
 	 * @param preferences
-	 *            The table preferences, not <code>null</code>.
+	 *            The table preferences, not <code>null</code>. They receive the
+	 *            table layout when the dialog closes; storing them is up to the
+	 *            caller.
 	 * @param database
 	 *            The database, not <code>null</code>.
 	 */
 	public static void browse(Window owner, AttributeTablePreferences preferences, ASMAClient.Database database) {
-		GroupListDialog dialog = new GroupListDialog(owner, preferences, database, false);
-		dialog.showModal(dialog.browsePanel.getKeywordField());
+		new GroupListDialog(owner, preferences, database, false).showAndSaveLayout();
 	}
 
 	/**
@@ -79,7 +89,7 @@ public final class GroupListDialog extends ModalDialog {
 	 */
 	public static Group choose(Window owner, AttributeTablePreferences preferences, ASMAClient.Database database) {
 		GroupListDialog dialog = new GroupListDialog(owner, preferences, database, true);
-		dialog.showModal(dialog.browsePanel.getKeywordField());
+		dialog.showAndSaveLayout();
 		return dialog.okPressed ? dialog.browsePanel.getSelectedGroup() : null;
 	}
 }

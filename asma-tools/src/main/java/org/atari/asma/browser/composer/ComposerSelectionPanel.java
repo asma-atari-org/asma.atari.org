@@ -13,6 +13,7 @@ import javax.swing.ListSelectionModel;
 import org.atari.asma.ASMAClient;
 import org.atari.asma.Composer;
 
+import com.wudsn.tools.base.gui.AttributeTable;
 import com.wudsn.tools.base.gui.AttributeTablePreferences;
 
 /**
@@ -99,7 +100,7 @@ public final class ComposerSelectionPanel extends JPanel {
 		return listPanel.getTableModel().getComposer(table.convertRowIndexToModel(viewRow));
 	}
 
-	public JTable getTable() {
+	public AttributeTable getTable() {
 		return listPanel.getTable();
 	}
 

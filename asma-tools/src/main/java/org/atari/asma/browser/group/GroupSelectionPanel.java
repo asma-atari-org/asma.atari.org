@@ -15,6 +15,7 @@ import org.atari.asma.ASMAClient;
 import org.atari.asma.Composer;
 import org.atari.asma.Group;
 
+import com.wudsn.tools.base.gui.AttributeTable;
 import com.wudsn.tools.base.gui.AttributeTablePreferences;
 
 /**
@@ -104,7 +105,7 @@ public final class GroupSelectionPanel extends JPanel {
 		return listPanel.getTableModel().getGroup(table.convertRowIndexToModel(viewRow));
 	}
 
-	public JTable getTable() {
+	public AttributeTable getTable() {
 		return listPanel.getTable();
 	}
 

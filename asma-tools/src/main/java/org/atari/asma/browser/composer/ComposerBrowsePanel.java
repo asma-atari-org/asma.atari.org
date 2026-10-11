@@ -5,13 +5,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JPanel;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 
 import org.atari.asma.ASMAClient;
 import org.atari.asma.Composer;
 import org.atari.asma.browser.STILSource;
 
+import com.wudsn.tools.base.gui.AttributeTable;
 import com.wudsn.tools.base.gui.AttributeTablePreferences;
 
 /**
@@ -76,7 +76,7 @@ public final class ComposerBrowsePanel extends JPanel {
 		return selectionPanel.getSelectedComposer();
 	}
 
-	public JTable getTable() {
+	public AttributeTable getTable() {
 		return selectionPanel.getTable();
 	}
 
