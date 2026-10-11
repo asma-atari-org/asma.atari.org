@@ -1,5 +1,7 @@
 package org.atari.asma;
 
+import org.atari.asma.demozoo.GroupDemozooID;
+
 import com.wudsn.tools.base.repository.Attribute;
 
 public class Group {
@@ -61,6 +63,11 @@ public class Group {
 	// The JSON attribute in "Docs/ASMA-Groups.json" is "name".
 	public String name = "";
 	public String demozooID = "";
+
+	/** The Demozoo ID, or <code>null</code> if there is none. See plans/10. */
+	public GroupDemozooID getDemozooID() {
+		return GroupDemozooID.parse(demozooID);
+	}
 
 	@Override
 	public String toString() {

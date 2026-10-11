@@ -13,8 +13,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import org.atari.asma.demozoo.DemozooID;
-
 import com.wudsn.tools.base.gui.ElementFactory;
 import com.wudsn.tools.base.repository.DataType;
 
@@ -43,8 +41,10 @@ public abstract class DetailsPanel extends JPanel {
 		return field;
 	}
 
-	protected final DemozooIDField addDemozooIDField(DataType dataType, DemozooID.Kind kind) {
-		DemozooIDField field = new DemozooIDField(kind);
+	protected final <F extends DemozooIDField<?>> F addDemozooIDField(DataType dataType, F field) {
+		if (field == null) {
+			throw new IllegalArgumentException("Parameter 'field' must not be null.");
+		}
 		addComponent(new JLabel(dataType.getLabelWithoutMnemonics()), field);
 		return field;
 	}

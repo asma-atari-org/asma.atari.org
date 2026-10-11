@@ -1,134 +1,79 @@
 package org.atari.asma.demozoo;
 
 /**
- * A reference to a Demozoo entity: a scener (composer), a group or a music
- * production, with the URLs the website uses for it (see
- * {@link DemozooLink}). Instances are immutable; a missing or invalid ID is
- * represented by <code>null</code>, see {@link #parse(Kind, String)}. See
- * plans/09.
+ * A reference to a Demozoo entity, with the URL the website uses for it (see
+ * {@link DemozooLink}). There is one subclass per kind of entity, because IDs
+ * of different kinds are never mixed. Each subclass provides
+ * <code>of(int)</code> and <code>parse(String)</code>, plus the find and
+ * create URLs, which are needed without an ID. Instances are immutable; a
+ * missing or invalid ID is represented by <code>null</code>. See plans/10.
  *
  * @author Peter Dell
  */
-public final class DemozooID {
+public abstract sealed class DemozooID permits ScenerDemozooID, GroupDemozooID, MusicDemozooID {
 
-	/** The kind of Demozoo entity, with its URL and search category. */
-	public enum Kind {
-		SCENER("scener"), GROUP("group"), MUSIC("music");
-
-		private final String category;
-
-		private Kind(String category) {
-			this.category = category;
-		}
-
-		/** The Demozoo search category, e.g. "scener". */
-		public String getCategory() {
-			return category;
-		}
-
-		/** The URL to search for the given text in this kind's category, not <code>null</code>. */
-		public String getFindURL(String query) {
-			if (query == null) {
-				throw new IllegalArgumentException("Parameter 'query' must not be null.");
-			}
-			return DemozooLink.getFind(query, category);
-		}
-
-		/** The URL of Demozoo's form to create an entity of this kind, not <code>null</code>. */
-		public String getCreateURL() {
-			switch (this) {
-			case SCENER:
-				return "https://demozoo.org/sceners/new/";
-			case GROUP:
-				return "https://demozoo.org/groups/new/";
-			case MUSIC:
-				return "https://demozoo.org/music/new/";
-			default:
-				throw new IllegalStateException("Unknown kind " + this + ".");
-			}
-		}
-	}
-
-	private final Kind kind;
 	private final int id;
 
-	private DemozooID(Kind kind, int id) {
-		this.kind = kind;
+	/**
+	 * @param id
+	 *            The ID, greater than 0.
+	 */
+	protected DemozooID(int id) {
+		if (id <= 0) {
+			throw new IllegalArgumentException("Parameter 'id' must be greater than 0, but is " + id + ".");
+		}
 		this.id = id;
 	}
 
 	/**
-	 * @param kind
-	 *            The kind, not <code>null</code>.
-	 * @param id
-	 *            The ID, 0 or negative for none.
-	 * @return The reference, or <code>null</code> if there is no ID.
-	 */
-	public static DemozooID of(Kind kind, int id) {
-		if (kind == null) {
-			throw new IllegalArgumentException("Parameter 'kind' must not be null.");
-		}
-		return (id > 0) ? new DemozooID(kind, id) : null;
-	}
-
-	/**
-	 * @param kind
-	 *            The kind, not <code>null</code>.
+	 * Parses the ID as text as in the JSON files.
+	 *
 	 * @param text
-	 *            The ID as text as in the JSON files, may be
-	 *            <code>null</code> or empty.
-	 * @return The reference, or <code>null</code> if the text is not a
-	 *         positive number.
+	 *            The text, may be <code>null</code> or empty.
+	 * @return The ID, or 0 if the text is not a positive number.
 	 */
-	public static DemozooID parse(Kind kind, String text) {
-		if (kind == null) {
-			throw new IllegalArgumentException("Parameter 'kind' must not be null.");
-		}
+	protected static int parseID(String text) {
 		if (text == null) {
-			return null;
+			return 0;
 		}
 		try {
-			return of(kind, Integer.parseInt(text.trim()));
+			return Math.max(0, Integer.parseInt(text.trim()));
 		} catch (NumberFormatException ex) {
-			return null;
+			return 0;
 		}
 	}
 
-	public Kind getKind() {
-		return kind;
-	}
-
-	public int getID() {
+	public final int getID() {
 		return id;
 	}
 
+	/**
+	 * The ID as a sortable table value.
+	 *
+	 * @param demozooID
+	 *            The ID or <code>null</code>.
+	 * @return The ID, or <code>null</code> if there is none.
+	 */
+	public static Integer toInteger(DemozooID demozooID) {
+		return (demozooID == null) ? null : Integer.valueOf(demozooID.id);
+	}
+
 	/** The URL of the entity's page on Demozoo, like the website's links. */
-	public String getURL() {
-		switch (kind) {
-		case SCENER:
-			return DemozooLink.getScener(id);
-		case GROUP:
-			return DemozooLink.getGroup(id);
-		case MUSIC:
-			return DemozooLink.getMusic(id);
-		default:
-			throw new IllegalStateException("Unknown kind " + kind + ".");
-		}
+	public abstract String getURL();
+
+	@Override
+	public final boolean equals(Object object) {
+		return object != null && object.getClass() == getClass() && ((DemozooID) object).id == id;
 	}
 
 	@Override
-	public boolean equals(Object object) {
-		return object instanceof DemozooID other && other.kind == kind && other.id == id;
-	}
-
-	@Override
-	public int hashCode() {
-		return kind.hashCode() * 31 + id;
+	public final int hashCode() {
+		return getClass().hashCode() * 31 + id;
 	}
 
 	/** The plain ID, without digit grouping. */
 	@Override
-	public String toString() {
+	public final String toString() {
 		return String.valueOf(id);
 	}
 }

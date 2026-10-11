@@ -5,9 +5,8 @@ import javax.swing.JTextField;
 
 import org.atari.asma.DataTypes;
 import org.atari.asma.Group;
-import org.atari.asma.browser.DemozooIDField;
 import org.atari.asma.browser.DetailsPanel;
-import org.atari.asma.demozoo.DemozooID;
+import org.atari.asma.browser.GroupDemozooIDField;
 
 /**
  * Details panel displaying the properties of the selected {@link Group}, plus
@@ -19,7 +18,7 @@ public final class GroupDetailsPanel extends DetailsPanel {
 
 	private final JTextField nameField;
 	private final JTextField folderNameField;
-	private final DemozooIDField demozooIDField;
+	private final GroupDemozooIDField demozooIDField;
 	private final JTextField fileCountField;
 	private final JTextField composersField;
 	private final JTextArea stilArea;
@@ -27,7 +26,7 @@ public final class GroupDetailsPanel extends DetailsPanel {
 	public GroupDetailsPanel() {
 		nameField = addField(DataTypes.Group_Name);
 		folderNameField = addField(DataTypes.Group_FolderName);
-		demozooIDField = addDemozooIDField(DataTypes.Group_DemozooID, DemozooID.Kind.GROUP);
+		demozooIDField = addDemozooIDField(DataTypes.Group_DemozooID, new GroupDemozooIDField());
 		fileCountField = addField(DataTypes.Group_FileCount);
 		composersField = addFullWidthField(DataTypes.Group_Composers);
 		stilArea = addSTILArea();
@@ -63,8 +62,7 @@ public final class GroupDetailsPanel extends DetailsPanel {
 		}
 		nameField.setText(group.name);
 		folderNameField.setText(group.folderName);
-		demozooIDField.setDemozooID(DemozooID.parse(DemozooID.Kind.GROUP, group.demozooID),
-				group.name);
+		demozooIDField.setDemozooID(group.getDemozooID(), group.name);
 		fileCountField.setText(String.valueOf(fileCount));
 		composersField.setText(composers);
 		composersField.setCaretPosition(0);

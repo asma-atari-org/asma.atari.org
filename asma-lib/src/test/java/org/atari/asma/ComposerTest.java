@@ -1,9 +1,11 @@
 package org.atari.asma;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
 
+import org.atari.asma.demozoo.ScenerDemozooID;
 import org.junit.jupiter.api.Test;
 
 public class ComposerTest {
@@ -33,6 +35,14 @@ public class ComposerTest {
 		composer.lastNameUnicode = "";
 		composer.handles = "Raster";
 		assertEquals("Raster", composer.getDisplayName());
+	}
+
+	@Test
+	public void demozooIDIsTyped() {
+		Composer composer = new Composer();
+		assertNull(composer.getDemozooID());
+		composer.demozooID = "8931";
+		assertEquals(ScenerDemozooID.of(8931), composer.getDemozooID());
 	}
 
 	@Test

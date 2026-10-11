@@ -11,6 +11,7 @@ import javax.swing.SwingConstants;
 import org.atari.asma.Composer;
 import org.atari.asma.Group;
 import org.atari.asma.browser.PlainNumberCellRenderer;
+import org.atari.asma.demozoo.DemozooID;
 
 import com.wudsn.tools.base.common.StringUtility;
 import com.wudsn.tools.base.gui.AttributeTableModel;
@@ -96,14 +97,6 @@ public final class GroupListPanel extends AttributeTablePanel {
 			return groups.size();
 		}
 
-		private static Integer parseDemozooID(String demozooID) {
-			try {
-				return Integer.valueOf(demozooID.trim());
-			} catch (NumberFormatException | NullPointerException ex) {
-				return null;
-			}
-		}
-
 		@Override
 		public Object getValueAt(int row, int column) {
 			Group group = groups.get(row);
@@ -118,7 +111,7 @@ public final class GroupListPanel extends AttributeTablePanel {
 			case Columns.FILE_COUNT:
 				return fileCountByFolderName.getOrDefault(group.folderName, Integer.valueOf(0));
 			case Columns.DEMOZOO_ID:
-				return parseDemozooID(group.demozooID);
+				return DemozooID.toInteger(group.getDemozooID());
 			default:
 				throw new IllegalArgumentException("Invalid column " + column + ".");
 			}

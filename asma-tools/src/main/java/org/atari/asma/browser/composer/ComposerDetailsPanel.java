@@ -5,9 +5,8 @@ import javax.swing.JTextField;
 
 import org.atari.asma.Composer;
 import org.atari.asma.DataTypes;
-import org.atari.asma.browser.DemozooIDField;
 import org.atari.asma.browser.DetailsPanel;
-import org.atari.asma.demozoo.DemozooID;
+import org.atari.asma.browser.ScenerDemozooIDField;
 
 /**
  * Details panel displaying the properties of the selected {@link Composer},
@@ -23,7 +22,7 @@ public final class ComposerDetailsPanel extends DetailsPanel {
 	private final JTextField handlesField;
 	private final JTextField folderNameField;
 	private final JTextField countryField;
-	private final DemozooIDField demozooIDField;
+	private final ScenerDemozooIDField demozooIDField;
 	private final JTextField groupsField;
 	private final JTextField fileCountField;
 	private final JTextArea stilArea;
@@ -34,7 +33,7 @@ public final class ComposerDetailsPanel extends DetailsPanel {
 		handlesField = addField(DataTypes.Composer_Handles);
 		folderNameField = addField(DataTypes.Composer_FolderName);
 		countryField = addField(DataTypes.Composer_Country);
-		demozooIDField = addDemozooIDField(DataTypes.Composer_DemozooID, DemozooID.Kind.SCENER);
+		demozooIDField = addDemozooIDField(DataTypes.Composer_DemozooID, new ScenerDemozooIDField());
 		groupsField = addField(DataTypes.Composer_Groups);
 		fileCountField = addField(DataTypes.Composer_FileCount);
 		stilArea = addSTILArea();
@@ -76,8 +75,7 @@ public final class ComposerDetailsPanel extends DetailsPanel {
 		handlesField.setText(composer.handles);
 		folderNameField.setText(composer.folderName);
 		countryField.setText(composer.country);
-		demozooIDField.setDemozooID(DemozooID.parse(DemozooID.Kind.SCENER, composer.demozooID),
-				composer.getDisplayName());
+		demozooIDField.setDemozooID(composer.getDemozooID(), composer.getDisplayName());
 		groupsField.setText(composer.groups);
 		fileCountField.setText(String.valueOf(fileCount));
 		stilArea.setText(stilComment);

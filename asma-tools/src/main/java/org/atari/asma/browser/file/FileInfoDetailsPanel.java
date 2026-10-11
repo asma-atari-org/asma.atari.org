@@ -8,10 +8,9 @@ import javax.swing.JTextField;
 
 import org.atari.asma.DataTypes;
 import org.atari.asma.FileInfo;
-import org.atari.asma.browser.DemozooIDField;
 import org.atari.asma.browser.DetailsPanel;
+import org.atari.asma.browser.MusicDemozooIDField;
 import org.atari.asma.browser.Texts;
-import org.atari.asma.demozoo.DemozooID;
 
 import com.wudsn.tools.base.gui.ElementFactory;
 
@@ -32,7 +31,7 @@ public final class FileInfoDetailsPanel extends DetailsPanel {
 	private final JTextField channelsField;
 	private final JTextField filePathField;
 	private final JTextField fileSizeField;
-	private final DemozooIDField demozooIDField;
+	private final MusicDemozooIDField demozooIDField;
 
 	/**
 	 * @param songsComponent
@@ -59,7 +58,7 @@ public final class FileInfoDetailsPanel extends DetailsPanel {
 		formatField = addField(DataTypes.FileInfo_OriginalModuleExt);
 		filePathField = addField(DataTypes.FileInfo_FilePath);
 		fileSizeField = addField(DataTypes.FileInfo_FileSize);
-		demozooIDField = addDemozooIDField(DataTypes.FileInfo_DemozooID, DemozooID.Kind.MUSIC);
+		demozooIDField = addDemozooIDField(DataTypes.FileInfo_DemozooID, new MusicDemozooIDField());
 		setFileInfo(null);
 	}
 
@@ -84,7 +83,6 @@ public final class FileInfoDetailsPanel extends DetailsPanel {
 		channelsField.setText(fileInfo.getChannelsText());
 		filePathField.setText(fileInfo.filePath);
 		fileSizeField.setText(NumberFormat.getIntegerInstance().format(fileInfo.fileSize) + " bytes");
-		demozooIDField.setDemozooID(DemozooID.of(DemozooID.Kind.MUSIC, fileInfo.getDemozooID()),
-				fileInfo.title == null ? "" : fileInfo.title);
+		demozooIDField.setDemozooID(fileInfo.getMusicDemozooID(), fileInfo.title == null ? "" : fileInfo.title);
 	}
 }

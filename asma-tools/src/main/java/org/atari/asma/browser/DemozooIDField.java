@@ -20,30 +20,36 @@ import com.wudsn.tools.base.common.MessageQueueEntry;
  * Display field for a {@link DemozooID}: the ID as a link that opens the
  * Demozoo page in the browser, like the website's links. Without an ID, it
  * offers "Find ..." and "Create ..." links instead, like the website's
- * author details. See plans/09.
+ * author details. There is one subclass per kind of ID, which provides these
+ * links. See plans/10.
+ *
+ * @param <T>
+ *            The kind of the displayed IDs.
  *
  * @author Peter Dell
  */
-public final class DemozooIDField extends JPanel {
+public abstract class DemozooIDField<T extends DemozooID> extends JPanel {
 
-	private final DemozooID.Kind kind;
-
-	/**
-	 * @param kind
-	 *            The kind of the displayed IDs, not <code>null</code>.
-	 */
-	public DemozooIDField(DemozooID.Kind kind) {
+	protected DemozooIDField() {
 		super(new FlowLayout(FlowLayout.LEFT, 0, 0));
-		if (kind == null) {
-			throw new IllegalArgumentException("Parameter 'kind' must not be null.");
-		}
-		this.kind = kind;
 		setOpaque(false);
 		clear();
 	}
 
+	/** The text of the link to search for the entity without an ID. */
+	protected abstract String getFindText();
+
+	/** The URL to search for the given text, not <code>null</code>. */
+	protected abstract String getFindURL(String searchText);
+
+	/** The text of the link to create the entity without an ID. */
+	protected abstract String getCreateText();
+
+	/** The URL to create the entity. */
+	protected abstract String getCreateURL();
+
 	/** Displays nothing, e.g. without a selected entry. */
-	public void clear() {
+	public final void clear() {
 		removeAll();
 		// A blank label keeps the row height constant.
 		add(new JLabel(" "));
@@ -56,53 +62,27 @@ public final class DemozooIDField extends JPanel {
 	 * ID.
 	 *
 	 * @param demozooID
-	 *            The ID or <code>null</code>; its kind must be the field's kind.
+	 *            The ID or <code>null</code>.
 	 * @param searchText
 	 *            The text to search for without an ID, e.g. the composer's name,
 	 *            not <code>null</code>.
 	 */
-	public void setDemozooID(DemozooID demozooID, String searchText) {
+	public final void setDemozooID(T demozooID, String searchText) {
 		if (searchText == null) {
 			throw new IllegalArgumentException("Parameter 'searchText' must not be null.");
-		}
-		if (demozooID != null && demozooID.getKind() != kind) {
-			throw new IllegalArgumentException("Demozoo ID " + demozooID + " is of kind " + demozooID.getKind()
-					+ " instead of " + kind + ".");
 		}
 		removeAll();
 		if (demozooID != null) {
 			add(createLink(demozooID.toString(), demozooID.getURL()));
 		} else {
 			if (!searchText.isBlank()) {
-				add(createLink(getFindText(), kind.getFindURL(searchText.trim())));
+				add(createLink(getFindText(), getFindURL(searchText.trim())));
 				add(new JLabel(", "));
 			}
-			add(createLink(getCreateText(), kind.getCreateURL()));
+			add(createLink(getCreateText(), getCreateURL()));
 		}
 		revalidate();
 		repaint();
-	}
-
-	private String getFindText() {
-		switch (kind) {
-		case SCENER:
-			return Texts.DemozooIDField_FindScener;
-		case GROUP:
-			return Texts.DemozooIDField_FindGroup;
-		default:
-			return Texts.DemozooIDField_FindMusic;
-		}
-	}
-
-	private String getCreateText() {
-		switch (kind) {
-		case SCENER:
-			return Texts.DemozooIDField_CreateScener;
-		case GROUP:
-			return Texts.DemozooIDField_CreateGroup;
-		default:
-			return Texts.DemozooIDField_CreateMusic;
-		}
 	}
 
 	// A button that looks like a link, so it is also reachable with the keyboard.

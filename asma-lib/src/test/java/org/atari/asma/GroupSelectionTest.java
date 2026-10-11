@@ -2,11 +2,13 @@ package org.atari.asma;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
+import org.atari.asma.demozoo.GroupDemozooID;
 import org.junit.jupiter.api.Test;
 
 public class GroupSelectionTest {
@@ -53,5 +55,13 @@ public class GroupSelectionTest {
 				 "groupInfos": [{ "folderName" : "Zur_soft", "name" : "Zur-soft", "demozooID" : "52078"}]}""");
 		assertEquals("Zur-soft", database.groupInfos.get(0).name);
 		assertEquals("52078", database.groupInfos.get(0).demozooID);
+		assertEquals(GroupDemozooID.of(52078), database.groupInfos.get(0).getDemozooID());
+	}
+
+	@Test
+	public void missingDemozooIDIsNull() {
+		Group group = createGroup();
+		group.demozooID = "";
+		assertNull(group.getDemozooID());
 	}
 }

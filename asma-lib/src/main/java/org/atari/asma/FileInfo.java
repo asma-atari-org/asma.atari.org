@@ -2,6 +2,7 @@ package org.atari.asma;
 
 import java.io.IOException;
 
+import org.atari.asma.demozoo.MusicDemozooID;
 import org.atari.asma.util.JSONWriter;
 import org.atari.asma.util.MessageQueue;
 
@@ -172,6 +173,11 @@ public final class FileInfo {
 
 	public void setDemozooID(int demozooID) {
 		this.demozooID = demozooID;
+	}
+
+	/** The Demozoo ID, or <code>null</code> if there is none. See plans/10. */
+	public MusicDemozooID getMusicDemozooID() {
+		return MusicDemozooID.of(demozooID);
 	}
 
 	public MessageQueue getMessageQueue() {

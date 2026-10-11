@@ -12,6 +12,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.atari.asma.FileInfo;
 import org.atari.asma.browser.PlainNumberCellRenderer;
+import org.atari.asma.demozoo.DemozooID;
 
 import com.wudsn.tools.base.common.StringUtility;
 import com.wudsn.tools.base.gui.AttributeTableModel;
@@ -134,7 +135,7 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 			case Columns.DEFAULT_SONG:
 				return Integer.valueOf(fileInfo.defaultSongIndex + 1);
 			case Columns.DEMOZOO_ID:
-				return Integer.valueOf(fileInfo.getDemozooID());
+				return DemozooID.toInteger(fileInfo.getMusicDemozooID());
 			default:
 				throw new IllegalArgumentException("Invalid column " + column + ".");
 			}

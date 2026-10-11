@@ -9,6 +9,7 @@ import javax.swing.SwingConstants;
 
 import org.atari.asma.Composer;
 import org.atari.asma.browser.PlainNumberCellRenderer;
+import org.atari.asma.demozoo.DemozooID;
 
 import com.wudsn.tools.base.common.StringUtility;
 import com.wudsn.tools.base.gui.AttributeTableModel;
@@ -95,14 +96,6 @@ public final class ComposerListPanel extends AttributeTablePanel {
 			return (unicodeValue != null && !unicodeValue.isEmpty()) ? unicodeValue : value;
 		}
 
-		private static Integer parseDemozooID(String demozooID) {
-			try {
-				return Integer.valueOf(demozooID.trim());
-			} catch (NumberFormatException | NullPointerException ex) {
-				return null;
-			}
-		}
-
 		@Override
 		public Object getValueAt(int row, int column) {
 			Composer composer = composers.get(row);
@@ -116,7 +109,7 @@ public final class ComposerListPanel extends AttributeTablePanel {
 			case Columns.COUNTRY:
 				return composer.country;
 			case Columns.DEMOZOO_ID:
-				return parseDemozooID(composer.demozooID);
+				return DemozooID.toInteger(composer.getDemozooID());
 			case Columns.FILE_COUNT:
 				return (fileCountByFolderName == null) ? null
 						: fileCountByFolderName.getOrDefault(composer.folderName, Integer.valueOf(0));

@@ -3,6 +3,8 @@ package org.atari.asma;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.atari.asma.demozoo.ScenerDemozooID;
+
 import com.wudsn.tools.base.repository.Attribute;
 
 public class Composer {
@@ -116,6 +118,11 @@ public class Composer {
 			return handles == null ? "" : handles;
 		}
 		return (first == null || first.isEmpty() || first.equals("<?>")) ? last : first + " " + last;
+	}
+
+	/** The Demozoo ID, or <code>null</code> if there is none. See plans/10. */
+	public ScenerDemozooID getDemozooID() {
+		return ScenerDemozooID.parse(demozooID);
 	}
 
 	public String[] getHandlesArray() {
