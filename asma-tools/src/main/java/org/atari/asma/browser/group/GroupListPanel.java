@@ -30,8 +30,8 @@ public final class GroupListPanel extends AttributeTablePanel {
 	public static final class TableModel extends AttributeTableModel {
 
 		public static final class Columns {
-			public static final int FOLDER_NAME = 0;
-			public static final int NAME = 1;
+			public static final int NAME = 0;
+			public static final int FOLDER_NAME = 1;
 			public static final int COMPOSERS = 2;
 			public static final int FILE_COUNT = 3;
 			public static final int DEMOZOO_ID = 4;
@@ -48,9 +48,10 @@ public final class GroupListPanel extends AttributeTablePanel {
 			groups = new ArrayList<Group>();
 			composersByFolderName = new HashMap<String, List<Composer>>();
 			fileCountByFolderName = new HashMap<String, Integer>();
-			addColumn(Group.Attributes.FOLDER_NAME, Column.FIXED | Column.SORTABLE,
-					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(Group.Attributes.NAME, Column.VISIBLE | Column.SORTABLE,
+					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
+			// Fixed, because only some groups have a name.
+			addColumn(Group.Attributes.FOLDER_NAME, Column.FIXED | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(Group.Attributes.COMPOSERS, Column.VISIBLE | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);

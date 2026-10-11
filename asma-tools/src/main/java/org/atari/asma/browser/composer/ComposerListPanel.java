@@ -28,13 +28,13 @@ public final class ComposerListPanel extends AttributeTablePanel {
 	public static final class TableModel extends AttributeTableModel {
 
 		public static final class Columns {
-			public static final int LAST_NAME = 0;
-			public static final int FIRST_NAME = 1;
+			public static final int FIRST_NAME = 0;
+			public static final int LAST_NAME = 1;
 			public static final int HANDLES = 2;
-			public static final int COUNTRY = 3;
-			public static final int DEMOZOO_ID = 4;
-			public static final int FILE_COUNT = 5;
-			public static final int FOLDER_NAME = 6;
+			public static final int FOLDER_NAME = 3;
+			public static final int COUNTRY = 4;
+			public static final int DEMOZOO_ID = 5;
+			public static final int FILE_COUNT = 6;
 			public static final int GROUPS = 7;
 
 			private Columns() {
@@ -47,19 +47,19 @@ public final class ComposerListPanel extends AttributeTablePanel {
 		public TableModel() {
 			composers = new ArrayList<Composer>();
 			fileCountByFolderName = new HashMap<String, Integer>();
-			addColumn(Composer.Attributes.LAST_NAME, Column.FIXED | Column.SORTABLE,
-					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(Composer.Attributes.FIRST_NAME, Column.VISIBLE | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
+			addColumn(Composer.Attributes.LAST_NAME, Column.FIXED | Column.SORTABLE,
+					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(Composer.Attributes.HANDLES, Column.VISIBLE | Column.SORTABLE,
+					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
+			addColumn(Composer.Attributes.FOLDER_NAME, Column.VISIBLE | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(Composer.Attributes.COUNTRY, Column.VISIBLE | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(Composer.Attributes.DEMOZOO_ID, Column.VISIBLE | Column.SORTABLE, null,
 					new PlainNumberCellRenderer(SwingConstants.RIGHT), null);
 			addColumn(Composer.Attributes.FILE_COUNT, Column.VISIBLE | Column.SORTABLE);
-			addColumn(Composer.Attributes.FOLDER_NAME, Column.VISIBLE | Column.SORTABLE,
-					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(Composer.Attributes.GROUPS, Column.HIDDEN | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 		}
