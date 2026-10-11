@@ -58,7 +58,7 @@ public final class ComposerListPanel extends AttributeTablePanel {
 			addColumn(Composer.Attributes.DEMOZOO_ID, Column.VISIBLE | Column.SORTABLE, null,
 					new PlainNumberCellRenderer(SwingConstants.RIGHT), null);
 			addColumn(Composer.Attributes.FILE_COUNT, Column.VISIBLE | Column.SORTABLE);
-			addColumn(Composer.Attributes.FOLDER_NAME, Column.HIDDEN | Column.SORTABLE,
+			addColumn(Composer.Attributes.FOLDER_NAME, Column.VISIBLE | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(Composer.Attributes.GROUPS, Column.HIDDEN | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
