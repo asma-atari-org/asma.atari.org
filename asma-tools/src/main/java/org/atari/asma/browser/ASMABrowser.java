@@ -34,6 +34,7 @@ import org.atari.asma.ASMAClient;
 import org.atari.asma.FileInfo;
 import org.atari.asma.browser.composer.ComposerSelectionPanel;
 import org.atari.asma.browser.file.FileInfoPlayerPanel;
+import org.atari.asma.browser.group.GroupSelectionPanel;
 
 import com.wudsn.tools.base.common.Application;
 import com.wudsn.tools.base.common.MessageQueue;
@@ -48,7 +49,8 @@ import com.wudsn.tools.base.gui.StatusBar;
  * {@link ASMAClient} from the website or from a local database file. The
  * Files tab has details and replay controls like the website player. The
  * panels of the tabs are also available as dialogs for other programs, see
- * the subpackages <code>file</code> and <code>composer</code>, plans/07 and
+ * the subpackages <code>file</code>, <code>composer</code> and
+ * <code>group</code>, plans/07 and
  * plans/09.
  *
  * @author Peter Dell
@@ -82,6 +84,7 @@ public final class ASMABrowser implements ActionListener {
 	private JFrame frame;
 	private FileInfoPlayerPanel filesPanel;
 	private ComposerSelectionPanel composersPanel;
+	private GroupSelectionPanel groupsPanel;
 	private StatusBar statusBar;
 	// Shared by all attribute tables, each under its own preferences prefix.
 	private final AttributeTablePreferences attributeTablePreferences;
@@ -131,6 +134,7 @@ public final class ASMABrowser implements ActionListener {
 			}
 		});
 		composersPanel = new ComposerSelectionPanel(attributeTablePreferences);
+		groupsPanel = new GroupSelectionPanel(attributeTablePreferences);
 		statusBar = new StatusBar();
 
 		// Escape anywhere in the window stops playing, like the Stop button.
@@ -148,6 +152,7 @@ public final class ASMABrowser implements ActionListener {
 		JTabbedPane tabbedPane = new JTabbedPane();
 		tabbedPane.addTab(Texts.MainWindow_FilesTab, filesPanel);
 		tabbedPane.addTab(Texts.MainWindow_ComposersTab, composersPanel);
+		tabbedPane.addTab(Texts.MainWindow_GroupsTab, groupsPanel);
 
 		frame.getContentPane().setLayout(new BorderLayout());
 		frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
@@ -275,6 +280,7 @@ public final class ASMABrowser implements ActionListener {
 					localArchiveFolder = archiveFolder;
 					filesPanel.setDatabase(database);
 					composersPanel.setDatabase(database);
+					groupsPanel.setDatabase(database);
 					messageQueue.sendMessage(ASMABrowser.this, null, Messages.I001,
 							String.valueOf(database.fileInfos.size()), source);
 				} catch (ExecutionException ex) {

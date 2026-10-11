@@ -76,6 +76,30 @@ public class ASMAClientTest {
 	}
 
 	@Test
+	public void testGroupFileCountsAndComposers() {
+		var database = new ASMAClient.Database();
+		assertTrue(database.getComposersByGroupFolderName().isEmpty());
+
+		database.fileInfos = java.util.List.of(createFileInfo("Groups/Top_Odin/A.sap"),
+				createFileInfo("Groups/Top_Odin/B.sap"), createFileInfo("Composers/Fel/Test.sap"));
+		assertEquals(java.util.Map.of("Top_Odin", 2), database.getFileCountByGroupFolderName());
+
+		var odin = new Composer();
+		odin.folderName = "Odin";
+		odin.groups = "Top_Odin";
+		var top = new Composer();
+		top.folderName = "Top";
+		top.groups = "Zur_soft, Top_Odin";
+		var fel = new Composer();
+		fel.folderName = "Fel";
+		database.composerInfos = java.util.List.of(odin, top, fel);
+		var composers = database.getComposersByGroupFolderName();
+		assertEquals(2, composers.size());
+		assertEquals(java.util.List.of(odin, top), composers.get("Top_Odin"));
+		assertEquals(java.util.List.of(top), composers.get("Zur_soft"));
+	}
+
+	@Test
 	public void testLoadDatabaseFromFile() throws IOException {
 		assumeTrue(DATABASE_FILE.isFile(), "Generated database " + DATABASE_FILE + " is not present.");
 

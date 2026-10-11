@@ -4,6 +4,7 @@ module org.atari.asma.tools {
 	exports org.atari.asma.browser;
 	exports org.atari.asma.browser.composer;
 	exports org.atari.asma.browser.file;
+	exports org.atari.asma.browser.group;
 	exports org.atari.asma.editor;
 	exports org.atari.asma.exporter;
 

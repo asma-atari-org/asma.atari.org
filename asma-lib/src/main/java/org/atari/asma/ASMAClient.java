@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +57,47 @@ public final class ASMAClient {
 		 *         <code>null</code>.
 		 */
 		public Map<String, Integer> getFileCountByComposerFolderName() {
-			final String prefix = "Composers/";
+			return getFileCountByFolderName("Composers/");
+		}
+
+		/**
+		 * Counts the files per group folder, i.e. per "Groups/<folderName>/..."
+		 * file path, like {@link #getFileCountByComposerFolderName()}.
+		 *
+		 * @return The modifiable map from folder name to file count, not
+		 *         <code>null</code>.
+		 */
+		public Map<String, Integer> getFileCountByGroupFolderName() {
+			return getFileCountByFolderName("Groups/");
+		}
+
+		/**
+		 * Collects the composers per group folder name, from the comma separated
+		 * group folder names of each composer, in the order of the composer list.
+		 *
+		 * @return The modifiable map from group folder name to composers, not
+		 *         <code>null</code>.
+		 */
+		public Map<String, List<Composer>> getComposersByGroupFolderName() {
+			Map<String, List<Composer>> result = new HashMap<String, List<Composer>>();
+			if (composerInfos == null) {
+				return result;
+			}
+			for (Composer composer : composerInfos) {
+				if (composer.groups == null || composer.groups.isBlank()) {
+					continue;
+				}
+				for (String groupFolderName : composer.groups.split(",")) {
+					groupFolderName = groupFolderName.trim();
+					if (!groupFolderName.isEmpty()) {
+						result.computeIfAbsent(groupFolderName, key -> new ArrayList<Composer>()).add(composer);
+					}
+				}
+			}
+			return result;
+		}
+
+		private Map<String, Integer> getFileCountByFolderName(String prefix) {
 			Map<String, Integer> result = new HashMap<String, Integer>();
 			if (fileInfos == null) {
 				return result;

@@ -28,6 +28,19 @@ Written 2026-10-11. Goal, as stated by the user:
   6407 files). The `choose` dialogs were compiled against but not clicked
   through.
 
+**Groups (P7 follow-up, executed 2026-10-11 on request):** subpackage
+`browser.group` with `GroupFilterPanel` (Keyword, Name),
+`GroupListPanel` (Folder Name, Name, Composers, File Count, Demozoo ID),
+`GroupSelectionPanel` and `GroupListDialog` (`browse`/`choose`), plus the
+third tab "Groups". asma-lib: `Group.Selection`, `Group.Attributes`, six
+`Group*` data types, `Database.getFileCountByGroupFolderName()` and
+`getComposersByGroupFolderName()` (from the composers' `groups` field),
+tests. Fixed on the way: `Group.handle` never matched the JSON attribute
+`name` of `Docs/ASMA-Groups.json`, so group names were never read (and the
+GRP-002 check never ran); the field is now `name`. The exporter writes the
+groups JSON verbatim, so its output is unaffected. Data note: 4 of the 9
+groups have no composer whose `groups` field names them.
+
 ## Current state (after plan 08)
 
 All 15 classes are flat in `org.atari.asma.browser`:

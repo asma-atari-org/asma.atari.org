@@ -66,7 +66,7 @@ public class GroupList {
 							"Group " + previousGroup.toString() + " already registered for Demozoo ID "
 									+ previousGroup.demozooID + " of group " + group.toString());
 			} else {
-				if (!group.handle.isEmpty()) {
+				if (!group.name.isEmpty()) {
 					messageQueue.sendError("GRP-002", "Group " + group.toString() + " has no Demozoo ID");
 				}
 			}

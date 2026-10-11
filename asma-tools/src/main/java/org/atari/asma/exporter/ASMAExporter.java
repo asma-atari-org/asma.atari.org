@@ -127,7 +127,7 @@ public class ASMAExporter {
 		asmaDatabase.composerList = composerList;
 
 		var groupsFile = new File(sourceFolder, ASMAPaths.ASMA_GROUPS_JSON);
-		messageQueue.sendInfo("Loading groups from '" + composersFile.getPath() + "'.");
+		messageQueue.sendInfo("Loading groups from '" + groupsFile.getPath() + "'.");
 		var groupList = GroupList.load(groupsFile);
 		groupList.deserialize();
 
