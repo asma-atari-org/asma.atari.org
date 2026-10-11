@@ -5,7 +5,11 @@ filter fields above its table, backed by a `Composer.Selection` record in
 asma-lib - the same structure the file info list already has with
 `FileInfo.Selection` and `FileInfoFilterPanel` (plan 07).
 
-**Status: proposed, not started.**
+**Status: decisions D1-D5 confirmed 2026-10-11 as recommended (combined
+Name field, Country as text field, no file count filter, shared
+`FilterPanel<S>`, filters reset on reopening); D6 rejected. New requirement:
+the composer list must be reusable outside the ASMABrowser (see "Reuse"
+below); its packaging is to be confirmed before implementation.**
 
 **Working rule (inherited from plans 06/07): the open decisions below are
 confirmed with the user before the non-mechanical steps are executed.**
@@ -91,13 +95,44 @@ confirmed with the user before the non-mechanical steps are executed.**
 - **D5 - Filter state across openings**: the dialog is recreated on each
   opening, so filters reset (recommended, simplest), or the main window
   keeps the last `Composer.Selection` and restores it.
-- **D6 - Optional follow-up**: double-clicking a composer closes the dialog
-  and sets the main window's Author filter to that composer's name. Not
-  part of this plan unless requested.
+- **D6 - Rejected**: double-clicking a composer does not set the main
+  window's Author filter.
+
+## Reuse outside the ASMABrowser (requirement added 2026-10-11)
+
+The composer list will also be used by a future submission tool: composers
+submit their files to ASMA, and the submission should carry their composer
+details, above all the `folderName`, which places the file in the archive
+(`asma/Composers/<folderName>/`). So the list must work without the browser
+and must be able to return a chosen composer.
+
+Proposal (to be confirmed):
+
+- **R1 - Package**: filter panel, list panel and dialog leave
+  `org.atari.asma.browser` for a new package `org.atari.asma.composer` in
+  asma-tools, with its own `Texts` NLS class (dialog titles), so it has no
+  dependency on the browser's `Texts`/`Messages`. The shared helpers
+  `FilterPanel<S>` and `PlainNumberCellRenderer` move to
+  `org.atari.asma.gui`. The browser only calls into these packages.
+  Alternative: asma-lib, which would pull Swing (`java.desktop`) into the
+  model library - not recommended.
+- **R2 - Composite panel**: `ComposerSelectionPanel` = filter panel on top,
+  list panel below, with `setComposers(List<Composer>, Map<String,Integer>
+  fileCounts)` (file counts optional, column shows 0/empty without them)
+  and `getSelectedComposer()`.
+- **R3 - Dialog modes**: `ComposerListDialog` gets a browse mode (OK only,
+  as today, used by the browser) and a choose mode (OK/Cancel, OK enabled
+  only with a selected row, double-click confirms, returns the `Composer`
+  or `null`), used by the submission tool.
+- **Out of scope here**: the submission tool itself and its data format.
+  To be recorded there: the submission carries the chosen `Composer`
+  (folder name, names in both spellings, handles, country, Demozoo ID), and
+  a new composer who is not yet in the list needs a way to enter their
+  details instead of choosing.
 
 ## Steps
 
-1. Confirm D1-D5 with the user.
+1. Confirm D1-D5 with the user (done) and R1-R3.
 2. `Composer.Selection` + `ComposerSelectionTest` (asma-lib).
 3. DataTypes entries + properties, `DataTypesTest` count.
 4. If D4 = extract: introduce `FilterPanel<S>`, move `FileInfoFilterPanel`
