@@ -1,4 +1,4 @@
-package org.atari.asma.composer;
+package org.atari.asma.browser;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;

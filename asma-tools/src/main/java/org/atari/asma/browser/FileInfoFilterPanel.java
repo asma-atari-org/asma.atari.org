@@ -7,7 +7,6 @@ import javax.swing.JTextField;
 
 import org.atari.asma.DataTypes;
 import org.atari.asma.FileInfo;
-import org.atari.asma.gui.FilterPanel;
 
 /**
  * Filter panel above the file info table, mirroring the search form of the

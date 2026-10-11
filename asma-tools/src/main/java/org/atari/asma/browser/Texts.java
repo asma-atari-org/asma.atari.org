@@ -10,6 +10,8 @@ import com.wudsn.tools.base.repository.NLS;
 public final class Texts extends NLS {
 
 	public static String Replay_PlayingTime;
+	public static String ComposerListDialog_Title;
+	public static String ComposerListDialog_ChooseTitle;
 	public static String LoadFromLocalFileDialog_Title;
 	public static String LoadFromLocalFileDialog_Filter;
 

@@ -7,8 +7,8 @@ asma-lib - the same structure the file info list already has with
 
 **Status: decisions D1-D5 confirmed 2026-10-11 as recommended (combined
 Name field, Country as text field, no file count filter, shared
-`FilterPanel<S>`, filters reset on reopening); D6 rejected. R1-R3
-confirmed as proposed. Steps 2-6 executed 2026-10-11; the choose mode has no
+`FilterPanel<S>`, filters reset on reopening); D6 rejected. R2-R3
+confirmed as proposed, R1 revised (one package). Steps 2-6 executed 2026-10-11; the choose mode has no
 caller yet (it is for the future submission tool).**
 
 **Working rule (inherited from plans 06/07): the open decisions below are
@@ -108,14 +108,13 @@ and must be able to return a chosen composer.
 
 Proposal (to be confirmed):
 
-- **R1 - Package**: filter panel, list panel and dialog leave
-  `org.atari.asma.browser` for a new package `org.atari.asma.composer` in
-  asma-tools, with its own `Texts` NLS class (dialog titles), so it has no
-  dependency on the browser's `Texts`/`Messages`. The shared helpers
-  `FilterPanel<S>` and `PlainNumberCellRenderer` move to
-  `org.atari.asma.gui`. The browser only calls into these packages.
-  Alternative: asma-lib, which would pull Swing (`java.desktop`) into the
-  model library - not recommended.
+- **R1 - Package**: revised 2026-10-11 by the user - the file info list
+  and the composer list, with their panels and dialogs, both stay in
+  `org.atari.asma.browser`; no separate packages. Reuse happens through the
+  public classes of that (exported) package. The shared helpers
+  `FilterPanel<S>` and `PlainNumberCellRenderer` and the dialog titles in
+  `Texts` live there too. (A first version used separate packages
+  `org.atari.asma.composer` and `org.atari.asma.gui`; it was reverted.)
 - **R2 - Composite panel**: `ComposerSelectionPanel` = filter panel on top,
   list panel below, with `setComposers(List<Composer>, Map<String,Integer>
   fileCounts)` (file counts optional, column shows 0/empty without them)

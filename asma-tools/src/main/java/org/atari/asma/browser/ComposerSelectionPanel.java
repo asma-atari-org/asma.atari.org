@@ -1,4 +1,4 @@
-package org.atari.asma.composer;
+package org.atari.asma.browser;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import com.wudsn.tools.base.gui.AttributeTablePreferences;
 
 /**
  * Reusable composer list: the {@link ComposerFilterPanel} above the
- * {@link ComposerListPanel}, independent of the ASMABrowser, so that other
+ * {@link ComposerListPanel}, usable without the ASMABrowser main window, so that other
  * tools (e.g. a submission tool) can let a composer find and choose
  * themselves. See plans/08.
  *

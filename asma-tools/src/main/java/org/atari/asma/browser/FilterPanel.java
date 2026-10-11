@@ -1,4 +1,4 @@
-package org.atari.asma.gui;
+package org.atari.asma.browser;
 
 import java.awt.FlowLayout;
 import java.util.function.Consumer;

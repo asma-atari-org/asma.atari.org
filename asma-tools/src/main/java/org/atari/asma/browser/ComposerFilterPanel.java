@@ -1,4 +1,4 @@
-package org.atari.asma.composer;
+package org.atari.asma.browser;
 
 import java.util.function.Consumer;
 
@@ -6,7 +6,6 @@ import javax.swing.JTextField;
 
 import org.atari.asma.Composer;
 import org.atari.asma.DataTypes;
-import org.atari.asma.gui.FilterPanel;
 
 /**
  * Filter panel above the composer table. Every change is applied

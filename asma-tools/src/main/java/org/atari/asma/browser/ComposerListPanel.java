@@ -1,4 +1,4 @@
-package org.atari.asma.composer;
+package org.atari.asma.browser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,7 +8,6 @@ import java.util.Map;
 import javax.swing.SwingConstants;
 
 import org.atari.asma.Composer;
-import org.atari.asma.gui.PlainNumberCellRenderer;
 
 import com.wudsn.tools.base.common.StringUtility;
 import com.wudsn.tools.base.gui.AttributeTableModel;
