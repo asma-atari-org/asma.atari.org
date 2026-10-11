@@ -1,5 +1,7 @@
 package org.atari.asma.browser;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -94,9 +96,36 @@ public final class FileInfoDetailsPanel extends JPanel {
 		fieldConstraints.weightx = 1.0;
 		fieldConstraints.fill = GridBagConstraints.HORIZONTAL;
 		fieldConstraints.insets = new Insets(2, 0, 2, gridx == 0 ? 16 : 4);
-		add(field, fieldConstraints);
+		add(createFixedWidthCell(field), fieldConstraints);
 
 		fieldIndex++;
+	}
+
+	/**
+	 * Wraps a value component into a cell with a constant preferred width, so
+	 * both value columns share the panel width equally and keep their width
+	 * when the content changes (a longer title, more song buttons, the playing
+	 * time text). The height stays the component's natural height.
+	 */
+	private static JComponent createFixedWidthCell(JComponent component) {
+		JPanel cell = new JPanel(new BorderLayout()) {
+			@Override
+			public Dimension getPreferredSize() {
+				Dimension size = super.getPreferredSize();
+				size.width = 1;
+				return size;
+			}
+
+			@Override
+			public Dimension getMinimumSize() {
+				Dimension size = super.getMinimumSize();
+				size.width = 1;
+				return size;
+			}
+		};
+		cell.setOpaque(false);
+		cell.add(component, BorderLayout.CENTER);
+		return cell;
 	}
 
 	private int getNextExtraRow() {
