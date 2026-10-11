@@ -46,9 +46,9 @@ ships the fat jar; launch4j is dropped.
    - Set the version: `mvn versions:set -DnewVersion=1.0.0` (or edit the three
      POMs), commit.
    - Tag and push: `git tag v1.0.0 && git push origin main v1.0.0`.
-   - The workflow publishes the release; JitPack serves
-     `com.github.asma-atari-org.asma.atari.org:asma-lib:v1.0.0` from the same
-     tag once requested the first time.
+   - The workflow publishes the release. (JitPack serving `asma-lib` from
+     the same tag is postponed, see plan 12: WUDSN Base, which asma-lib
+     depends on since plan 06, is not published.)
    - Back to the next snapshot: `mvn versions:set -DnewVersion=1.1.0-SNAPSHOT`,
      commit.
 

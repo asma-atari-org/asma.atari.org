@@ -40,7 +40,24 @@
 		</dependency>
 	</dependencies>
 
+	<properties>
+		<!-- The ASMABrowser's version is its build time, in the format WUDSN
+			Base's Application compares; maven.build.timestamp is UTC. See plans/12. -->
+		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+		<build.timestamp>${maven.build.timestamp}</build.timestamp>
+	</properties>
+
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<!-- Only these resources are filtered, the message texts contain {0}. -->
+			<resource>
+				<directory>src/main/resources-filtered</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 		<plugins>
 			<!-- Produces target/SAPFileEditor.jar, the runnable fat jar that replaces
 				the Eclipse "Runnable JAR with jar-in-jar loader" export. The regular
@@ -123,6 +140,22 @@
 								<descriptor>src/assembly/SAPFileEditor-zip.xml</descriptor>
 							</descriptors>
 							<finalName>SAPFileEditor</finalName>
+							<appendAssemblyId>false</appendAssemblyId>
+							<attach>false</attach>
+						</configuration>
+					</execution>
+					<!-- Packs target/ASMABrowser.zip the same way, see plans/12. -->
+					<execution>
+						<id>asma-browser-zip</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/assembly/ASMABrowser-zip.xml</descriptor>
+							</descriptors>
+							<finalName>ASMABrowser</finalName>
 							<appendAssemblyId>false</appendAssemblyId>
 							<attach>false</attach>
 						</configuration>

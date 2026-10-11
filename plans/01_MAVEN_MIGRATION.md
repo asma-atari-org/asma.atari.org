@@ -177,5 +177,7 @@ Open items:
   `net.sf.asap:asap:8.0.0-asma` from committed sources). See the updated
   `ASAP.md`. Both branches are pushed to the SourceForge fork.
 - Publish asma-lib via JitPack (tag a release) once the API has settled.
+  Postponed by plan 12 (2026-10-12): asma-lib depends on the unpublished
+  WUDSN Base since plan 06, and no consumer needs it without building yet.
 - Eclipse launch configurations and the Fusion/ASTIL builder: proposal in
   [02_ECLIPSE_INTEGRATION.md](02_ECLIPSE_INTEGRATION.md).

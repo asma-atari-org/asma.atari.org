@@ -29,9 +29,12 @@ The link is created by the "bat\checkout.bat" script if it is missing.
 mvn install
 ```
 
-builds both modules, runs the tests, and produces `asma-tools/target/SAPFileEditor.jar`
-(the runnable fat jar of the SAP file editor) and `SAPFileEditor.zip` (the jar plus a
-Windows starter script, the distributable download).
+builds both modules, runs the tests, and produces the runnable fat jars of the two
+programs in `asma-tools/target`: `SAPFileEditor.jar` (the SAP file editor) and
+`ASMABrowser.jar` (the database browser and player). `SAPFileEditor.zip` and
+`ASMABrowser.zip` contain the jar plus a Windows starter script and are the
+distributable downloads. Building requires WUDSN Base in the local Maven repository:
+clone https://github.com/wudsn/wudsn-base and run `mvn install` there first.
 
 The `ASMAExporter` generates `public_html/asmadb/asmadb.js` (for the website),
 `asmadb.json` (plain JSON for API consumers) and `asmadb.html` from the SVN checkout.
@@ -39,9 +42,10 @@ The `ASMAExporter` generates `public_html/asmadb/asmadb.js` (for the website),
 ## Release
 
 Pushing a tag `v*` triggers `.github/workflows/release.yml`, which builds, tests and
-publishes a GitHub release with `SAPFileEditor.jar` and `SAPFileEditor.zip` attached.
-The same tag can be consumed via JitPack as
-`com.github.asma-atari-org.asma.atari.org:asma-lib:<tag>`.
+publishes a GitHub release with the jars and zips of both programs attached. After the
+release, copy both zips to `public_html/bin/` for the website download.
+The library `asma-lib` is not published to a Maven repository yet, see
+`plans/12_RELEASE_1_0_0.md`.
 
 Release ritual:
 

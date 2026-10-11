@@ -33,4 +33,6 @@ jobs:
           files: |
             asma-tools/target/SAPFileEditor.jar
             asma-tools/target/SAPFileEditor.zip
+            asma-tools/target/ASMABrowser.jar
+            asma-tools/target/ASMABrowser.zip
           generate_release_notes: true
