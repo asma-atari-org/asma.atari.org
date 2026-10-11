@@ -40,9 +40,10 @@ import com.wudsn.tools.base.common.Application;
 import com.wudsn.tools.base.common.ApplicationSettings;
 import com.wudsn.tools.base.common.MessageQueue;
 import com.wudsn.tools.base.common.MessageQueueEntry;
+import com.wudsn.tools.base.gui.AttributeTablePreferences;
+import com.wudsn.tools.base.gui.AttributeTablePreferencesFactory;
 import com.wudsn.tools.base.gui.ElementFactory;
 import com.wudsn.tools.base.gui.MainWindow;
-import com.wudsn.tools.base.gui.SettingsAttributeTablePreferences;
 import com.wudsn.tools.base.gui.StatusBar;
 
 /**
@@ -92,7 +93,7 @@ public final class ASMABrowser implements ActionListener {
 	private GroupBrowsePanel groupsPanel;
 	private StatusBar statusBar;
 	// Shared by all attribute tables, each under its own preferences prefix.
-	private final SettingsAttributeTablePreferences attributeTablePreferences;
+	private final AttributeTablePreferences attributeTablePreferences;
 	// The archive folder next to a locally loaded database, null when loaded from the website.
 	private File localArchiveFolder;
 
@@ -117,8 +118,8 @@ public final class ASMABrowser implements ActionListener {
 		client = new ASMAClient();
 		settings = new ApplicationSettings(Preferences.userNodeForPackage(ASMABrowser.class));
 		// Read before the panels are created, because the tables read their layout in their constructor.
-		attributeTablePreferences = new SettingsAttributeTablePreferences(
-				settings.getSection(Sections.ATTRIBUTE_TABLES));
+		attributeTablePreferences = AttributeTablePreferencesFactory
+				.createPersistent(settings.getSection(Sections.ATTRIBUTE_TABLES));
 		windowPreferences = new ASMABrowserWindowPreferences(settings.getSection(Sections.MAIN_WINDOW));
 	}
 
@@ -249,7 +250,7 @@ public final class ASMABrowser implements ActionListener {
 			filesPanel.getTable().saveLayout();
 			composersPanel.getTable().saveLayout();
 			groupsPanel.getTable().saveLayout();
-			attributeTablePreferences.save();
+			// The table preferences write through to their section, so flushing stores everything.
 			settings.flush();
 		} catch (RuntimeException ex) {
 			System.err.println("Cannot save the settings: " + ex);

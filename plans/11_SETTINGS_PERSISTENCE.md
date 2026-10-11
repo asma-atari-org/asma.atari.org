@@ -6,12 +6,22 @@ persistence via ApplicationSettings" from plan 07 (`TODO plans/07` in
 `ASMABrowser`).
 
 **Status: D1-D5 confirmed 2026-10-11 as recommended. Steps 1-4 executed
-2026-10-11. wudsn-base commit 5daa1d0 is local and not yet pushed; ASMA's
-CI cannot build until it is. Implementation notes:**
+2026-10-11. wudsn-base commits 5daa1d0 and 3f579ab are local and not yet
+pushed; ASMA's CI cannot build until they are. Implementation notes:**
 
-- `SettingsAttributeTablePreferences` reads the section in its constructor
-  rather than in a separate `load()`. `ApplicationSettings.flush()` was
-  added as well.
+- D1 revised 2026-10-11: instead of the public class
+  `SettingsAttributeTablePreferences` with `save()` (described below),
+  WUDSN Base has `AttributeTablePreferencesFactory` with `createInMemory()`
+  and `createPersistent(section)`.
+  - Both return the plain `AttributeTablePreferences` interface; the
+    implementations are private.
+  - The persistent map reads the section on creation and writes every
+    `put`, `remove` and `clear` through to it. Its key and entry views are
+    read-only.
+  - There is no `save()`: `ApplicationSettings.flush()` on exit stores
+    everything.
+  - Base also gained `ApplicationSettingsSection.getKeys()` and
+    `remove(key)`, and `ApplicationSettings.flush()`.
 - The six `getTable()` methods of the selection, browse and player panels
   now return `AttributeTable`, so `saveLayout()` is reachable.
 - The window geometry and the selected tab are kept by the package-private
