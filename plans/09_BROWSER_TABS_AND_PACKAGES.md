@@ -9,8 +9,24 @@ Written 2026-10-11. Goal, as stated by the user:
   programs can reuse, explicitly the RMT Java port.
 - Since there are several classes per entity, **subpackages per entity**.
 
-**Status: proposal, not started. All decisions below are to be confirmed
-first (working rule of plans 06-08).**
+**Status: P1-P8 confirmed 2026-10-11 as recommended; steps 1-6 executed
+2026-10-11.** Deviations from the proposal, decided during implementation:
+
+- Tabs have no mnemonics: Alt+F belongs to the File menu, and the filter
+  labels of the tabs already use most other letters (e.g. C for Channels
+  and Country). Ctrl+Tab / Ctrl+PageDown switch tabs.
+- The Files tab and the file dialog share one more class,
+  `FileInfoPlayerPanel` (details + replay controls + `FileInfoSelectionPanel`),
+  with `ContentLoader` and `ErrorHandler` callbacks: the browser loads from
+  the local archive or the website and reports to the status bar, the
+  dialog downloads via its `ASMAClient` and reports in a message box.
+- `ReplayControls.dispose()` stops playing and the refresh timer when a
+  file dialog closes.
+- Verified: `mvn install` (all tests), the browser with both tabs, and a
+  classpath-only check like RMT's (`ComposerSelectionPanel`/
+  `FileInfoPlayerPanel` filled from the local `asmadb.json`: 305 composers,
+  6407 files). The `choose` dialogs were compiled against but not clicked
+  through.
 
 ## Current state (after plan 08)
 
@@ -40,7 +56,8 @@ org.atari.asma.browser            ASMABrowser (main window), Actions, Messages,
                                   Texts, FilterPanel<S>, PlainNumberCellRenderer
 org.atari.asma.browser.file       FileInfoFilterPanel, FileInfoListPanel,
                                   FileInfoDetailsPanel, FileInfoSelectionPanel (new),
-                                  FileInfoListDialog (new), ReplayControls, ASAPPlayer
+                                  FileInfoPlayerPanel (new), FileInfoListDialog (new),
+                                  ReplayControls, ASAPPlayer
 org.atari.asma.browser.composer   ComposerFilterPanel, ComposerListPanel,
                                   ComposerSelectionPanel, ComposerListDialog
 org.atari.asma.browser.group      (later) GroupFilterPanel, GroupListPanel,
@@ -78,8 +95,8 @@ org.atari.asma.browser.group      (later) GroupFilterPanel, GroupListPanel,
 +-----------------------------------------------------------------+
 ```
 
-- Tab titles from `Texts` with mnemonics ("&Files", "&Composers",
-  "&Groups"), no colons.
+- Tab titles from `Texts` ("Files", "Composers", "Groups"), no colons,
+  no mnemonics (see the status above).
 - Each tab hosts the entity's `SelectionPanel`; the Files tab adds the
   details panel and replay controls above it.
 - Menu Database > Composers is removed: the tab replaces it.

@@ -1,4 +1,4 @@
-package org.atari.asma.browser;
+package org.atari.asma.browser.file;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;

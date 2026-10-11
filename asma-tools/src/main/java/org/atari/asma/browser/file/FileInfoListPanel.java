@@ -1,4 +1,4 @@
-package org.atari.asma.browser;
+package org.atari.asma.browser.file;
 
 import java.awt.Component;
 import java.text.NumberFormat;
@@ -11,6 +11,7 @@ import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.atari.asma.FileInfo;
+import org.atari.asma.browser.PlainNumberCellRenderer;
 
 import com.wudsn.tools.base.common.StringUtility;
 import com.wudsn.tools.base.gui.AttributeTableModel;

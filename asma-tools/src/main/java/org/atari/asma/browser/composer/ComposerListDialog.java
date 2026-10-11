@@ -1,14 +1,13 @@
-package org.atari.asma.browser;
+package org.atari.asma.browser.composer;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.List;
-import java.util.Map;
-
+import org.atari.asma.ASMAClient;
 import org.atari.asma.Composer;
+import org.atari.asma.browser.Texts;
 
 import com.wudsn.tools.base.gui.AttributeTablePreferences;
 import com.wudsn.tools.base.gui.ModalDialog;
@@ -30,11 +29,11 @@ public final class ComposerListDialog extends ModalDialog {
 
 	private final ComposerSelectionPanel selectionPanel;
 
-	private ComposerListDialog(Window owner, AttributeTablePreferences preferences, List<Composer> composers,
-			Map<String, Integer> fileCountByFolderName, boolean chooseMode) {
+	private ComposerListDialog(Window owner, AttributeTablePreferences preferences, ASMAClient.Database database,
+			boolean chooseMode) {
 		super(owner, chooseMode ? Texts.ComposerListDialog_ChooseTitle : Texts.ComposerListDialog_Title, chooseMode);
 		selectionPanel = new ComposerSelectionPanel(preferences);
-		selectionPanel.setComposers(composers, fileCountByFolderName);
+		selectionPanel.setDatabase(database);
 		selectionPanel.setPreferredSize(new Dimension(900, 550));
 		// The panel fills the dialog; the base class keeps the fields pane on top and the buttons below.
 		getContentPane().add(selectionPanel, BorderLayout.CENTER);
@@ -62,16 +61,11 @@ public final class ComposerListDialog extends ModalDialog {
 	 *            The owner window or <code>null</code>.
 	 * @param preferences
 	 *            The table preferences, not <code>null</code>.
-	 * @param composers
-	 *            The composers, not <code>null</code>.
-	 * @param fileCountByFolderName
-	 *            The number of files per composer folder name, or
-	 *            <code>null</code> if unknown.
+	 * @param database
+	 *            The database, not <code>null</code>.
 	 */
-	public static void browse(Window owner, AttributeTablePreferences preferences, List<Composer> composers,
-			Map<String, Integer> fileCountByFolderName) {
-		ComposerListDialog dialog = new ComposerListDialog(owner, preferences, composers, fileCountByFolderName,
-				false);
+	public static void browse(Window owner, AttributeTablePreferences preferences, ASMAClient.Database database) {
+		ComposerListDialog dialog = new ComposerListDialog(owner, preferences, database, false);
 		dialog.showModal(dialog.selectionPanel.getKeywordField());
 	}
 
@@ -81,10 +75,8 @@ public final class ComposerListDialog extends ModalDialog {
 	 * @return The chosen composer, or <code>null</code> if the dialog was
 	 *         cancelled.
 	 */
-	public static Composer choose(Window owner, AttributeTablePreferences preferences, List<Composer> composers,
-			Map<String, Integer> fileCountByFolderName) {
-		ComposerListDialog dialog = new ComposerListDialog(owner, preferences, composers, fileCountByFolderName,
-				true);
+	public static Composer choose(Window owner, AttributeTablePreferences preferences, ASMAClient.Database database) {
+		ComposerListDialog dialog = new ComposerListDialog(owner, preferences, database, true);
 		dialog.showModal(dialog.selectionPanel.getKeywordField());
 		return dialog.okPressed ? dialog.selectionPanel.getSelectedComposer() : null;
 	}

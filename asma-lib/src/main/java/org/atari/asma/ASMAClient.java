@@ -6,7 +6,9 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.atari.asma.demozoo.ASMAProduction;
 import org.atari.asma.util.FileUtility;
@@ -44,6 +46,31 @@ public final class ASMAClient {
 
 		public static final class DemozooContent {
 			public List<ASMAProduction> productions;
+		}
+
+		/**
+		 * Counts the files per composer folder, i.e. per "Composers/<folderName>/..."
+		 * file path. Files in subfolders count for their composer folder.
+		 *
+		 * @return The modifiable map from folder name to file count, not
+		 *         <code>null</code>.
+		 */
+		public Map<String, Integer> getFileCountByComposerFolderName() {
+			final String prefix = "Composers/";
+			Map<String, Integer> result = new HashMap<String, Integer>();
+			if (fileInfos == null) {
+				return result;
+			}
+			for (FileInfo fileInfo : fileInfos) {
+				String filePath = fileInfo.filePath;
+				if (filePath != null && filePath.startsWith(prefix)) {
+					int index = filePath.indexOf('/', prefix.length());
+					if (index > prefix.length()) {
+						result.merge(filePath.substring(prefix.length(), index), Integer.valueOf(1), Integer::sum);
+					}
+				}
+			}
+			return result;
 		}
 	}
 

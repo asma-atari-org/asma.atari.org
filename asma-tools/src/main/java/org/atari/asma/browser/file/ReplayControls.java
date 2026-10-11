@@ -1,4 +1,4 @@
-package org.atari.asma.browser;
+package org.atari.asma.browser.file;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -21,6 +21,7 @@ import javax.swing.SwingWorker;
 import javax.swing.Timer;
 
 import org.atari.asma.FileInfo;
+import org.atari.asma.browser.Actions;
 
 import com.wudsn.tools.base.gui.ElementFactory;
 
@@ -28,7 +29,7 @@ import net.sf.asap.ASAPFormatException;
 import net.sf.asap.ASAPInfo;
 
 /**
- * The replay controls of the ASMABrowser, mirroring the website player
+ * The replay controls of the file panels, mirroring the website player
  * (asma.js): song buttons, playing time with seek slider, and the Play,
  * Pause, Stop and Shuffle buttons. The controls operate on the file selected
  * in the table; playback continues when the selection changes.
@@ -77,6 +78,7 @@ final class ReplayControls {
 	private boolean loading;
 	private int loadRequestCount;
 	private boolean updatingSlider;
+	private final Timer refreshTimer;
 
 	ReplayControls(Host host) {
 		if (host == null) {
@@ -112,7 +114,8 @@ final class ReplayControls {
 		buttonPanel.add(stopButton);
 		buttonPanel.add(shuffleButton);
 
-		new Timer(500, event -> refreshPlayingTime()).start();
+		refreshTimer = new Timer(500, event -> refreshPlayingTime());
+		refreshTimer.start();
 		updateControls();
 	}
 
@@ -206,6 +209,12 @@ final class ReplayControls {
 		}
 		setShuffleMode(false);
 		updateControls();
+	}
+
+	/** Stops playing and the refresh timer, for a window that is closed for good. */
+	void dispose() {
+		refreshTimer.stop();
+		player.stop();
 	}
 
 	private void startShuffle() {

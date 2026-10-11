@@ -1,4 +1,4 @@
-package org.atari.asma.browser;
+package org.atari.asma.browser.composer;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;
@@ -10,6 +10,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 
+import org.atari.asma.ASMAClient;
 import org.atari.asma.Composer;
 
 import com.wudsn.tools.base.gui.AttributeTablePreferences;
@@ -18,7 +19,7 @@ import com.wudsn.tools.base.gui.AttributeTablePreferences;
  * Reusable composer list: the {@link ComposerFilterPanel} above the
  * {@link ComposerListPanel}, usable without the ASMABrowser main window, so that other
  * tools (e.g. a submission tool) can let a composer find and choose
- * themselves. See plans/08.
+ * themselves. See plans/08 and plans/09.
  *
  * @author Peter Dell
  */
@@ -41,18 +42,17 @@ public final class ComposerSelectionPanel extends JPanel {
 	}
 
 	/**
-	 * @param composers
-	 *            The composers, not <code>null</code>.
-	 * @param fileCountByFolderName
-	 *            The number of files per composer folder name, or
-	 *            <code>null</code> if unknown.
+	 * Shows the composers of the database, with their file counts.
+	 *
+	 * @param database
+	 *            The database, not <code>null</code>.
 	 */
-	public void setComposers(List<Composer> composers, Map<String, Integer> fileCountByFolderName) {
-		if (composers == null) {
-			throw new IllegalArgumentException("Parameter 'composers' must not be null.");
+	public void setDatabase(ASMAClient.Database database) {
+		if (database == null) {
+			throw new IllegalArgumentException("Parameter 'database' must not be null.");
 		}
-		this.allComposers = composers;
-		this.fileCountByFolderName = fileCountByFolderName;
+		this.allComposers = database.composerInfos;
+		this.fileCountByFolderName = database.getFileCountByComposerFolderName();
 		applySelection(filterPanel.getSelection());
 	}
 

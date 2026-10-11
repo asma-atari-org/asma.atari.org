@@ -1,4 +1,4 @@
-package org.atari.asma.browser;
+package org.atari.asma.browser.file;
 
 import java.util.function.Consumer;
 
@@ -7,6 +7,7 @@ import javax.swing.JTextField;
 
 import org.atari.asma.DataTypes;
 import org.atari.asma.FileInfo;
+import org.atari.asma.browser.FilterPanel;
 
 /**
  * Filter panel above the file info table, mirroring the search form of the
@@ -42,6 +43,11 @@ public final class FileInfoFilterPanel extends FilterPanel<FileInfo.Selection> {
 		channelsComboBox = addComboBox(DataTypes.FileInfo_Channels, CHANNELS_TEXTS);
 		formatField = addTextField(DataTypes.FileInfo_OriginalModuleExt, 4);
 		addCountLabel();
+	}
+
+	/** The field to focus first. */
+	public JTextField getKeywordField() {
+		return keywordField;
 	}
 
 	@Override

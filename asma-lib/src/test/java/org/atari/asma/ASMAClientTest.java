@@ -55,6 +55,26 @@ public class ASMAClientTest {
 		assertEquals("https://asma.atari.org/asma/Composers/Fel/Test.sap", client.getFileURL(sapFileInfo));
 	}
 
+	private static FileInfo createFileInfo(String filePath) {
+		FileInfo fileInfo = new FileInfo();
+		fileInfo.filePath = filePath;
+		return fileInfo;
+	}
+
+	@Test
+	public void testFileCountByComposerFolderName() {
+		var database = new ASMAClient.Database();
+		assertTrue(database.getFileCountByComposerFolderName().isEmpty());
+
+		database.fileInfos = java.util.List.of(createFileInfo("Composers/Fel/Test.sap"),
+				createFileInfo("Composers/Fel/Unknown/Other.sap"), createFileInfo("Composers/Aki/A.sap"),
+				createFileInfo("Composers/Loose.sap"), createFileInfo("Games/Zybex.sap"));
+		var fileCounts = database.getFileCountByComposerFolderName();
+		assertEquals(2, fileCounts.size());
+		assertEquals(2, fileCounts.get("Fel"));
+		assertEquals(1, fileCounts.get("Aki"));
+	}
+
 	@Test
 	public void testLoadDatabaseFromFile() throws IOException {
 		assumeTrue(DATABASE_FILE.isFile(), "Generated database " + DATABASE_FILE + " is not present.");

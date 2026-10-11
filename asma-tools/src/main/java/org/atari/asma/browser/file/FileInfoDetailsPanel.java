@@ -1,4 +1,4 @@
-package org.atari.asma.browser;
+package org.atari.asma.browser.file;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -14,6 +14,7 @@ import javax.swing.JTextField;
 
 import org.atari.asma.DataTypes;
 import org.atari.asma.FileInfo;
+import org.atari.asma.browser.Texts;
 
 import com.wudsn.tools.base.gui.ElementFactory;
 import com.wudsn.tools.base.repository.DataType;
