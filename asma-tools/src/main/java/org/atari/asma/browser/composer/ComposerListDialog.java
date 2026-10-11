@@ -7,13 +7,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import org.atari.asma.ASMAClient;
 import org.atari.asma.Composer;
+import org.atari.asma.browser.STILSource;
 import org.atari.asma.browser.Texts;
 
 import com.wudsn.tools.base.gui.AttributeTablePreferences;
 import com.wudsn.tools.base.gui.ModalDialog;
 
 /**
- * Dialog listing the composers of the ASMA database with filter fields, in
+ * Dialog listing the composers of the ASMA database with details and filter fields, in
  * two modes:
  * <ul>
  * <li>{@link #browse}: OK only, for browsing; Escape and the close box close it
@@ -27,26 +28,27 @@ import com.wudsn.tools.base.gui.ModalDialog;
  */
 public final class ComposerListDialog extends ModalDialog {
 
-	private final ComposerSelectionPanel selectionPanel;
+	private final ComposerBrowsePanel browsePanel;
 
 	private ComposerListDialog(Window owner, AttributeTablePreferences preferences, ASMAClient.Database database,
 			boolean chooseMode) {
 		super(owner, chooseMode ? Texts.ComposerListDialog_ChooseTitle : Texts.ComposerListDialog_Title, chooseMode);
-		selectionPanel = new ComposerSelectionPanel(preferences);
-		selectionPanel.setDatabase(database);
-		selectionPanel.setPreferredSize(new Dimension(900, 550));
+		// No STIL yet, see plans/09, section 5.
+		browsePanel = new ComposerBrowsePanel(preferences, STILSource.NONE);
+		browsePanel.setDatabase(database);
+		browsePanel.setPreferredSize(new Dimension(900, 750));
 		// The panel fills the dialog; the base class keeps the fields pane on top and the buttons below.
-		getContentPane().add(selectionPanel, BorderLayout.CENTER);
+		getContentPane().add(browsePanel, BorderLayout.CENTER);
 
 		if (chooseMode) {
-			var table = selectionPanel.getTable();
+			var table = browsePanel.getTable();
 			getOKButton().setEnabled(false);
 			table.getSelectionModel().addListSelectionListener(
-					event -> getOKButton().setEnabled(selectionPanel.getSelectedComposer() != null));
+					event -> getOKButton().setEnabled(browsePanel.getSelectedComposer() != null));
 			table.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent event) {
-					if (event.getClickCount() == 2 && selectionPanel.getSelectedComposer() != null) {
+					if (event.getClickCount() == 2 && browsePanel.getSelectedComposer() != null) {
 						getOKButton().doClick();
 					}
 				}
@@ -66,7 +68,7 @@ public final class ComposerListDialog extends ModalDialog {
 	 */
 	public static void browse(Window owner, AttributeTablePreferences preferences, ASMAClient.Database database) {
 		ComposerListDialog dialog = new ComposerListDialog(owner, preferences, database, false);
-		dialog.showModal(dialog.selectionPanel.getKeywordField());
+		dialog.showModal(dialog.browsePanel.getKeywordField());
 	}
 
 	/**
@@ -77,7 +79,7 @@ public final class ComposerListDialog extends ModalDialog {
 	 */
 	public static Composer choose(Window owner, AttributeTablePreferences preferences, ASMAClient.Database database) {
 		ComposerListDialog dialog = new ComposerListDialog(owner, preferences, database, true);
-		dialog.showModal(dialog.selectionPanel.getKeywordField());
-		return dialog.okPressed ? dialog.selectionPanel.getSelectedComposer() : null;
+		dialog.showModal(dialog.browsePanel.getKeywordField());
+		return dialog.okPressed ? dialog.browsePanel.getSelectedComposer() : null;
 	}
 }

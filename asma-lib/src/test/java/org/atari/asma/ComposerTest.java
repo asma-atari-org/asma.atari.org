@@ -20,6 +20,22 @@ public class ComposerTest {
 	}
 
 	@Test
+	public void displayNamePrefersUnicodeAndFallsBackToHandles() {
+		Composer composer = new Composer();
+		composer.firstName = "Radek";
+		composer.lastName = "Sterba";
+		assertEquals("Radek Sterba", composer.getDisplayName());
+		composer.lastNameUnicode = "Štěrba";
+		assertEquals("Radek Štěrba", composer.getDisplayName());
+		composer.firstName = "<?>";
+		assertEquals("Štěrba", composer.getDisplayName());
+		composer.lastName = "<?>";
+		composer.lastNameUnicode = "";
+		composer.handles = "Raster";
+		assertEquals("Raster", composer.getDisplayName());
+	}
+
+	@Test
 	public void attributesBindTheGsonFieldNames() {
 		assertEquals("lastName", Composer.Attributes.LAST_NAME.getName());
 		assertEquals("demozooID", Composer.Attributes.DEMOZOO_ID.getName());

@@ -32,9 +32,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.atari.asma.ASMAClient;
 import org.atari.asma.FileInfo;
-import org.atari.asma.browser.composer.ComposerSelectionPanel;
+import org.atari.asma.browser.composer.ComposerBrowsePanel;
 import org.atari.asma.browser.file.FileInfoPlayerPanel;
-import org.atari.asma.browser.group.GroupSelectionPanel;
+import org.atari.asma.browser.group.GroupBrowsePanel;
 
 import com.wudsn.tools.base.common.Application;
 import com.wudsn.tools.base.common.MessageQueue;
@@ -83,8 +83,8 @@ public final class ASMABrowser implements ActionListener {
 	private final ASMAClient client;
 	private JFrame frame;
 	private FileInfoPlayerPanel filesPanel;
-	private ComposerSelectionPanel composersPanel;
-	private GroupSelectionPanel groupsPanel;
+	private ComposerBrowsePanel composersPanel;
+	private GroupBrowsePanel groupsPanel;
 	private StatusBar statusBar;
 	// Shared by all attribute tables, each under its own preferences prefix.
 	private final AttributeTablePreferences attributeTablePreferences;
@@ -133,8 +133,9 @@ public final class ASMABrowser implements ActionListener {
 				}
 			}
 		});
-		composersPanel = new ComposerSelectionPanel(attributeTablePreferences);
-		groupsPanel = new GroupSelectionPanel(attributeTablePreferences);
+		// No STIL yet: reading and parsing STIL will become part of ASAP, see plans/09, section 5.
+		composersPanel = new ComposerBrowsePanel(attributeTablePreferences, STILSource.NONE);
+		groupsPanel = new GroupBrowsePanel(attributeTablePreferences, STILSource.NONE);
 		statusBar = new StatusBar();
 
 		// Escape anywhere in the window stops playing, like the Stop button.

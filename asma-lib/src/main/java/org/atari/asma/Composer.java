@@ -104,6 +104,20 @@ public class Composer {
 		return firstName + " " + lastName + " (" + handles + ")";
 	}
 
+	/**
+	 * The name for display: "First Last" in the Unicode spelling where there is
+	 * one, only the last name without a known first name, the handles without a
+	 * known last name.
+	 */
+	public String getDisplayName() {
+		String last = (lastNameUnicode == null || lastNameUnicode.isEmpty()) ? lastName : lastNameUnicode;
+		String first = (firstNameUnicode == null || firstNameUnicode.isEmpty()) ? firstName : firstNameUnicode;
+		if (last == null || last.isEmpty() || last.equals("<?>")) {
+			return handles == null ? "" : handles;
+		}
+		return (first == null || first.isEmpty() || first.equals("<?>")) ? last : first + " " + last;
+	}
+
 	public String[] getHandlesArray() {
 		String[] result = handles.split(",");
 		for (int i = 0; i < result.length; i++) {

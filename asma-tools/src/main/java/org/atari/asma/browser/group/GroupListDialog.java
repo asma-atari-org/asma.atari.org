@@ -8,13 +8,14 @@ import java.awt.event.MouseEvent;
 
 import org.atari.asma.ASMAClient;
 import org.atari.asma.Group;
+import org.atari.asma.browser.STILSource;
 import org.atari.asma.browser.Texts;
 
 import com.wudsn.tools.base.gui.AttributeTablePreferences;
 import com.wudsn.tools.base.gui.ModalDialog;
 
 /**
- * Dialog listing the groups of the ASMA database with filter fields, in two
+ * Dialog listing the groups of the ASMA database with details and filter fields, in two
  * modes like the composer list dialog:
  * <ul>
  * <li>{@link #browse}: OK only, for browsing; Escape and the close box close it
@@ -27,26 +28,27 @@ import com.wudsn.tools.base.gui.ModalDialog;
  */
 public final class GroupListDialog extends ModalDialog {
 
-	private final GroupSelectionPanel selectionPanel;
+	private final GroupBrowsePanel browsePanel;
 
 	private GroupListDialog(Window owner, AttributeTablePreferences preferences, ASMAClient.Database database,
 			boolean chooseMode) {
 		super(owner, chooseMode ? Texts.GroupListDialog_ChooseTitle : Texts.GroupListDialog_Title, chooseMode);
-		selectionPanel = new GroupSelectionPanel(preferences);
-		selectionPanel.setDatabase(database);
-		selectionPanel.setPreferredSize(new Dimension(900, 400));
+		// No STIL yet, see plans/09, section 5.
+		browsePanel = new GroupBrowsePanel(preferences, STILSource.NONE);
+		browsePanel.setDatabase(database);
+		browsePanel.setPreferredSize(new Dimension(900, 600));
 		// The panel fills the dialog; the base class keeps the fields pane on top and the buttons below.
-		getContentPane().add(selectionPanel, BorderLayout.CENTER);
+		getContentPane().add(browsePanel, BorderLayout.CENTER);
 
 		if (chooseMode) {
-			var table = selectionPanel.getTable();
+			var table = browsePanel.getTable();
 			getOKButton().setEnabled(false);
 			table.getSelectionModel().addListSelectionListener(
-					event -> getOKButton().setEnabled(selectionPanel.getSelectedGroup() != null));
+					event -> getOKButton().setEnabled(browsePanel.getSelectedGroup() != null));
 			table.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent event) {
-					if (event.getClickCount() == 2 && selectionPanel.getSelectedGroup() != null) {
+					if (event.getClickCount() == 2 && browsePanel.getSelectedGroup() != null) {
 						getOKButton().doClick();
 					}
 				}
@@ -66,7 +68,7 @@ public final class GroupListDialog extends ModalDialog {
 	 */
 	public static void browse(Window owner, AttributeTablePreferences preferences, ASMAClient.Database database) {
 		GroupListDialog dialog = new GroupListDialog(owner, preferences, database, false);
-		dialog.showModal(dialog.selectionPanel.getKeywordField());
+		dialog.showModal(dialog.browsePanel.getKeywordField());
 	}
 
 	/**
@@ -77,7 +79,7 @@ public final class GroupListDialog extends ModalDialog {
 	 */
 	public static Group choose(Window owner, AttributeTablePreferences preferences, ASMAClient.Database database) {
 		GroupListDialog dialog = new GroupListDialog(owner, preferences, database, true);
-		dialog.showModal(dialog.selectionPanel.getKeywordField());
-		return dialog.okPressed ? dialog.selectionPanel.getSelectedGroup() : null;
+		dialog.showModal(dialog.browsePanel.getKeywordField());
+		return dialog.okPressed ? dialog.browsePanel.getSelectedGroup() : null;
 	}
 }

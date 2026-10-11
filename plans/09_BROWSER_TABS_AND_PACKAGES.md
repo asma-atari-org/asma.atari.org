@@ -11,7 +11,7 @@ Written 2026-10-11. Goal, as stated by the user:
 
 **Status: P1-P8 confirmed 2026-10-11 as recommended; steps 1-6 executed
 2026-10-11.** **Section 5 (details panels for composers and groups,
-STIL) added 2026-10-11: proposal, decisions S1-S3 open.** Deviations from the proposal, decided during implementation:
+STIL) added 2026-10-11; decided and phase A executed 2026-10-11, see there.** Deviations from the proposal, decided during implementation:
 
 - Tabs have no mnemonics: Alt+F belongs to the File menu, and the filter
   labels of the tabs already use most other letters (e.g. C for Channels
@@ -175,6 +175,42 @@ Points to watch:
 Requirement (user, 2026-10-11): the Composers and Groups tabs also get a
 details panel, like the Files tab, where the display and later the editing
 of STIL information will be added.
+
+**Decisions (user, 2026-10-11):**
+
+- STIL reading and parsing will later become part of **ASAP**, ideally
+  written in **Fusion** so it can be reused - a separate plan. Until
+  then the browser only has a stub: `STILSource` (browser package) with
+  `STILSource.NONE`; the existing `org.atari.asma.STIL` stays the
+  exporter's parser for now. This replaces S3 and phase B below.
+- S1: a separate composite panel per entity, as for files:
+  `ComposerBrowsePanel` / `GroupBrowsePanel` = details panel + selection
+  panel, used by the tab and the dialog; the selection panels stay
+  details-free.
+- S2: the Demozoo ID gets its own data type class and GUI field, used in
+  all details panels (files too), opening the browser with the URLs of
+  the website's JS.
+
+**Executed 2026-10-11 (phase A):**
+
+- asma-lib: `org.atari.asma.demozoo.DemozooID` (kind SCENER/GROUP/MUSIC +
+  ID, `parse`, `getURL()`, `Kind.getFindURL()`/`getCreateURL()`), built on
+  `DemozooLink` (new: `getGroup`, `getFind`), `DemozooIDTest`;
+  `Composer.getDisplayName()` with test. The table columns keep their
+  `Integer` data types (numeric sorting).
+- browser: `DetailsPanel` base class (extracted from
+  `FileInfoDetailsPanel`, plus labeled full-width rows and the STIL area),
+  `DemozooIDField` (link buttons, keyboard reachable; without an ID "Find
+  .../Create ..." like the website's author details; errors as message
+  ASB-006), `STILSource` stub.
+- `ComposerDetailsPanel`, `GroupDetailsPanel` (with a read-only "STIL"
+  area, empty for now), `ComposerBrowsePanel`, `GroupBrowsePanel`;
+  selection listeners on the selection panels; tabs and dialogs use the
+  browse panels; the file details use the `DemozooIDField` (kind MUSIC).
+- URLs as in the JS: `https://demozoo.org/sceners/<id>`
+  (composer.js), `https://demozoo.org/music/<id>` (demozoo.js). The JS
+  has no group links; groups use `https://demozoo.org/groups/<id>`, to be
+  checked manually (demozoo.org rejects scripted requests with 403).
 
 **Background - STIL in ASMA.** `asma/Docs/STIL.txt` is the "SAP Tune
 Information List" (format of the HVSC STIL, UTF-8): entries per file

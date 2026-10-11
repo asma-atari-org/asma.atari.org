@@ -28,18 +28,25 @@ public final class GroupSelectionPanel extends JPanel {
 
 	private final GroupFilterPanel filterPanel;
 	private final GroupListPanel listPanel;
+	private final List<Runnable> selectionListeners;
 	private List<Group> allGroups;
 	private Map<String, List<Composer>> composersByFolderName;
 	private Map<String, Integer> fileCountByFolderName;
 
 	public GroupSelectionPanel(AttributeTablePreferences preferences) {
 		super(new BorderLayout());
+		selectionListeners = new ArrayList<Runnable>();
 		allGroups = new ArrayList<Group>();
 		composersByFolderName = new HashMap<String, List<Composer>>();
 		fileCountByFolderName = new HashMap<String, Integer>();
 		filterPanel = new GroupFilterPanel(selection -> applySelection(selection));
 		listPanel = new GroupListPanel(preferences);
 		listPanel.getTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		listPanel.getTable().getSelectionModel().addListSelectionListener(event -> {
+			if (!event.getValueIsAdjusting()) {
+				fireSelectionChanged();
+			}
+		});
 		add(filterPanel, BorderLayout.NORTH);
 		add(listPanel, BorderLayout.CENTER);
 		applySelection(filterPanel.getSelection());
@@ -70,6 +77,21 @@ public final class GroupSelectionPanel extends JPanel {
 		}
 		listPanel.getTableModel().setGroups(selectedGroups, composersByFolderName, fileCountByFolderName);
 		filterPanel.setCountText(selectedGroups.size(), allGroups.size());
+		fireSelectionChanged();
+	}
+
+	/** Called whenever the selected row may have changed, also by filtering. */
+	public void addSelectionListener(Runnable listener) {
+		if (listener == null) {
+			throw new IllegalArgumentException("Parameter 'listener' must not be null.");
+		}
+		selectionListeners.add(listener);
+	}
+
+	private void fireSelectionChanged() {
+		for (Runnable listener : selectionListeners) {
+			listener.run();
+		}
 	}
 
 	/** The selected group, or <code>null</code>. */

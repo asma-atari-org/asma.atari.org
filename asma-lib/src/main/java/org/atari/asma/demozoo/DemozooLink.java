@@ -13,6 +13,19 @@ public class DemozooLink {
 		return "https://demozoo.org/sceners/" + scenerID;
 	}
 
+	// Not used by the website; the route of Demozoo's group pages.
+	public static String getGroup(int groupID) {
+		return "https://demozoo.org/groups/" + groupID;
+	}
+
+	// Like the website's "Find Scener" link (asma.js), category "scener", "group" or "music".
+	public static String getFind(String query, String category) {
+		StringBuilder builder = new StringBuilder();
+		addParameter(builder, "q", query);
+		addParameter(builder, "category", category);
+		return "https://demozoo.org/search/?" + builder.toString();
+	}
+
 	private static void addParameter(StringBuilder builder, String key, String value) {
 		if (value != null & !value.isEmpty()) {
 

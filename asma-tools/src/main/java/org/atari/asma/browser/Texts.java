@@ -19,6 +19,13 @@ public final class Texts extends NLS {
 	public static String ComposerListDialog_ChooseTitle;
 	public static String GroupListDialog_Title;
 	public static String GroupListDialog_ChooseTitle;
+	public static String DetailsPanel_STIL;
+	public static String DemozooIDField_FindScener;
+	public static String DemozooIDField_CreateScener;
+	public static String DemozooIDField_FindGroup;
+	public static String DemozooIDField_CreateGroup;
+	public static String DemozooIDField_FindMusic;
+	public static String DemozooIDField_CreateMusic;
 	public static String LoadFromLocalFileDialog_Title;
 	public static String LoadFromLocalFileDialog_Filter;
 

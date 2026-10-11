@@ -27,15 +27,22 @@ public final class ComposerSelectionPanel extends JPanel {
 
 	private final ComposerFilterPanel filterPanel;
 	private final ComposerListPanel listPanel;
+	private final List<Runnable> selectionListeners;
 	private List<Composer> allComposers;
 	private Map<String, Integer> fileCountByFolderName;
 
 	public ComposerSelectionPanel(AttributeTablePreferences preferences) {
 		super(new BorderLayout());
+		selectionListeners = new ArrayList<Runnable>();
 		allComposers = new ArrayList<Composer>();
 		filterPanel = new ComposerFilterPanel(selection -> applySelection(selection));
 		listPanel = new ComposerListPanel(preferences);
 		listPanel.getTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		listPanel.getTable().getSelectionModel().addListSelectionListener(event -> {
+			if (!event.getValueIsAdjusting()) {
+				fireSelectionChanged();
+			}
+		});
 		add(filterPanel, BorderLayout.NORTH);
 		add(listPanel, BorderLayout.CENTER);
 		applySelection(filterPanel.getSelection());
@@ -65,6 +72,21 @@ public final class ComposerSelectionPanel extends JPanel {
 		}
 		listPanel.getTableModel().setComposers(selectedComposers, fileCountByFolderName);
 		filterPanel.setCountText(selectedComposers.size(), allComposers.size());
+		fireSelectionChanged();
+	}
+
+	/** Called whenever the selected row may have changed, also by filtering. */
+	public void addSelectionListener(Runnable listener) {
+		if (listener == null) {
+			throw new IllegalArgumentException("Parameter 'listener' must not be null.");
+		}
+		selectionListeners.add(listener);
+	}
+
+	private void fireSelectionChanged() {
+		for (Runnable listener : selectionListeners) {
+			listener.run();
+		}
 	}
 
 	/** The selected composer, or <code>null</code>. */

@@ -104,16 +104,6 @@ public final class GroupListPanel extends AttributeTablePanel {
 			}
 		}
 
-		// "First Last" in the Unicode spelling when there is one, the handles for unknown names.
-		private static String getComposerName(Composer composer) {
-			String lastName = composer.lastNameUnicode.isEmpty() ? composer.lastName : composer.lastNameUnicode;
-			String firstName = composer.firstNameUnicode.isEmpty() ? composer.firstName : composer.firstNameUnicode;
-			if (lastName.isEmpty() || lastName.equals("<?>")) {
-				return composer.handles;
-			}
-			return (firstName.isEmpty() || firstName.equals("<?>")) ? lastName : firstName + " " + lastName;
-		}
-
 		@Override
 		public Object getValueAt(int row, int column) {
 			Group group = groups.get(row);
@@ -124,7 +114,7 @@ public final class GroupListPanel extends AttributeTablePanel {
 				return group.name;
 			case Columns.COMPOSERS:
 				return composersByFolderName.getOrDefault(group.folderName, List.of()).stream()
-						.map(TableModel::getComposerName).collect(Collectors.joining(", "));
+						.map(Composer::getDisplayName).collect(Collectors.joining(", "));
 			case Columns.FILE_COUNT:
 				return fileCountByFolderName.getOrDefault(group.folderName, Integer.valueOf(0));
 			case Columns.DEMOZOO_ID:

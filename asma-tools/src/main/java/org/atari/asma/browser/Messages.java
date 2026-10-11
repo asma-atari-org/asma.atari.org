@@ -21,6 +21,8 @@ public final class Messages extends NLS {
 	public static Message E004;
 	/** The database is being loaded: the source. */
 	public static Message S005;
+	/** A web page could not be opened: the URL, the reason. */
+	public static Message E006;
 
 	static {
 		initializeClass(Messages.class, null);
