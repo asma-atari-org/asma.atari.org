@@ -72,6 +72,39 @@ public class FileInfoListTest {
 	}
 
 	@Test
+	public void checkDateAcceptsTheExamplesOfTheSAPSpecification() {
+		// https://asap.sourceforge.net/sap-format.html, DATE tag.
+		assertDateValid("1986");
+		assertDateValid("1993-1994");
+		assertDateValid("28/08/1997");
+		assertDateValid("12/2001");
+		assertDateValid("23-26/07/2010");
+		assertDateValid("199?"); // Some unknown year in the 1990s.
+	}
+
+	@Test
+	public void checkDateAcceptsUnknownDigits() {
+		assertDateValid("19??");
+		assertDateValid("199? <?>");
+		assertDateValid("1993-199?");
+		assertDateValid("??/08/1997");
+		assertDateValid("2?/02/1997");
+		assertDateValid("3?/01/1997"); // 30 and 31 exist in January.
+		assertDateValid("1?/2001");
+		assertDateValid("??/??/19??");
+		assertDateValid("0?-2?/07/2010"); // The order is unknown, so not checked.
+	}
+
+	@Test
+	public void checkDateRejectsImpossibleUnknownDigits() {
+		assertDateInvalid("3?/02/1997"); // February has no day 30-39.
+		assertDateInvalid("4?/01/1997");
+		assertDateInvalid("2?/2001"); // No month 20-29.
+		assertDateInvalid("29??"); // Every reading is in the future.
+		assertDateInvalid("1999-1995"); // Fully known ranges are still ordered.
+	}
+
+	@Test
 	public void checkDateRejectsUnknownPatterns() {
 		assertDateInvalid("1.1.2000");
 		assertDateInvalid("January 2000");
