@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.text.NumberFormat;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -163,7 +164,7 @@ public final class FileInfoDetailsPanel extends JPanel {
 		formatField.setText(fileInfo.originalModuleExt);
 		channelsField.setText(fileInfo.getChannelsText());
 		filePathField.setText(fileInfo.filePath);
-		fileSizeField.setText(fileInfo.fileSize + " bytes");
+		fileSizeField.setText(NumberFormat.getIntegerInstance().format(fileInfo.fileSize) + " bytes");
 		demozooIDField.setText(fileInfo.getDemozooID() == 0 ? "" : String.valueOf(fileInfo.getDemozooID()));
 	}
 }

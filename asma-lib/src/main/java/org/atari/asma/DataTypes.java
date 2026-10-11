@@ -20,6 +20,7 @@ public final class DataTypes extends NLS {
 	public static DataType FileInfo_OriginalModuleExt = new DataType(String.class);
 	public static DataType FileInfo_Channels = new DataType(Integer.class);
 	public static DataType FileInfo_Songs = new DataType(Integer.class);
+	public static DataType FileInfo_SongsAndDefaultSong = new DataType(Integer.class);
 	public static DataType FileInfo_DefaultSongIndex = new DataType(Integer.class);
 	public static DataType FileInfo_FileSize = new DataType(MemorySize.class);
 	public static DataType FileInfo_DemozooID = new DataType(Integer.class);

@@ -1,6 +1,7 @@
 package org.atari.asma.browser;
 
 import java.awt.Component;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -45,6 +46,8 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 		}
 
 		private List<FileInfo> fileInfos;
+		// Sizes are quantities, so they keep the locale's digit grouping.
+		private final NumberFormat sizeFormat = NumberFormat.getIntegerInstance();
 
 		public TableModel() {
 			fileInfos = new ArrayList<FileInfo>();
@@ -59,12 +62,13 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 			// The values stay numeric for sorting; the renderers show the website's texts.
 			addColumn(FileInfo.Attributes.CHANNELS, Column.VISIBLE | Column.SORTABLE, null,
 					createTextRenderer(FileInfo::getChannelsText, SwingConstants.LEADING), null);
-			addColumn(FileInfo.Attributes.SONGS, Column.VISIBLE | Column.SORTABLE, null,
+			addColumn(FileInfo.Attributes.SONGS_AND_DEFAULT_SONG, Column.VISIBLE | Column.SORTABLE, null,
 					createTextRenderer(FileInfo::getSongsText, SwingConstants.LEADING), null);
 			addColumn(FileInfo.Attributes.FILE_PATH, Column.HIDDEN | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(FileInfo.Attributes.FILE_SIZE, Column.HIDDEN | Column.SORTABLE, null,
-					new PlainNumberCellRenderer(SwingConstants.LEADING), null);
+					createTextRenderer(fileInfo -> sizeFormat.format(fileInfo.fileSize), SwingConstants.LEADING),
+					null);
 			addColumn(FileInfo.Attributes.HARDWARE, Column.HIDDEN | Column.SORTABLE);
 			addColumn(FileInfo.Attributes.DEFAULT_SONG_INDEX, Column.HIDDEN | Column.SORTABLE, null,
 					new PlainNumberCellRenderer(SwingConstants.LEADING), null);

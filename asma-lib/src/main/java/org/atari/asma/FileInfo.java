@@ -85,6 +85,9 @@ public final class FileInfo {
 				DataTypes.FileInfo_OriginalModuleExt);
 		public static final Attribute CHANNELS = new Attribute("channels", DataTypes.FileInfo_Channels);
 		public static final Attribute SONGS = new Attribute("songs", DataTypes.FileInfo_Songs);
+		/** The songs with the default song, as one table column like on the website. */
+		public static final Attribute SONGS_AND_DEFAULT_SONG = new Attribute("songsAndDefaultSong",
+				DataTypes.FileInfo_SongsAndDefaultSong);
 		public static final Attribute DEFAULT_SONG_INDEX = new Attribute("defaultSongIndex",
 				DataTypes.FileInfo_DefaultSongIndex);
 		public static final Attribute FILE_SIZE = new Attribute("fileSize", DataTypes.FileInfo_FileSize);

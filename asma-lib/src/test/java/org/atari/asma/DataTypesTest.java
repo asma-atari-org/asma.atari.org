@@ -23,7 +23,7 @@ public class DataTypesTest {
 				count++;
 			}
 		}
-		assertEquals(20, count);
+		assertEquals(21, count);
 	}
 
 	@Test
