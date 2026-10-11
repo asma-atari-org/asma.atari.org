@@ -17,6 +17,16 @@ public final class ASMAProduction {
 	public final int[] authorIDs;
 	public final String urlFilePath;
 
+	// For gson, which sets the fields afterwards. Without it, gson needs
+	// sun.misc.Unsafe, which is missing when running on the module path, e.g.
+	// from Eclipse.
+	private ASMAProduction() {
+		id = 0;
+		title = "";
+		authorIDs = new int[0];
+		urlFilePath = "";
+	}
+
 	public ASMAProduction(Production production) {
 		this.id = production.id;
 		this.title = production.title;
