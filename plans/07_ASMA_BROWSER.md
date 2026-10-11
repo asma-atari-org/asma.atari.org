@@ -106,3 +106,21 @@ decisions below are proposed and confirmed with the user first.**
    database (6405 rows - also a size sanity check for the table).
 5. SAPFileEditor dialog variant reusing the panel.
 6. Optional polish: column chooser defaults, row action, release upload.
+
+## TODO
+
+- **Check where WUDSN Base `ValueSet`s can be applied** (recorded
+  2026-10-11). ValueSets are the base library's enumerations with texts
+  from the `.properties` files (The!Cart Studio uses them, e.g. for its
+  content types). Candidates in the FileInfo model, today plain strings or
+  numbers with hand-written texts:
+  - the file format (`originalModuleExt`: `rmt`, `cmc`, `tmc`, `ttt`, ...) -
+    the example named when recording; its descriptions currently come from
+    ASAP's `getExtDescription` or are missing (TIATracker),
+  - the hardware (`ATARI800`/`ATARI2600`), whose display texts are
+    hard-coded in the filter panel,
+  - the channels (1/2), whose texts "Mono (4)"/"Stereo (8)"/"Mono (2)" are
+    hard-coded in `FileInfo.getChannelsText()` and the filter panel.
+  A ValueSet could replace the hard-coded combo box arrays and texts and
+  give the table a proper display per value. Check against the JSON
+  contract: the stored values in `asmadb.js` must not change.
