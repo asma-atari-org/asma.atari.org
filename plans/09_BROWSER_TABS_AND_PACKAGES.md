@@ -6,7 +6,7 @@ Written 2026-10-11. Goal, as stated by the user:
 - Its main window shows the entities in a **tabbed pane**: "Files",
   "Composers" and later "Groups".
 - The entity lists are **also available as separate dialogs** that other
-  programs can reuse, explicitly RMT.
+  programs can reuse, explicitly the RMT Java port.
 - Since there are several classes per entity, **subpackages per entity**.
 
 **Status: proposal, not started. All decisions below are to be confirmed
@@ -100,21 +100,44 @@ org.atari.asma.browser.group      (later) GroupFilterPanel, GroupListPanel,
 - The file dialog contains the details panel and the replay controls as
   well, so a user can listen before choosing.
 
-### 4. Reuse in RMT
+### 4. Reuse in RMT (the Java port)
 
-RMT (Raster Music Tracker) is a Windows C++/MFC program, so it cannot
-call the Java dialogs directly. A process boundary is needed. Proposal:
+"RMT" means the Java port only (clarified by the user 2026-10-11):
+`C:\jac\system\Java\Programming\Repositories\Tools\RASTER-Music-Tracker`,
+Maven `org.atari.raster:org.atari.raster.rmt:1.0.0-SNAPSHOT`, Java 21, on
+WUDSN Base (`com.wudsn.tools.base`, `.atari`), classpath (no
+`module-info`), main class `org.atari.raster.rmt.ui.RmtApplication`. It
+has Tools > Open ASMA today, which only opens the website.
 
-- A command-line mode of `ASMABrowser.jar`, e.g.
-  `java -jar ASMABrowser.jar --choose composer` (and `--choose file`):
-  opens only the chosen dialog, loads the database from the website (or
-  `--database <file>`), and on OK prints the chosen entity as one JSON
-  object (the gson form of `Composer` / `FileInfo`) to standard output,
-  exit code 0; on Cancel no output, exit code 1.
-- RMT starts the process, waits, and parses the JSON - e.g. to prefill
-  the author and the composer folder name for an ASMA submission (see
-  plan 08, "Reuse").
-- Without arguments the jar starts the standalone browser as today.
+So the dialogs are called in-process - no command line, no JSON:
+
+- RMT adds a Maven dependency on `org.atari.asma:asma-tools` (which brings
+  `asma-lib`, gson and ASAP); both projects already share WUDSN Base and
+  Java 21.
+- RMT loads the database once with `new ASMAClient().loadDatabase()` and
+  opens e.g. `ComposerListDialog.choose(frame, preferences, database)`,
+  getting a `Composer` (with `folderName`) back, or
+  `FileInfoListDialog.choose(...)` for a module, whose file it gets via
+  `ASMAClient.downloadFile`.
+- RMT running on the classpath is fine: the `opens` in `module-info` only
+  matter on the module path.
+- The RMT side (menu entries, what it does with the result) is a plan in
+  the RMT repository, not here; this plan only provides a stable API.
+
+Points to watch:
+
+- **Shaded jar**: RMT's shade plugin merges its dependencies, so
+  `asma-tools`, `asma-lib`, gson and ASAP end up in `Rmt.jar`. The
+  asma-tools module jar must not itself be a shaded jar (it is not: the
+  shaded `ASMABrowser.jar`/`SAPFileEditor.jar` are separate outputs).
+- **ASAP**: RMT vendors `lib/java/asap.jar` (8.0.0, not in its POM). If
+  it adds ASAP via Maven later, both projects should use the same
+  artifact (`net.sf.asap:asap:8.0.0-asma`), otherwise the classes clash.
+- **Repository**: asma-tools must be resolvable for RMT - `mvn install`
+  locally for now; JitPack/GitHub releases per plan 04 later.
+- **API scope**: the reusable surface is the `browser.file` and
+  `browser.composer` dialogs and selection panels, plus `ASMAClient`;
+  `ASMABrowser` itself stays the standalone application.
 
 ## Open decisions
 
@@ -131,10 +154,10 @@ call the Java dialogs directly. A process boundary is needed. Proposal:
 - **P5 - File dialog contents**: with details panel and replay controls
   (recommended), or the plain list only. In `choose` mode a double click
   chooses; in the tab a double click plays, as today.
-- **P6 - RMT integration**: the command-line `--choose` mode with JSON on
-  standard output (recommended), or another mechanism (e.g. a file
-  written next to the module, or RMT reading `asmadb.json` itself with its
-  own C++ dialog).
+- **P6 - RMT dependency**: RMT depends on `asma-tools` directly
+  (recommended; one artifact), or asma-tools is split so that RMT gets
+  only the reusable dialogs without the browser application and the
+  SAPFileEditor (a further module, e.g. `asma-gui`).
 - **P7 - Groups tab**: only reserve the package and the tab order now and
   build it in a separate plan (recommended), or include it here.
 - **P8 - Cross-tab navigation** (e.g. a composer's files): not part of
@@ -148,9 +171,8 @@ call the Java dialogs directly. A process boundary is needed. Proposal:
 3. `FileInfoSelectionPanel` (filter + table) and `FileInfoListDialog`;
    move the file-specific wiring out of `ASMABrowser` into it.
 4. Main window with the tabbed pane; remove Database > Composers (P3).
-5. Command-line `--choose` mode (P6) with a test of the argument parsing
-   and the JSON output.
+5. API check from the RMT side: a small test or scratch class in asma-tools
+   that uses only the public dialog API the way RMT would.
 6. Verify: `mvn install`, launch the browser (both tabs, loading, replay,
-   Escape), run `--choose composer` and `--choose file` from a shell and
-   check the JSON and exit codes; update plans 07/08 cross references.
+   Escape), open both dialogs in `choose` mode; update plans 07/08 cross references.
 7. Commit with explicit paths.
