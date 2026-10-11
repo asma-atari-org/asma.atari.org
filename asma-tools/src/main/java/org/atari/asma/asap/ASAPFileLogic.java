@@ -1,6 +1,7 @@
 package org.atari.asma.asap;
 import org.atari.asma.sap.ASAPFileUtility;
 import org.atari.asma.sap.ByteUtility;
+import org.atari.asma.sap.Messages;
 import org.atari.asma.sap.SAPFileProcessor;
 import org.atari.asma.sap.SAPTags;
 import org.atari.asma.sap.Segment;
@@ -22,7 +23,9 @@ import java.util.TreeSet;
 
 import org.atari.asma.asap.player.PlayerFactory;
 import org.atari.asma.util.FileUtility;
-import org.atari.asma.util.MessageQueue;
+
+import com.wudsn.tools.base.common.MessageQueue;
+import com.wudsn.tools.base.repository.Message;
 
 import net.sf.asap.ASAP;
 import net.sf.asap.ASAPArgumentException;
@@ -68,7 +71,7 @@ public class ASAPFileLogic {
 
 		if (content.length == 0) {
 
-			messageQueue.sendError("SAP-001", "File '" + fileName + "' is empty");
+			messageQueue.sendMessage(this, null, Messages.E001, fileName);
 			return null;
 		}
 
@@ -88,19 +91,18 @@ public class ASAPFileLogic {
 						index++;
 
 					} else {
-						messageQueue.sendError("SAP-002", "Invalid character " + ByteUtility.getCharForByte(b)
-								+ " after carriage return at index. Line feed expected.");
+						messageQueue.sendMessage(this, null, Messages.E002, ByteUtility.getCharForByte(b),
+								ByteUtility.getIndexString(index + 1));
 						return null;
 					}
 				} else {
-					messageQueue.sendError("SAP-003", "Missing line feed after carriage return at index "
-							+ ByteUtility.getIndexString(index) + ".");
+					messageQueue.sendMessage(this, null, Messages.E003, ByteUtility.getIndexString(index));
 				}
 			} else {
 				char c = (char) (b & 0xff);
 				if (ASAPFile.ATASCII_CHARACTERS.indexOf(c) == -1) {
-					messageQueue.sendError("SAP-004", "Invalid non-ATASCII character " + ByteUtility.getCharForByte(b)
-							+ " at index " + ByteUtility.getIndexString(index) + ".");
+					messageQueue.sendMessage(this, null, Messages.E004, ByteUtility.getCharForByte(b),
+							ByteUtility.getIndexString(index));
 					return null;
 				}
 				headerBuilder.append(c);
@@ -108,12 +110,12 @@ public class ASAPFileLogic {
 			index++;
 		}
 		if (!endOfHeader) {
-			messageQueue.sendError("SAP-005", "Invalid file structure.");
+			messageQueue.sendMessage(this, null, Messages.E005);
 			return null;
 		}
 		var header = headerBuilder.toString();
 		if (!header.startsWith("SAP\n")) {
-			messageQueue.sendError("SAP-006", "Header does not start with 'SAP' line.");
+			messageQueue.sendMessage(this, null, Messages.E006);
 			return null;
 		}
 		var lines = header.split("\n");
@@ -133,7 +135,7 @@ public class ASAPFileLogic {
 			var foundTag = line;
 			foundTagSet.add(foundTag);
 			if (!tags.contains(foundTag)) {
-				messageQueue.sendError("SAP-007", "Undefined tag '" + foundTag + "' found.");
+				messageQueue.sendMessage(this, null, Messages.E007, foundTag);
 				return null;
 			}
 			boolean ok = false;
@@ -146,8 +148,7 @@ public class ASAPFileLogic {
 				tagIndex++;
 			}
 			if (!ok) {
-				messageQueue.sendWarning("SAP-008", "Found tag " + foundTag
-						+ " does not fit to the recommended tag sequece '" + tags.toString() + "'.");
+				messageQueue.sendMessage(this, null, Messages.W008, foundTag, tags.toString());
 				return null;
 
 			}
@@ -156,22 +157,21 @@ public class ASAPFileLogic {
 		}
 
 		if (!foundTagSet.contains(SAPTags.AUTHOR)) {
-			messageQueue.sendWarning("SAP-009", "Stronly recommended tag '" + SAPTags.AUTHOR + "' missing");
+			messageQueue.sendMessage(this, null, Messages.W009, SAPTags.AUTHOR);
 			return null;
 		}
 		if (!foundTagSet.contains(SAPTags.NAME)) {
-			messageQueue.sendWarning("SAP-010", "Stronly recommended tag '" + SAPTags.NAME + "' missing");
+			messageQueue.sendMessage(this, null, Messages.W010, SAPTags.NAME);
 			return null;
 		}
 		if (!foundTagSet.contains(SAPTags.DATE)) {
-			messageQueue.sendWarning("SAP-011", "Stronly recommended tag '" + SAPTags.DATE + "' missing");
+			messageQueue.sendMessage(this, null, Messages.W011, SAPTags.DATE);
 			return null;
 		}
 
 		// There must be at least one segment header followed by at least one byte.
 		if (index + 6 >= content.length) {
-			messageQueue.sendError("SAP-012",
-					"Invalid binary segment at index " + ByteUtility.getIndexString(index) + ".");
+			messageQueue.sendMessage(this, null, Messages.E012, ByteUtility.getIndexString(index));
 			return null;
 		}
 
@@ -184,7 +184,7 @@ public class ASAPFileLogic {
 		try {
 			asap.load(fileName, content, content.length);
 		} catch (ASAPFormatException ex) {
-			messageQueue.sendError("SAP-006", "Invalid SAP file. " + ex.getMessage());
+			messageQueue.sendMessage(this, null, Messages.E027, ex.getMessage());
 			return null;
 		}
 		sapFile.setASAPInfo(asap.getInfo());
@@ -203,7 +203,7 @@ public class ASAPFileLogic {
 		try {
 			asap.load(fileName, content, content.length);
 		} catch (ASAPFormatException ex) {
-			messageQueue.sendError("SAP-013", "Invalid ASAP file. " + ex.getMessage());
+			messageQueue.sendMessage(this, null, Messages.E013, ex.getMessage());
 			return null;
 		}
 
@@ -214,15 +214,15 @@ public class ASAPFileLogic {
 			asapWriter.write(tempSAPFileName, asapInfo, content, content.length, false);
 
 		} catch (ASAPConversionException ex) {
-			messageQueue.sendError("SAP-014", "Cannot save SAP file. " + ex.getMessage());
+			messageQueue.sendMessage(this, null, Messages.E014, ex.getMessage());
 			return null;
 		} catch (ASAPIOException ex) {
-			messageQueue.sendError("SAP-015", "Cannot save SAP file. " + ex.getMessage());
+			messageQueue.sendMessage(this, null, Messages.E015, ex.getMessage());
 			return null;
 		}
 
 		if (asapWriter.fileMap.size() != 1) {
-			messageQueue.sendError("SAP-016", "File could not be converted to SAP format.");
+			messageQueue.sendMessage(this, null, Messages.E016);
 			return null;
 		}
 
@@ -238,19 +238,19 @@ public class ASAPFileLogic {
 		try {
 			asapInfo.setAuthor(asapFile.getAuthor());
 		} catch (ASAPArgumentException ex) {
-			messageQueue.sendError("SAP-017", "Cannot set author. " + ex.getMessage());
+			messageQueue.sendMessage(this, null, Messages.E017, ex.getMessage());
 		}
 		try {
 			asapInfo.setTitle(asapFile.getTitle());
 		} catch (ASAPArgumentException ex) {
-			messageQueue.sendError("SAP-018", "Cannot set title. " + ex.getMessage());
+			messageQueue.sendMessage(this, null, Messages.E018, ex.getMessage());
 		}
 		try {
 			asapInfo.setDate(asapFile.getDate());
 		} catch (ASAPArgumentException ex) {
-			messageQueue.sendError("SAP-019", "Cannot set date. " + ex.getMessage());
+			messageQueue.sendMessage(this, null, Messages.E019, ex.getMessage());
 		}
-		if (messageQueue.getErrorCount() > 0) {
+		if (messageQueue.getCount(Message.ERROR) > 0) {
 			return false;
 		}
 
@@ -263,13 +263,13 @@ public class ASAPFileLogic {
 			Files.write(file.toPath(), content, StandardOpenOption.CREATE);
 
 		} catch (ASAPConversionException ex) {
-			messageQueue.sendError("SAP-020", "Cannot save SAP file. " + ex.getMessage());
+			messageQueue.sendMessage(this, null, Messages.E020, ex.getMessage());
 			return false;
 		} catch (ASAPIOException ex) {
-			messageQueue.sendError("SAP-020", "Cannot save SAP file. " + ex.getMessage());
+			messageQueue.sendMessage(this, null, Messages.E020, ex.getMessage());
 			return false;
 		} catch (IOException ex) {
-			messageQueue.sendError("SAP-020", "Cannot save SAP file. " + ex.getMessage());
+			messageQueue.sendMessage(this, null, Messages.E020, ex.getMessage());
 			return false;
 		}
 
@@ -297,8 +297,7 @@ public class ASAPFileLogic {
 
 					if (!result.segmentsFolder.delete()) {
 
-						messageQueue.sendError("SAP-022",
-								"Cannot delete segments folder file " + result.segmentsFolder.getAbsolutePath());
+						messageQueue.sendMessage(this, null, Messages.E022, result.segmentsFolder.getAbsolutePath());
 						return null;
 					}
 
@@ -312,8 +311,7 @@ public class ASAPFileLogic {
 			}
 
 		} catch (IOException e) {
-			messageQueue.sendError("SAP-023",
-					"Cannot craete segments folder " + result.segmentsFolder.getAbsolutePath());
+			messageQueue.sendMessage(this, null, Messages.E023, result.segmentsFolder.getAbsolutePath());
 			return null;
 		}
 		try {
@@ -332,7 +330,7 @@ public class ASAPFileLogic {
 
 			}
 		} catch (IOException e) {
-			messageQueue.sendError("SAP-021", e.getMessage());
+			messageQueue.sendMessage(this, null, Messages.E021, e.getMessage());
 		}
 
 		header.println("XEX");
@@ -358,7 +356,7 @@ public class ASAPFileLogic {
 		if (players.isEmpty()) {
 			for (int i = 0; i < segmentList.size(); i++) {
 				var segment = asapFile.segmentList.get(i);
-				messageQueue.sendInfo("Scanning segment " + i + " for modules.");
+				messageQueue.sendMessage(this, null, Messages.I028, String.valueOf(i));
 				scanSegment(fileProcessor, inputFile, segment, header, messageQueue);
 			}
 		} else {
@@ -366,7 +364,7 @@ public class ASAPFileLogic {
 			if (players.size() == 1) {
 				var player = players.get(0);
 				if (player.fillSAPFile(asapFile, segmentList, messageQueue)) {
-					messageQueue.sendInfo("Convertered " + player.getName() + " file to SAP format.");
+					messageQueue.sendMessage(this, null, Messages.I029, player.getName());
 				}
 				;
 			}
@@ -419,8 +417,8 @@ public class ASAPFileLogic {
 			String startAddressString = ByteUtility.getWordHexString(startAddress);
 			String endAddressString = ByteUtility.getWordHexString(endAddress);
 
-			messageQueue
-					.sendInfo("Found " + entry.type + " at $" + startAddressString + " - $" + endAddressString + ".");
+			messageQueue.sendMessage(ASAPFileLogic.class, null, Messages.I030, entry.type, startAddressString,
+					endAddressString);
 
 			byte[] rmtContent = new byte[6 + length];
 			rmtContent[0] = (byte) 0xff;
@@ -436,10 +434,10 @@ public class ASAPFileLogic {
 
 			try {
 				Files.write(rmtFile.toPath(), rmtContent, StandardOpenOption.CREATE);
-				messageQueue.sendInfo("Opening " + rmtFile.getAbsolutePath() + " in separate window.");
+				messageQueue.sendMessage(ASAPFileLogic.class, null, Messages.I031, rmtFile.getAbsolutePath());
 				fileProcessor.processFile(rmtFile);
 			} catch (IOException e) {
-				messageQueue.sendError("SAP-021", e.getMessage());
+				messageQueue.sendMessage(ASAPFileLogic.class, null, Messages.E021, e.getMessage());
 			}
 //
 //			var asapFile = loadOriginalModuleFile(rmtFileName, rmtContent, messageQueue);

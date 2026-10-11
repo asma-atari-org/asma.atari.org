@@ -5,7 +5,7 @@ import java.util.List;
 import org.atari.asma.asap.ASAPFile;
 import org.atari.asma.sap.Segment;
 import org.atari.asma.sap.SegmentList;
-import org.atari.asma.util.MessageQueue;
+import com.wudsn.tools.base.common.MessageQueue;
 
 public abstract class Player {
 

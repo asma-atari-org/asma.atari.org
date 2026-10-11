@@ -11,6 +11,8 @@ module org.atari.asma.tools {
 	// Opened unconditionally: WUDSN Base's NLS reflects on the repository
 	// classes and loads their .properties resources.
 	opens org.atari.asma.browser;
+	opens org.atari.asma.editor;
+	opens org.atari.asma.exporter;
 
 	requires transitive org.atari.asma;
 	requires com.google.gson;

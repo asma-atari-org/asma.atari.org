@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.atari.asma.asap.ASAPFile;
 import org.atari.asma.sap.SegmentList;
-import org.atari.asma.util.MessageQueue;
+import com.wudsn.tools.base.common.MessageQueue;
 import org.atari.asma.util.StringUtility;
 
 public abstract class RMTPlayer extends Player {

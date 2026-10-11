@@ -27,7 +27,9 @@ import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
 
 import org.atari.asma.util.FileUtility;
-import org.atari.asma.util.MessageQueue;
+import org.atari.asma.util.MessageQueueUtility;
+
+import com.wudsn.tools.base.common.MessageQueue;
 
 public class SAPFileDialog {
 
@@ -225,7 +227,7 @@ public class SAPFileDialog {
 		this.inputFile = inputFile;
 		this.outputFile = null;
 		header.setLength(0);
-		messageQueue.sendInfo("Reading '" + inputFile.getAbsolutePath() + "'.");
+		messageQueue.sendMessage(this, null, Messages.I409, inputFile.getAbsolutePath());
 		final var fileExtension = (FileUtility.getFileExtension(inputFile.getName()).toLowerCase());
 		if (fileExtension.equals(".sap")) {
 			newASAPFile = asapFileLogic.loadSAPFile(inputFile, messageQueue);
@@ -234,11 +236,10 @@ public class SAPFileDialog {
 			newASAPFile = asapFileLogic.loadOriginalModuleFile(inputFile, messageQueue);
 			if (newASAPFile != null) {
 				outputFile = FileUtility.changeFileExtension(inputFile, ".sap");
-				messageQueue.sendInfo("Converted ASAP compatible file '" + inputFile.getName() + "' to '"
-						+ outputFile.getName() + "'.");
+				messageQueue.sendMessage(this, null, Messages.I410, inputFile.getName(), outputFile.getName());
 
 				if (outputFile.exists()) {
-					messageQueue.sendWarning("DIA-001", "Be careful when saving, the target file already exists.");
+					messageQueue.sendMessage(this, null, Messages.W402);
 				}
 			}
 		} else if (fileExtension.equals(".xex")) {
@@ -257,13 +258,13 @@ public class SAPFileDialog {
 
 			}
 		} else {
-			messageQueue.sendError("DIA-002", "Unsupported file extension or file type.");
+			messageQueue.sendMessage(this, null, Messages.E403);
 		}
 
 		if (newASAPFile != null) {
 			this.asapFile = newASAPFile;
 		} else {
-			messageQueue.sendInfo("Error reading '" + inputFile.getAbsolutePath() + "'. See above.");
+			messageQueue.sendMessage(this, null, Messages.I407, inputFile.getAbsolutePath());
 		}
 
 		dataToUI();
@@ -280,7 +281,8 @@ public class SAPFileDialog {
 		var entries = messageQueue.getEntries();
 		for (var entry : entries) {
 
-			builder.append(entry.getType().toString()).append(" : ").append(entry.getMessage());
+			builder.append(MessageQueueUtility.getSeverityText(entry.getMessage())).append(" : ")
+					.append(entry.getMessage().getIdentifier()).append(" - ").append(entry.getMessageText());
 			builder.append("\n");
 
 		}
@@ -303,7 +305,7 @@ public class SAPFileDialog {
 	private void performSave() {
 		dataFromUI();
 		if (asapFileLogic.saveSAPFile(outputFile, asapFile, messageQueue)) {
-			messageQueue.sendInfo("SAP file '" + outputFile.getAbsolutePath() + "' saved.");
+			messageQueue.sendMessage(this, null, Messages.I411, outputFile.getAbsolutePath());
 			outputFilePanel.setFile(outputFile);
 		}
 

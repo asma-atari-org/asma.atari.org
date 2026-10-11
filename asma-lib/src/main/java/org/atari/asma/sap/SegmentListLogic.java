@@ -3,7 +3,8 @@ package org.atari.asma.sap;
 import java.io.File;
 
 import org.atari.asma.util.FileUtility;
-import org.atari.asma.util.MessageQueue;
+
+import com.wudsn.tools.base.common.MessageQueue;
 
 public class SegmentListLogic {
 
@@ -13,7 +14,7 @@ public class SegmentListLogic {
 
 		segmentList.clear();
 		if (content.length < 7) {
-			messageQueue.sendError("SEG-001", "Content has less than 7 bytes.");
+			messageQueue.sendMessage(this, null, Messages.E024);
 			return false;
 		}
 		while (index + 4 < content.length) {
@@ -31,10 +32,9 @@ public class SegmentListLogic {
 			index += 2;
 			segment.endAddress = w;
 			if (segment.startAddress > segment.endAddress) {
-				messageQueue.sendError("SEG-002", "Invalid segment " + segmentCount + " at index "
-						+ ByteUtility.getIndexString(segmentStartIndex) + " has start address "
-						+ ByteUtility.getWordHexString(segment.startAddress) + " greater than end address "
-						+ ByteUtility.getWordHexString(segment.endAddress) + ".");
+				messageQueue.sendMessage(this, null, Messages.E025, String.valueOf(segmentCount),
+						ByteUtility.getIndexString(segmentStartIndex), ByteUtility.getWordHexString(segment.startAddress),
+						ByteUtility.getWordHexString(segment.endAddress));
 				return false;
 			}
 			var binaryStartIndex = index;
@@ -46,8 +46,8 @@ public class SegmentListLogic {
 			segmentCount++;
 		}
 		if (index != content.length) {
-			messageQueue.sendError("SEG-003", "Invalid additional data after last segment " + segmentCount + " at index "
-					+ ByteUtility.getIndexString(index) + ".");
+			messageQueue.sendMessage(this, null, Messages.E026, String.valueOf(segmentCount),
+					ByteUtility.getIndexString(index));
 			return false;
 		}
 		return true;

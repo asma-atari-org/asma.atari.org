@@ -68,7 +68,7 @@ public final class FileInfoListDialog extends ModalDialog {
 
 	private void showPlaybackError(FileInfo fileInfo, String reason) {
 		JOptionPane.showMessageDialog(this,
-				new MessageQueueEntry(this, null, Messages.E004, fileInfo == null ? "" : fileInfo.filePath, reason)
+				new MessageQueueEntry(this, null, Messages.E504, fileInfo == null ? "" : fileInfo.filePath, reason)
 						.getMessageText(),
 				getTitle(), JOptionPane.ERROR_MESSAGE);
 	}

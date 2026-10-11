@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.atari.asma.demozoo.MusicDemozooID;
 import org.atari.asma.util.JSONWriter;
-import org.atari.asma.util.MessageQueue;
+import com.wudsn.tools.base.common.MessageQueue;
 
 import com.wudsn.tools.base.repository.Attribute;
 

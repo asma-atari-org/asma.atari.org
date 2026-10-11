@@ -6,8 +6,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.atari.asma.demozoo.Demozoo.PlatformDefinition;
-import org.atari.asma.util.MessageQueue;
 import org.atari.asma.util.StringUtility;
+
+import com.wudsn.tools.base.common.MessageQueue;
 
 public final class Production {
 

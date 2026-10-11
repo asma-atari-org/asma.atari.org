@@ -34,26 +34,24 @@ public class ASMAProductionList {
 			final var fileExtensions = production.getFileExtensionsSet();
 			final var tags=production.getTagsSet();
 			if (production.download_links.length == 0) {
-				messageQueue.sendInfo("DMO-001", "Music has no download link.");
+				messageQueue.sendMessage(production, null, Messages.I001);
 			} else {
 				switch (urlFilePaths.size()) {
 				case 0:
 					if (production.getHardware().equals("ATARI2600") && !fileExtensions.contains("ttt")) {
-						messageQueue.sendInfo("DMO-007",
-								"Atari 2600 is currently not supported by ASMA, except for TIA-Tracker files.");
+						messageQueue.sendMessage(production, null, Messages.I007);
 
 					} else {
 						if (fileExtensions.contains("cmc") || fileExtensions.contains("cms")
 								|| fileExtensions.contains("rmt") || fileExtensions.contains("sap")) {
-							messageQueue.sendError("DMO-008",
-									"Music has ASAP file extension but no ASMA download link.");
+							messageQueue.sendMessage(production, null, Messages.E008);
 						} else {
-							messageQueue.sendWarning("DMO-002", "Music has no ASMA download link.");
+							messageQueue.sendMessage(production, null, Messages.W002);
 						}
 						
 						
 						if (fileExtensions.contains("neo") && !tags.contains("neo-tracker")) {
-							messageQueue.sendWarning("DMO-009", "Music has \"neo\" file extension but has no \"neo-tracker\" tag.");
+							messageQueue.sendMessage(production, null, Messages.W009);
 	
 						}
 					}
@@ -71,11 +69,8 @@ public class ASMAProductionList {
 
 					ASMAProduction previousASMAProduction = productionByURLFilePathMap.put(urlFilePath, asmaProduction);
 					if (previousASMAProduction != null) {
-						String message = "Production " + previousASMAProduction.toString()
-								+ " already registered for file path " + previousASMAProduction.urlFilePath
-								+ " of production " + asmaProduction.toString()
-								+ ", Check if this is a multi-song module and adapt the URLs.";
-						messageQueue.sendError("DMO-004", message);
+						messageQueue.sendMessage(production, null, Messages.E004, previousASMAProduction.toString(),
+								previousASMAProduction.urlFilePath, asmaProduction.toString());
 					} else {
 						productionByURLFilePathMap.put(urlFilePath, asmaProduction);
 
@@ -84,16 +79,16 @@ public class ASMAProductionList {
 					break;
 
 				default:
-					messageQueue.sendError("DMO-003", "Music has more than one ASMA download link.");
+					messageQueue.sendMessage(production, null, Messages.E003);
 					break;
 				}
 			}
 
 			if (fileExtensions.contains("sap") && !production.hasTag("sap")) {
-				messageQueue.sendWarning("DMO-005", "Music has file extension \".sap\", but no tag \"sap\".");
+				messageQueue.sendMessage(production, null, Messages.W005);
 			}
 			if (production.hasTag("sap") && !fileExtensions.contains("sap")) {
-				messageQueue.sendWarning("DMO-006", "Music has tag \"sap\", but not file extension \".sap\".");
+				messageQueue.sendMessage(production, null, Messages.W006);
 			}
 
 //				String defaultFolderName = production.getDefaultFolderName();
@@ -121,8 +116,7 @@ public class ASMAProductionList {
 					urlFilePath = urlFilePath.substring(0, index);
 				}
 				if (!fileInfoMap.containsKey(urlFilePath)) {
-					messageQueue.sendError("DMO-006", "Music download URL contains non-existing file path \""
-							+ urlFilePath + "\". Check if ASMA path has changed.");
+					messageQueue.sendMessage(production, null, Messages.E010, urlFilePath);
 				}
 			}
 		}

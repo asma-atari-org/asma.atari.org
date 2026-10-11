@@ -16,10 +16,11 @@ import org.atari.asma.demozoo.model.Database;
 import org.atari.asma.demozoo.model.Production;
 import org.atari.asma.demozoo.model.ProductionsPage;
 import org.atari.asma.util.FileUtility;
-import org.atari.asma.util.MemoryUtility;
-import org.atari.asma.util.MessageQueue;
 import org.atari.asma.util.JSONSerializer;
+import org.atari.asma.util.MemoryUtility;
 import org.atari.asma.util.StringUtility;
+
+import com.wudsn.tools.base.common.MessageQueue;
 
 public class Demozoo {
 
@@ -67,10 +68,10 @@ public class Demozoo {
 					* (productionsPage.count - productionNumber));
 
 			if (productionNumber % 10 == 0) {
-				messageQueue.sendInfo("DMO-109", "Fetching production " + (productionNumber) + " of " + productionsPage.count
-						+ " from " + productionsPageResult.url + " ("
-						+ StringUtility.getDurationString(milliSecondsSinceStart) + " until now, "
-						+ StringUtility.getDurationString(milliSecondsToGo) + " to go)");
+				messageQueue.sendMessage(this, null, Messages.I109, String.valueOf(productionNumber),
+						String.valueOf(productionsPage.count), productionsPageResult.url,
+						StringUtility.getDurationString(milliSecondsSinceStart),
+						StringUtility.getDurationString(milliSecondsToGo));
 			}
 			try {
 				var response = RestClient.sendGetRequest(productionsPageResult.url);
@@ -80,14 +81,13 @@ public class Demozoo {
 					productionList.add(production);
 					return production;
 				} else {
-					messageQueue.sendError("DMO-110", "Fetch error for '" + productionsPageResult.url + "': "
-							+ response.status + " - " + response.content);
+					messageQueue.sendMessage(this, null, Messages.E110, productionsPageResult.url,
+							String.valueOf(response.status), response.content);
 					return null;
 				}
 
 			} catch (IOException ex) {
-				messageQueue.sendError("DMO-111",
-						"Fetch error for '" + productionsPageResult.url + "': " + ex.getMessage());
+				messageQueue.sendMessage(this, null, Messages.E111, productionsPageResult.url, ex.getMessage());
 				return null;
 			}
 
@@ -117,7 +117,7 @@ public class Demozoo {
 				}
 				return productionsPage;
 			} catch (IOException ex) {
-				messageQueue.sendError("DMO-108", ex.getMessage());
+				messageQueue.sendMessage(this, null, Messages.E108, url, ex.getMessage());
 				return null;
 			}
 		}
@@ -130,7 +130,7 @@ public class Demozoo {
 			do {
 				pageNumber++;
 				if (pageNumber <= MAX_PAGES) {
-					messageQueue.sendInfo("DMO-107", "Fetching page " + pageNumber + " from " + url);
+					messageQueue.sendMessage(this, null, Messages.I107, String.valueOf(pageNumber), url);
 
 					var page = this.fetchPage(url, productionList);
 					if (page != null) {
@@ -164,17 +164,17 @@ public class Demozoo {
 		database.updateDateTime = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
 		fetchProductions(database, messageQueue);
 
-		messageQueue.sendInfo("DMO-104", "Saving to '" + outputFile.getAbsolutePath() + "'.");
+		messageQueue.sendMessage(this, null, Messages.I104, outputFile.getAbsolutePath());
 		try {
 			var content = JSONSerializer.serialize(database);
 			var writer = new FileWriter(outputFile, StandardCharsets.UTF_8);
 			writer.write(content);
 			writer.close();
-			messageQueue.sendInfo("DMO-106", "Demozoo database file written with "
-					+ MemoryUtility.getRoundedMemorySize(outputFile.length()) + ".");
+			messageQueue.sendMessage(this, null, Messages.I106,
+					MemoryUtility.getRoundedMemorySize(outputFile.length()));
 
 		} catch (IOException ex) {
-			messageQueue.sendError("DMO-105", ex.getMessage());
+			messageQueue.sendMessage(this, null, Messages.E105, outputFile.getAbsolutePath(), ex.getMessage());
 		}
 	}
 

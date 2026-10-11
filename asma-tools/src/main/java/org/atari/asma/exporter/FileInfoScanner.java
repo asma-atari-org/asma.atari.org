@@ -18,10 +18,10 @@ import org.atari.asma.TTTFile;
 import org.atari.asma.asap.ASAPFile;
 import org.atari.asma.asap.ASAPFileLogic;
 import org.atari.asma.util.FileUtility;
-import org.atari.asma.util.MessageQueue;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.wudsn.tools.base.common.MessageQueue;
 
 // Scans the ASMA archive folder and builds the FileInfoList by reading
 // every SAP file via ASAP and every TTT file via Gson.
@@ -38,7 +38,7 @@ public class FileInfoScanner {
 	}
 
 	public FileInfoList scanFolder(File sourceFolder, MessageQueue messageQueue, int maxFiles) {
-		messageQueue.sendInfo("Scanning " + sourceFolder.getAbsolutePath());
+		messageQueue.sendMessage(this, null, Messages.I313, sourceFolder.getAbsolutePath());
 
 		var fileList = FileUtility.getRecursiveFileList(sourceFolder, new FileFilter() {
 
@@ -52,7 +52,7 @@ public class FileInfoScanner {
 			}
 		});
 
-		messageQueue.sendInfo(fileList.size() + " matching files found.");
+		messageQueue.sendMessage(this, null, Messages.I314, String.valueOf(fileList.size()));
 
 		int index = sourceFolder.getAbsolutePath().length() + 1;
 		var count = new AtomicInteger();
@@ -80,7 +80,7 @@ public class FileInfoScanner {
 				var fileMessageQueue = new MessageQueue();
 				var fileInfo = readFile(file, filePath, fileMessageQueue);
 				synchronized (messageQueue) {
-					fileListMessageQueue.addEntries(fileMessageQueue);
+					fileListMessageQueue.addAll(fileMessageQueue);
 
 				}
 				synchronized (fileInfos) {
@@ -105,7 +105,7 @@ public class FileInfoScanner {
 		});
 
 		// Issue which result in broken SAP file files, are reported right away.
-		messageQueue.addEntries(fileListMessageQueue);
+		messageQueue.addAll(fileListMessageQueue);
 
 		var fileInfoList = new FileInfoList();
 		for (var fileInfo : fileInfos) {
@@ -127,7 +127,7 @@ public class FileInfoScanner {
 			fileInfo.hardware = FileInfo.ATARI800;
 			var sapFile = sapFileLogic.loadSAPFile(file, messageQueue);
 			if (sapFile == null) {
-				messageQueue.sendInfo("Error reading '" + file.getAbsolutePath() + "'. See above.");
+				messageQueue.sendMessage(this, null, Messages.I315, file.getAbsolutePath());
 				return null;
 			}
 			readFromSAPFile(fileInfo, sapFile, messageQueue);
@@ -190,8 +190,7 @@ public class FileInfoScanner {
 		// seek slider, and shuffle mode falls back to a fixed maximum.
 		// A warning only: endlessly looping tunes are legitimate.
 		if (asapInfo.getDuration(asapInfo.getDefaultSong()) <= 0) {
-			messageQueue.sendWarning("SAP-111",
-					"File " + fileInfo.filePath + " has no TIME tag for the default song.");
+			messageQueue.sendMessage(fileInfo, null, org.atari.asma.Messages.W011, fileInfo.filePath);
 		}
 
 		fileInfo.setDemozooID(0);

@@ -8,10 +8,10 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.atari.asma.util.FileUtility;
-import org.atari.asma.util.MessageQueue;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.wudsn.tools.base.common.MessageQueue;
 
 public class GroupList {
 	private String jsonString;
@@ -56,7 +56,7 @@ public class GroupList {
 							"Group " + previousGroup.toString() + " already registered for folder name "
 									+ previousGroup.folderName + " of group " + group.toString());
 			} else {
-				messageQueue.sendError("GRP-001", "Group " + group.toString() + " has no folder path");
+				messageQueue.sendMessage(group, null, Messages.E201, group.toString());
 			}
 
 			if (!group.demozooID.isEmpty()) {
@@ -67,7 +67,7 @@ public class GroupList {
 									+ previousGroup.demozooID + " of group " + group.toString());
 			} else {
 				if (!group.name.isEmpty()) {
-					messageQueue.sendError("GRP-002", "Group " + group.toString() + " has no Demozoo ID");
+					messageQueue.sendMessage(group, null, Messages.E202, group.toString());
 				}
 			}
 		}
@@ -101,14 +101,12 @@ public class GroupList {
 			if (!group.folderName.isEmpty()) {
 				File groupFolder = new File(groupsFolder, group.folderName);
 				if (!groupFolder.exists()) {
-					messageQueue.sendError("GRP-003", "Folder " + groupFolder.toString() + " of group\""
-							+ group.toString() + "\" does not exist");
+					messageQueue.sendMessage(group, null, Messages.E203, groupFolder.toString(), group.toString());
 					continue;
 
 				}
 				if (!groupFolder.isDirectory()) {
-					messageQueue.sendError("GRP-004", "Path " + groupFolder.toString() + " of group \"" + group.toString()
-							+ "\" is not a directory");
+					messageQueue.sendMessage(group, null, Messages.E204, groupFolder.toString(), group.toString());
 					continue;
 
 				}
@@ -119,13 +117,13 @@ public class GroupList {
 		for (File groupFolder : groupFolders) {
 
 			if (!groupFolder.isDirectory()) {
-				messageQueue.sendError("GRP-005", "Path " + groupFolder.toString() + " is not a directory");
+				messageQueue.sendMessage(this, null, Messages.E205, groupFolder.toString());
 				continue;
 
 			}
 			String folderName = groupFolder.getName();
 			if (getByFolderName(folderName) == null) {
-				messageQueue.sendError("GRP-006", "Folder " + groupFolder.toString() + " has no entry in the group list");
+				messageQueue.sendMessage(this, null, Messages.E206, groupFolder.toString());
 				continue;
 
 			}

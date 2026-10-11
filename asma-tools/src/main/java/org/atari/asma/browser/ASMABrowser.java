@@ -308,7 +308,7 @@ public final class ASMABrowser implements ActionListener {
 
 	// Loads in the background, so a download does not freeze the window.
 	private void loadDatabase(String source, DatabaseLoader loader, File archiveFolder) {
-		statusBar.displayStatusMessage(new MessageQueueEntry(this, null, Messages.S005, source));
+		statusBar.displayStatusMessage(new MessageQueueEntry(this, null, Messages.S505, source));
 		new SwingWorker<ASMAClient.Database, Void>() {
 			@Override
 			protected ASMAClient.Database doInBackground() throws IOException {
@@ -324,11 +324,11 @@ public final class ASMABrowser implements ActionListener {
 					filesPanel.setDatabase(database);
 					composersPanel.setDatabase(database);
 					groupsPanel.setDatabase(database);
-					messageQueue.sendMessage(ASMABrowser.this, null, Messages.I001,
+					messageQueue.sendMessage(ASMABrowser.this, null, Messages.I501,
 							String.valueOf(database.fileInfos.size()), source);
 				} catch (ExecutionException ex) {
 					Throwable cause = ex.getCause();
-					messageQueue.sendMessage(ASMABrowser.this, null, Messages.E002, source,
+					messageQueue.sendMessage(ASMABrowser.this, null, Messages.E502, source,
 							cause.getMessage() != null ? cause.getMessage() : cause.toString());
 				} catch (InterruptedException ex) {
 					Thread.currentThread().interrupt();
@@ -352,7 +352,7 @@ public final class ASMABrowser implements ActionListener {
 
 	private void showPlaybackError(FileInfo fileInfo, String reason) {
 		messageQueue.clear();
-		messageQueue.sendMessage(this, null, Messages.E004, fileInfo == null ? "" : fileInfo.filePath, reason);
+		messageQueue.sendMessage(this, null, Messages.E504, fileInfo == null ? "" : fileInfo.filePath, reason);
 		statusBar.displayMessageQueue(messageQueue);
 	}
 }

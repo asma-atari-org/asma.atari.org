@@ -8,10 +8,10 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.atari.asma.util.FileUtility;
-import org.atari.asma.util.MessageQueue;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.wudsn.tools.base.common.MessageQueue;
 
 public class ComposerList {
 
@@ -57,12 +57,12 @@ public class ComposerList {
 							+ "\" of composer \"" + composer.toString() + "\"");
 				String defaultFolderName = composer.getDefaultFolderName();
 				if (!composer.folderName.equals(defaultFolderName)) {
-					messageQueue.sendError("COM-001", "Folder \"" + composer.folderName + "\" of \"" + composer.toString()
-							+ "\" is different from default folder name \"" + defaultFolderName + "\"");
+					messageQueue.sendMessage(composer, null, Messages.E101, composer.folderName, composer.toString(),
+							defaultFolderName);
 
 				}
 			} else {
-				messageQueue.sendError("COM-002", "Composer \"" + composer.toString() + "\" has no folder path");
+				messageQueue.sendMessage(composer, null, Messages.E102, composer.toString());
 			}
 
 			if (!composer.demozooID.isEmpty()) {
@@ -72,7 +72,7 @@ public class ComposerList {
 							"Composer \"" + previousComposer.toString() + "\" is already registered for Demozoo ID "
 									+ previousComposer.demozooID + " of composer \"" + composer.toString() + "\"");
 			} else {
-				messageQueue.sendError("COM-003", "Composer \"" + composer.toString() + "\" has no Demozoo ID");
+				messageQueue.sendMessage(composer, null, Messages.E103, composer.toString());
 			}
 		}
 	}
@@ -100,14 +100,14 @@ public class ComposerList {
 			if (!composer.folderName.isEmpty()) {
 				File composerFolder = new File(composersFolder, composer.folderName);
 				if (!composerFolder.exists()) {
-					messageQueue.sendError("COM-004", "Folder " + composerFolder.toString() + " of \""
-							+ composer.toString() + "\" does not exist");
+					messageQueue.sendMessage(composer, null, Messages.E104, composerFolder.toString(),
+							composer.toString());
 					continue;
 
 				}
 				if (!composerFolder.isDirectory()) {
-					messageQueue.sendError("COM-005", "Path " + composerFolder.toString() + " of \"" + composer.toString()
-							+ "\" is not a directory");
+					messageQueue.sendMessage(composer, null, Messages.E105, composerFolder.toString(),
+							composer.toString());
 					continue;
 
 				}
@@ -118,14 +118,13 @@ public class ComposerList {
 		for (File composerFolder : composerFolders) {
 
 			if (!composerFolder.isDirectory()) {
-				messageQueue.sendError("COM-006", "Path " + composerFolder.toString() + "  is not a directory");
+				messageQueue.sendMessage(this, null, Messages.E106, composerFolder.toString());
 				continue;
 
 			}
 			String folderName = composerFolder.getName();
 			if (getByFolderName(folderName) == null) {
-				messageQueue
-						.sendError("COM-007", "Folder " + composerFolder.toString() + " has no entry in composer list");
+				messageQueue.sendMessage(this, null, Messages.E107, composerFolder.toString());
 				continue;
 
 			}
@@ -138,8 +137,7 @@ public class ComposerList {
 				String[] groupsFolderNameArray = composer.groups.split(",");
 				for (String groupFolderName : groupsFolderNameArray) {
 					if (groupList.getByFolderName(groupFolderName) == null) {
-						messageQueue.sendError("COM-008", "Group folder " + groupFolderName + " of composer "
-								+ composer.toString() + " has no entry in the group list");
+						messageQueue.sendMessage(composer, null, Messages.E108, groupFolderName, composer.toString());
 						continue;
 					}
 				}

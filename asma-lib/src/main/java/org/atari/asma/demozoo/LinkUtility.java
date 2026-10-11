@@ -6,7 +6,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.atari.asma.demozoo.model.Link;
-import org.atari.asma.util.MessageQueue;
+
+import com.wudsn.tools.base.common.MessageQueue;
 
 public class LinkUtility {
 

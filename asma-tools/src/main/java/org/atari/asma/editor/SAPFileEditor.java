@@ -11,10 +11,10 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import org.atari.asma.FileExtension;
-import org.atari.asma.util.BufferedMessageQueue;
 import org.atari.asma.util.FileUtility;
-import org.atari.asma.util.MessageQueue;
-import org.atari.asma.util.MessageQueueFactory;
+import org.atari.asma.util.MessageQueueUtility;
+
+import com.wudsn.tools.base.common.MessageQueue;
 
 public class SAPFileEditor implements SAPFileProcessor {
 
@@ -24,7 +24,7 @@ public class SAPFileEditor implements SAPFileProcessor {
 	private SAPFileList fileList;
 
 	private SAPFileEditor() {
-		messageQueue = MessageQueueFactory.createSystemInstance();
+		messageQueue = MessageQueueUtility.createConsoleInstance();
 		sapFileLogic = new ASAPFileLogic();
 
 		fileList = new SAPFileList();
@@ -91,11 +91,12 @@ public class SAPFileEditor implements SAPFileProcessor {
 				}
 
 			} catch (Exception ex) {
-				messageQueue.sendError("EDI-001", ex.getMessage());
+				messageQueue.sendMessage(this, null, Messages.E401, file.getAbsolutePath(), ex.getMessage());
 				ex.printStackTrace();
 			}
 		}
-		messageQueue.printSummary();
+		System.out.println(MessageQueueUtility.getSummary(messageQueue));
+		messageQueue.clear();
 	}
 
 	public void processFile(File inputFile) {
@@ -122,7 +123,7 @@ public class SAPFileEditor implements SAPFileProcessor {
 	}
 
 	public void processFolder(File folder) {
-		messageQueue.sendInfo("Scanning " + folder.getAbsolutePath());
+		messageQueue.sendMessage(this, null, Messages.I404, folder.getAbsolutePath());
 
 		var fileList = FileUtility.getRecursiveFileList(folder, new FileFilter() {
 
@@ -136,26 +137,29 @@ public class SAPFileEditor implements SAPFileProcessor {
 			}
 		});
 		int totalCount = fileList.size();
-		messageQueue.sendInfo(totalCount + " files found.");
+		messageQueue.sendMessage(this, null, Messages.I405, String.valueOf(totalCount));
 
 		var count = new AtomicInteger();
 		final var blockSize = 100;
 		fileList.parallelStream().forEach(file -> {
 			if (count.incrementAndGet() % blockSize == 0) {
 				synchronized (messageQueue) {
-					messageQueue.sendInfo(count + " files processed.");
+					messageQueue.sendMessage(this, null, Messages.I406, count.toString());
 				}
 			}
 
-			var localMessageQueue = new BufferedMessageQueue(messageQueue);
+			// Each worker collects its messages, which are then added in one piece.
+			var localMessageQueue = new MessageQueue();
 			var sapFile = sapFileLogic.loadSAPFile(file, localMessageQueue);
 			if (sapFile == null) {
-				messageQueue.sendInfo("Error reading '" + file.getAbsolutePath() + "'. See above.");
+				localMessageQueue.sendMessage(this, null, Messages.I407, file.getAbsolutePath());
 			}
-			localMessageQueue.flush();
+			synchronized (messageQueue) {
+				messageQueue.addAll(localMessageQueue);
+			}
 		});
 
-		messageQueue.sendInfo("All " + fileList.size() + " files processed.");
+		messageQueue.sendMessage(this, null, Messages.I408, String.valueOf(fileList.size()));
 
 	}
 

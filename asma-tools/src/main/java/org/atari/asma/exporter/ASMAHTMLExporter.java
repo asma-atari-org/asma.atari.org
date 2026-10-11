@@ -17,9 +17,12 @@ import java.util.TreeSet;
 import org.atari.asma.demozoo.DemozooLink;
 import org.atari.asma.demozoo.model.Database;
 import org.atari.asma.demozoo.model.Production;
-import org.atari.asma.util.MessageQueue;
-import org.atari.asma.util.MessageQueue.Entry;
+import org.atari.asma.util.MessageQueueUtility;
 import org.atari.asma.util.StringUtility;
+
+import com.wudsn.tools.base.common.MessageQueue;
+import com.wudsn.tools.base.common.MessageQueueEntry;
+import com.wudsn.tools.base.repository.Message;
 
 public class ASMAHTMLExporter {
 
@@ -69,25 +72,25 @@ public class ASMAHTMLExporter {
 		}
 	}
 
-	private static void formatMessageQueueEntry(StringBuilder htmlBuilder, Entry entry, List<Link> linkList) {
+	private static void formatMessageQueueEntry(StringBuilder htmlBuilder, MessageQueueEntry entry,
+			List<Link> linkList) {
 		var color = "";
-		switch (entry.getType()) {
-		case ERROR:
+		var message = entry.getMessage();
+		switch (message.getSeverity()) {
+		case Message.ERROR:
 			color = "color:red;";
 			break;
-		case WARNING:
+		case Message.WARNING:
 			color = "color:#FF8C00;";
 			break;
-		case INFO:
+		default:
 			break;
 		}
 		htmlBuilder.append("<div style=\"" + color + "\">");
 
-		htmlBuilder.append(entry.getType().toString()).append(" : ");
-		if (!entry.getID().isEmpty()) {
-			htmlBuilder.append(entry.getID()).append(" - ");
-		}
-		htmlBuilder.append(HTMLWriter.encodeHTML(entry.getMessage()));
+		htmlBuilder.append(MessageQueueUtility.getSeverityText(message)).append(" : ");
+		htmlBuilder.append(message.getIdentifier()).append(" - ");
+		htmlBuilder.append(HTMLWriter.encodeHTML(entry.getMessageText()));
 
 		for (var link : linkList) {
 			htmlBuilder.append(" ").append(link.toHTML());
@@ -101,8 +104,8 @@ public class ASMAHTMLExporter {
 		for (var entry : entries) {
 
 			List<Link> linkList = new ArrayList<Link>();
-			// ERROR : SAP-107 - File Composers/Mega9man/Heat_Squared.sap has no Demozoo ID.
-			if (fileInfo.getMessageQueue().containsMessage("SAP-107")) {
+			// ERROR : ASA-007 - File Composers/Mega9man/Heat_Squared.sap has no Demozoo ID.
+			if (fileInfo.getMessageQueue().contains(org.atari.asma.Messages.E007)) {
 				linkList.add(new Link("Find Music", DemozooLink.getFindMusic(fileInfo.title)));
 				linkList.add(new Link("Create Music", DemozooLink.getNewMusic(scenerID, fileInfo.title, fileInfo.date,
 						ASMALink.getFile(fileInfo.filePath))));
@@ -121,10 +124,10 @@ public class ASMAHTMLExporter {
 		for (var entry : entries) {
 
 			List<Link> linkList = new ArrayList<Link>();
-			// ERROR : DMO-006 - Music download URL contains non-existing file path
+			// ERROR : DMZ-010 - Music download URL contains non-existing file path
 			// "Composers/Krix_Mario/Acidjazzed_Evening.sap". Check if ASMA path has
 			// changed.
-			if (production.getMessageQueue().containsMessage("DMO-006")) {
+			if (production.getMessageQueue().contains(org.atari.asma.demozoo.Messages.E010)) {
 				linkList.add(new Link("Edit Download Links", DemozooLink.getEditDownloadLinks(production.id)));
 
 			}
@@ -163,8 +166,8 @@ public class ASMAHTMLExporter {
 			fileCount++;
 			if (hasIssues(messageQueue)) {
 				fileWithIssuesCount++;
-				errorCount += messageQueue.getErrorCount();
-				warningCount += messageQueue.getWarningCount();
+				errorCount += messageQueue.getCount(Message.ERROR);
+				warningCount += messageQueue.getCount(Message.WARNING);
 			}
 		}
 		html.beginTable();
@@ -300,7 +303,7 @@ public class ASMAHTMLExporter {
 		Arrays.sort(sortedProductions, new Comparator<Production>() {
 			public int compare(Production o1, Production o2) {
 				int result;
-				result = -o1.getMessageQueue().compareTo(o2.getMessageQueue());
+				result = -MessageQueueUtility.compare(o1.getMessageQueue(), o2.getMessageQueue());
 				if (result == 0) {
 					result = o1.getAuthorNicksString().compareTo(o2.getAuthorNicksString());
 				}
@@ -374,7 +377,7 @@ public class ASMAHTMLExporter {
 	}
 
 	private static boolean hasIssues(MessageQueue messageQueue) {
-		return (messageQueue.getErrorCount() > 0 || messageQueue.getWarningCount() > 0);
+		return MessageQueueUtility.hasIssues(messageQueue);
 	}
 
 	public void write(ASMADatabase asmaDatabase, Database database, boolean onlyIssues, String basePath) {

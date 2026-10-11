@@ -107,7 +107,7 @@ public abstract class DemozooIDField<T extends DemozooID> extends JPanel {
 		} catch (Exception ex) {
 			String reason = ex.getMessage() != null ? ex.getMessage() : ex.toString();
 			JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(this),
-					new MessageQueueEntry(this, null, Messages.E006, url, reason).getMessageText(), "Demozoo",
+					new MessageQueueEntry(this, null, Messages.E506, url, reason).getMessageText(), "Demozoo",
 					JOptionPane.ERROR_MESSAGE);
 		}
 	}

@@ -4,8 +4,9 @@ import org.atari.asma.demozoo.Demozoo;
 import java.io.File;
 
 import org.atari.asma.ASMAPaths;
-import org.atari.asma.util.MessageQueueFactory;
-import org.atari.asma.util.MessageQueue;
+import org.atari.asma.util.MessageQueueUtility;
+
+import com.wudsn.tools.base.common.MessageQueue;
 
 public class DemozooImporter {
 
@@ -18,10 +19,10 @@ public class DemozooImporter {
 
 	@SuppressWarnings("static-method")
 	private int run(String[] args) {
-		MessageQueue messageQueue = MessageQueueFactory.createSystemInstance();
+		MessageQueue messageQueue = MessageQueueUtility.createConsoleInstance();
 
 		if (args.length != 1) {
-			messageQueue.sendInfo("DMO-100","Usage: DemozooImporter <trunk/asma folder>");
+			System.out.println("Usage: DemozooImporter <trunk/asma folder>");
 			return 0;
 		}
 
@@ -31,18 +32,18 @@ public class DemozooImporter {
 		var databaseFile = new File(sourceFolder, ASMAPaths.DEMOZOO_DATABASE_JSON);
 
 		var demozoo = new Demozoo();
-		messageQueue.sendInfo("DMO-101", "Fetching Demozoo database to '" + databaseFile.getPath() + "'.");
+		messageQueue.sendMessage(this, null, org.atari.asma.demozoo.Messages.I101, databaseFile.getPath());
 
 		if (!databaseFile.exists()) {
-			messageQueue.sendError("DMO-102", "Output file '" + databaseFile.getPath() + "' does not exist.");
+			messageQueue.sendMessage(this, null, org.atari.asma.demozoo.Messages.E102, databaseFile.getPath());
 			return 1;
 		}
 		if (!databaseFile.canWrite()) {
-			messageQueue.sendError("DMO-103", "Output file '" + databaseFile.getPath() + "' is not writeable.");
+			messageQueue.sendMessage(this, null, org.atari.asma.demozoo.Messages.E103, databaseFile.getPath());
 			return 1;
 		}
 		demozoo.importDatabase(databaseFile, messageQueue);
-		messageQueue.printSummary();
+		System.out.println(MessageQueueUtility.getSummary(messageQueue));
 		return 0;
 
 	}

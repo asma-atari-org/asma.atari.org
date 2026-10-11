@@ -8,14 +8,15 @@ import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.atari.asma.util.MessageQueue;
-import org.atari.asma.util.MessageQueueFactory;
+import org.atari.asma.util.MessageQueueUtility;
+
+import com.wudsn.tools.base.common.MessageQueue;
 
 public class ZipUtility {
 
 	public static void main(String[] args) {
 		var url = "https://files.scene.org/get/parties/2023/xenium23/msx_chip/chipmsx_zoltarx_trainoscope.7z";
-		var messageQueue = MessageQueueFactory.createSystemInstance();
+		var messageQueue = MessageQueueUtility.createConsoleInstance();
 		System.out.println(getZIPFileContentFileExtensions(url, messageQueue));
 	}
 
@@ -40,7 +41,7 @@ public class ZipUtility {
 		} catch (RuntimeException e) {
 			result.add("ERROR: " + e.getMessage());
 		}
-		messageQueue.sendInfo("DMO-112", "Resolved " + result + " from " + url + ".");
+		messageQueue.sendMessage(ZipUtility.class, null, Messages.I112, result.toString(), url);
 		return result;
 	}
 }

@@ -189,8 +189,8 @@ public class FileInfoList {
 			for (int i = 0; i < folderPath.length(); i++) {
 				var c = folderPath.charAt(i);
 				if (FOLDER_PATH_CHARACTERS.indexOf(c) < 0) {
-					messageQueue.sendError("SAP-103", "File " + fileInfo.filePath
-							+ " has a folder path with the invalid character \"" + c + "\" (0x"+Long.toHexString(c)+") at index " + i + ".");
+					messageQueue.sendMessage(fileInfo, null, Messages.E003, fileInfo.filePath, String.valueOf(c),
+							Long.toHexString(c), String.valueOf(i));
 
 				}
 			}
@@ -198,22 +198,21 @@ public class FileInfoList {
 			try {
 				checkDate(fileInfo.date);
 			} catch (IllegalArgumentException ex) {
-				messageQueue.sendError("SAP-110",
-						"File " + fileInfo.filePath + " has an invalid date \"" + fileInfo.date + "\". " + ex.getMessage());
+				messageQueue.sendMessage(fileInfo, null, Messages.E010, fileInfo.filePath, fileInfo.date,
+						ex.getMessage());
 			}
 
 			final var filePath = fileInfo.filePath;
 			if (filePath.length()>MAX_FILE_PATH_LENGTH) {
-					messageQueue.sendError("SAP-109", "File " + fileInfo.filePath
-							+ " has a relative file path that exceeds the allowed limit of " + MAX_FILE_PATH_LENGTH + " characters. Use a short file path.");
+					messageQueue.sendMessage(fileInfo, null, Messages.E009, fileInfo.filePath,
+							String.valueOf(MAX_FILE_PATH_LENGTH));
 
 			}
 	
 			
 			if (filePath.toLowerCase().endsWith(FileExtension.SAP)) {
 				if (!filePath.endsWith(FileExtension.SAP)) {
-					messageQueue.sendError("SAP-101",
-							"File " + fileInfo.filePath + " does not have a lowercase \".sap\" file extension");
+					messageQueue.sendMessage(fileInfo, null, Messages.E001, fileInfo.filePath);
 				}
 				var fileName = filePath;
 				var index = filePath.lastIndexOf('/');
@@ -225,6 +224,7 @@ public class FileInfoList {
 				/*
 				var length = fileName.length();
 				if (length > MAX_FILE_NAME_LENGTH) {
+					// ASA-002, formerly SAP-102.
 					messageQueue.sendError("SAP-102",
 							"File " + fileInfo.filePath + " has a file name with " + length + " characters. This is "
 									+ (length - MAX_FILE_NAME_LENGTH)
@@ -234,8 +234,8 @@ public class FileInfoList {
 				for (int i = 0; i < fileName.length(); i++) {
 					var c = fileName.charAt(i);
 					if (FILE_NAME_CHARACTERS.indexOf(c) < 0) {
-						messageQueue.sendError("SAP-103", "File " + fileInfo.filePath
-								+ " has a file name with the invalid character \"" + c + "\" (0x"+Long.toHexString(c)+") at index " + i + ".");
+						messageQueue.sendMessage(fileInfo, null, Messages.E012, fileInfo.filePath, String.valueOf(c),
+								Long.toHexString(c), String.valueOf(i));
 
 					}
 				}
@@ -269,22 +269,20 @@ public class FileInfoList {
 							boolean WARN_DIFFRENT_COMPOSERS=false;
 							if (!authors.contains(trimmedFileAuthor)) {
 								if (WARN_DIFFRENT_COMPOSERS) {
-								messageQueue.sendWarning("SAP-104",
-										"File " + fileInfo.filePath + " author \"" + trimmedFileAuthor + "\" in \""
-												+ fileInfo.author + "\" is different from all composer authors \""
-												+ authors.toString() + "\"");
+								messageQueue.sendMessage(fileInfo, null, Messages.W004, fileInfo.filePath,
+										trimmedFileAuthor, fileInfo.author, authors.toString());
 								}
 
 							} else {
 								if (unsafe) {
-									messageQueue.sendInfo("SAP-105", "File " + fileInfo.filePath + " author \""
-											+ fileAuthor + "\" in \"" + fileInfo.author + "\" is unsafe.");
+									messageQueue.sendMessage(fileInfo, null, Messages.I005, fileInfo.filePath, fileAuthor,
+											fileInfo.author);
 								}
 							}
 						}
 					}
 				} else {
-					messageQueue.sendError("SAP-106", "File " + fileInfo.filePath + " has an unknown composer path.");
+					messageQueue.sendMessage(fileInfo, null, Messages.E006, fileInfo.filePath);
 				}
 			}
 
@@ -307,7 +305,7 @@ public class FileInfoList {
 					if (fileInfo.songs == 1) {
 
 						if (fileInfo.hardware.equals(FileInfo.ATARI800)) {
-							messageQueue.sendError("SAP-107", "File " + fileInfo.filePath + " has no Demozoo ID.");
+							messageQueue.sendMessage(fileInfo, null, Messages.E007, fileInfo.filePath);
 						}
 					} else {
 						missingSongNumbers.add(songNumber);
@@ -319,8 +317,8 @@ public class FileInfoList {
 			// Having separate productions for subsong is optional.
 			// But if there are more than one URL, all songs must have URLs.
 			if (fileInfo.songs > 1 && (foundSongNumbers > 1) && !missingSongNumbers.isEmpty()) {
-				messageQueue.sendWarning("SAP-108", "Song numbers " + missingSongNumbers.toString() + " in File "
-						+ fileInfo.filePath + " have no Demozoo ID.");
+				messageQueue.sendMessage(fileInfo, null, Messages.W008, missingSongNumbers.toString(),
+						fileInfo.filePath);
 
 			}
 
