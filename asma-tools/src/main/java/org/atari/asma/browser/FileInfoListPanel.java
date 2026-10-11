@@ -52,20 +52,24 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(FileInfo.Attributes.AUTHOR, Column.VISIBLE | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
-			addColumn(FileInfo.Attributes.DATE, Column.VISIBLE | Column.SORTABLE);
+			// Like the website, all columns are left-aligned except the date.
+			addColumn(FileInfo.Attributes.DATE, Column.VISIBLE | Column.SORTABLE, null,
+					createTextRenderer(fileInfo -> fileInfo.date, SwingConstants.RIGHT), null);
 			addColumn(FileInfo.Attributes.ORIGINAL_MODULE_EXT, Column.VISIBLE | Column.SORTABLE);
 			// The values stay numeric for sorting; the renderers show the website's texts.
 			addColumn(FileInfo.Attributes.CHANNELS, Column.VISIBLE | Column.SORTABLE, null,
 					createTextRenderer(FileInfo::getChannelsText, SwingConstants.LEADING), null);
 			addColumn(FileInfo.Attributes.SONGS, Column.VISIBLE | Column.SORTABLE, null,
-					createTextRenderer(FileInfo::getSongsText, SwingConstants.RIGHT), null);
+					createTextRenderer(FileInfo::getSongsText, SwingConstants.LEADING), null);
 			addColumn(FileInfo.Attributes.FILE_PATH, Column.HIDDEN | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
-			addColumn(FileInfo.Attributes.FILE_SIZE, Column.HIDDEN | Column.SORTABLE);
+			addColumn(FileInfo.Attributes.FILE_SIZE, Column.HIDDEN | Column.SORTABLE, null,
+					new PlainNumberCellRenderer(SwingConstants.LEADING), null);
 			addColumn(FileInfo.Attributes.HARDWARE, Column.HIDDEN | Column.SORTABLE);
-			addColumn(FileInfo.Attributes.DEFAULT_SONG_INDEX, Column.HIDDEN | Column.SORTABLE);
+			addColumn(FileInfo.Attributes.DEFAULT_SONG_INDEX, Column.HIDDEN | Column.SORTABLE, null,
+					new PlainNumberCellRenderer(SwingConstants.LEADING), null);
 			addColumn(FileInfo.Attributes.DEMOZOO_ID, Column.HIDDEN | Column.SORTABLE, null,
-					new IdentifierCellRenderer(), null);
+					new PlainNumberCellRenderer(SwingConstants.LEADING), null);
 		}
 
 		private DefaultTableCellRenderer createTextRenderer(Function<FileInfo, String> text,
