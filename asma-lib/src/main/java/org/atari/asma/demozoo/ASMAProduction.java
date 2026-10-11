@@ -25,7 +25,7 @@ public final class ASMAProduction {
 	}
 
 	public ASMAProduction(Production production) {
-		// TODO
+		// TODO: The real file URL path would require additional parameters.
 		this(production.id, production.title, getAuthorIDs(production), production.getASMADefaultURLFilePath());
 	}
 
