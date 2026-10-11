@@ -5,7 +5,14 @@ this repository, a GitHub release with the two programs, the SAPFileEditor
 and the ASMABrowser. Plan 04 prepared the workflow; plan 06 phase 2 had to
 come first and is done.
 
-**Status: R1-R3 confirmed 2026-10-12 as recommended; steps 1-2 executed.
+**Status: executed 2026-10-12. Release v1.0.0 published at
+https://github.com/asma-atari-org/asma.atari.org/releases/tag/v1.0.0 with
+the jars and zips of both programs; main is on 1.1.0-SNAPSHOT. The release
+zips are in `public_html/bin/`; the website upload is still to be done.
+Note: `versions:set` must be called with quoted arguments from PowerShell
+(`cmd /c 'mvn versions:set "-DnewVersion=1.0.0"'`), otherwise PowerShell
+splits the value at the first dot and the version becomes "1".
+R1-R3 confirmed 2026-10-12 as recommended.
 The version resource is `src/main/resources-filtered/.../ASMABrowser.version`,
 the only filtered resource folder; its timestamp is UTC.**
 
