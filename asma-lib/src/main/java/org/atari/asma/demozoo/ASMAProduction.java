@@ -6,7 +6,7 @@ import org.atari.asma.demozoo.model.Production;
 
 /**
  * Reduced version of the Demozoo {@link Production} for usage within ASMA.
- * 
+ *
  * @author Peter Dell
  *
  */
@@ -21,27 +21,34 @@ public final class ASMAProduction {
 	// sun.misc.Unsafe, which is missing when running on the module path, e.g.
 	// from Eclipse.
 	private ASMAProduction() {
-		id = 0;
-		title = "";
-		authorIDs = new int[0];
-		urlFilePath = "";
+		this(0, "", new int[0], "");
 	}
 
 	public ASMAProduction(Production production) {
-		this.id = production.id;
-		this.title = production.title;
+		// TODO
+		this(production.id, production.title, getAuthorIDs(production), production.getASMADefaultURLFilePath());
+	}
+
+	private ASMAProduction(int id, String title, int[] authorIDs, String urlFilePath) {
+		this.id = id;
+		this.title = title;
+		this.authorIDs = authorIDs;
+		this.urlFilePath = urlFilePath;
+	}
+
+	// The distinct IDs of the production's authors, sorted.
+	private static int[] getAuthorIDs(Production production) {
 		var authorIDs = new TreeSet<Integer>();
 		for (var authorNick : production.author_nicks) {
 			authorIDs.add(authorNick.releaser.id);
 		}
 
-		this.authorIDs = new int[authorIDs.size()];
+		var result = new int[authorIDs.size()];
 		var it = authorIDs.iterator();
 		for (int i = 0; it.hasNext(); i++) {
-			this.authorIDs[i] = it.next().intValue();
+			result[i] = it.next().intValue();
 		}
-		// TODO
-		this.urlFilePath = production.getASMADefaultURLFilePath();
+		return result;
 	}
 
 	public String getURL() {
