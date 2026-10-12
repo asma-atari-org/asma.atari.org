@@ -27,7 +27,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingWorker;
-import javax.swing.UIManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.atari.asma.ASMAClient;
@@ -45,6 +44,7 @@ import com.wudsn.tools.base.gui.AttributeTablePreferencesFactory;
 import com.wudsn.tools.base.gui.ElementFactory;
 import com.wudsn.tools.base.gui.MainWindow;
 import com.wudsn.tools.base.gui.StatusBar;
+import com.wudsn.tools.base.gui.UIManager;
 
 /**
  * ASMABrowser - browses the database of the Atari SAP Music Archive
@@ -101,11 +101,7 @@ public final class ASMABrowser implements ActionListener {
 		EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				try {
-					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-				} catch (Exception ex) {
-					// Ignore: keep the look and feel Swing already selected.
-				}
+				UIManager.init();
 				Application.createInstance("https://asma.atari.org/bin/ASMABrowser.zip", "ASMABrowser.jar",
 						ASMABrowser.class);
 				new ASMABrowser().run();

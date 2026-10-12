@@ -71,6 +71,14 @@ public API changes of asma-lib, or data contract decisions stops and asks.**
 3. **Editor GUI onto base** (NON-MECHANICAL - ask first, optional):
    `ElementFactory`/`Actions`/`ModalDialog`/`AttributeTablePanel` for
    SAPFileEditor, aligning it with DIS6502/RMT conventions.
+   DONE 2026-10-12, with the goal of less code: base `FileDrop` replaces
+   the 822-line copy; `ASAPPanel` extends the browser's `DetailsPanel` with
+   the `FileInfo_Author/Title/Date` data types; new editor `Actions` and
+   `Texts` repositories with `ElementFactory.createButton`; base `UIManager`
+   (also in ASMABrowser) and `Desktop.openFile`; dead code removed.
+   `ModalDialog`/`AttributeTablePanel` did not apply (the editor has no
+   modal dialogs and no tables); the window structure (file list window
+   plus one frame per file) stays as it is.
 
 4. **Format logic convergence into base.atari** (NON-MECHANICAL - ask
    first, separate decision, likely driven from the RMT side): SAP/SAP-R/

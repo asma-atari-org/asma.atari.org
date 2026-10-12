@@ -8,16 +8,12 @@ import org.atari.asma.sap.SegmentList;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -30,19 +26,16 @@ import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MessageQueueUtility;
 
 import com.wudsn.tools.base.common.MessageQueue;
+import com.wudsn.tools.base.common.TextUtility;
+import com.wudsn.tools.base.gui.ElementFactory;
 
 public class SAPFileDialog {
-
-//	private SAPEditor editor;
-
-	private static String TITLE = "SAP File Editor";
 
 	private SAPFileProcessor fileProcessor;
 	private ASAPFileLogic asapFileLogic;
 	private MessageQueue messageQueue;
 
 	private JFrame frame;
-	private JButton openButton;
 	private JButton saveButton;
 	private FilePanel inputFilePanel;
 	private FilePanel segmentsFolderPanel;
@@ -61,22 +54,6 @@ public class SAPFileDialog {
 	private StringBuilder header;
 	private ASAPFile asapFile;
 
-	@SuppressWarnings("serial")
-	private final class SaveAction extends AbstractAction {
-
-		public SaveAction(String text, ImageIcon icon, String description, Integer mnemonic) {
-			super(text, icon);
-			putValue(SHORT_DESCRIPTION, description);
-			putValue(MNEMONIC_KEY, mnemonic);
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			performSave();
-		}
-
-	};
-
 	public SAPFileDialog(SAPFileProcessor editor) {
 
 		this.fileProcessor = editor;
@@ -90,24 +67,12 @@ public class SAPFileDialog {
 		asapFile = new ASAPFile();
 
 		frame = new JFrame();
-		frame.setTitle(TITLE);
 
-		openButton = new JButton("Open");
-		openButton.setToolTipText("Open a new input file.");
+		var openButton = ElementFactory.createButton(Actions.SAPFileDialog_Open, true);
+		openButton.addActionListener(event -> performOpen());
 
-		openButton.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				performOpen();
-
-			}
-
-		});
-
-		var saveAction = new SaveAction("Save", null, "Save the current output file", null);
-
-		saveButton = new JButton(saveAction);
+		saveButton = ElementFactory.createButton(Actions.SAPFileDialog_Save, true);
+		saveButton.addActionListener(event -> performSave());
 
 		var toolbar = new JToolBar();
 		toolbar.add(openButton);
@@ -118,15 +83,9 @@ public class SAPFileDialog {
 		var filePanel = new JPanel();
 		filePanel.setLayout(new BorderLayout());
 
-		inputFilePanel = new FilePanel(true);
-		inputFilePanel.filePathLabel.setText("Input File");
-
-		segmentsFolderPanel = new FilePanel(false);
-		segmentsFolderPanel.filePathLabel.setText("Segments Folder");
-		segmentsFolderPanel.button.setText("Open Folder");
-
-		outputFilePanel = new FilePanel(true);
-		outputFilePanel.filePathLabel.setText("Output File");
+		inputFilePanel = new FilePanel(Texts.SAPFileDialog_InputFile, true);
+		segmentsFolderPanel = new FilePanel(Texts.SAPFileDialog_SegmentsFolder, false);
+		outputFilePanel = new FilePanel(Texts.SAPFileDialog_OutputFile, true);
 
 		var contentPanel = new JPanel();
 		var layout = new GridLayout();
@@ -169,15 +128,6 @@ public class SAPFileDialog {
 		messageTextArea.setBackground(frame.getBackground());
 		frame.add(messageTextArea, BorderLayout.SOUTH);
 
-		/*
-		 * KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(
-		 * new KeyEventDispatcher() {
-		 * 
-		 * @Override public boolean dispatchKeyEvent(KeyEvent e) { if (e.isControlDown()
-		 * && e.getKeyCode() == KeyEvent.VK_S) { e.consume(); performSave(); return
-		 * true; } return false; } });
-		 */
-
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 
@@ -198,12 +148,9 @@ public class SAPFileDialog {
 	}
 
 	private void dataToUI() {
-		var title = new StringBuilder(inputFile.getName()).append(" - ");
-
-		title.append(asapFile.getTitle()).append(" by ").append(asapFile.getAuthor());
-
 		saveButton.setEnabled(outputFile != null && asapFile.getASAPInfo() != null);
-		frame.setTitle(title.toString());
+		frame.setTitle(TextUtility.format(Texts.SAPFileDialog_Title, inputFile.getName(), asapFile.getTitle(),
+				asapFile.getAuthor()));
 		inputFilePanel.setFile(inputFile);
 		segmentsFolderPanel.setFile(segmentsFolder);
 		outputFilePanel.setFile(outputFile);

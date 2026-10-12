@@ -17,10 +17,10 @@ import com.wudsn.tools.base.gui.ElementFactory;
 import com.wudsn.tools.base.repository.DataType;
 
 /**
- * Base class of the details panels above the entity lists: read-only fields
- * in two label/field column pairs, filled row by row, and full-width rows in
- * between, in the order they are added. The value columns keep their width
- * when the content changes.
+ * Base class of the details panels above the entity lists and of the
+ * SAPFileEditor's header fields: read-only fields in two label/field column
+ * pairs, filled row by row, and full-width rows in between, in the order they
+ * are added. The value columns keep their width when the content changes.
  *
  * @author Peter Dell
  */

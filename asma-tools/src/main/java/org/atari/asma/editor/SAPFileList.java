@@ -26,7 +26,6 @@ public class SAPFileList {
 		listModel = new DefaultListModel<>();
 
 		frame = new JFrame();
-		frame.setTitle("SAPFileEditor");
 		// Create a JList and set its model to the DefaultListModel
 		JList<String> jList = new JList<>(listModel);
 
@@ -54,7 +53,7 @@ public class SAPFileList {
 		});
 		// Set the JFrame properties
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setTitle("SAPFileEditor - Files Opened");
+		frame.setTitle(Texts.SAPFileList_Title);
 		frame.setLocationRelativeTo(null);
 		frame.pack();
 		frame.setVisible(true);

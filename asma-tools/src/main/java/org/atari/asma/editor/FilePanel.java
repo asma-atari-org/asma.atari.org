@@ -1,8 +1,5 @@
 package org.atari.asma.editor;
 
-import java.awt.Desktop;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -15,40 +12,43 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class FilePanel extends JPanel {
+import com.wudsn.tools.base.gui.Desktop;
+import com.wudsn.tools.base.gui.ElementFactory;
 
-	/**
-	 * 
-	 */
+/**
+ * A file or folder path with its status, size and date, and a button to open
+ * it with the desktop.
+ */
+public final class FilePanel extends JPanel {
+
 	private static final long serialVersionUID = 1L;
 
-	private boolean fileMode;
-	public JLabel filePathLabel;
+	private final boolean fileMode;
+	private final JTextField filePathField;
+	private final JLabel fileStatusLabel;
+	private final JLabel fileSizeLabel;
+	private final JLabel fileDateLabel;
+	private final JButton button;
 
-	public JTextField filePathField;
-
-	public JLabel fileStatusLabel;
-	public JLabel fileSizeLabel;
-	public JLabel fileDateLabel;
-
-	public JButton button;
-
-	public FilePanel(boolean fileMode) {
-
+	/**
+	 * @param label
+	 *            The label, not <code>null</code>.
+	 * @param fileMode
+	 *            <code>true</code> for a file, <code>false</code> for a folder.
+	 */
+	public FilePanel(String label, boolean fileMode) {
 		this.fileMode = fileMode;
 
 		var border = BorderFactory.createEmptyBorder(1, 5, 1, 5);
+		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
 
-		var layout = new BoxLayout(this, BoxLayout.LINE_AXIS);
-		setLayout(layout);
-		filePathLabel = new JLabel();
+		var filePathLabel = new JLabel(label);
 		filePathLabel.setBorder(border);
-
 		add(filePathLabel);
 
 		filePathField = new JTextField();
 		filePathField.setBorder(border);
-
+		filePathField.setEditable(false);
 		add(filePathField);
 
 		fileStatusLabel = new JLabel();
@@ -63,32 +63,17 @@ public class FilePanel extends JPanel {
 		fileDateLabel.setBorder(border);
 		add(fileDateLabel);
 
-		button = new JButton("Play");
-		if (!fileMode) {
-			button.setText("Open Folder");
-		}
-		add(button);
-
-		button.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				var desktop = Desktop.getDesktop();
-				try {
-					desktop.open(new File(filePathField.getText()));
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-
+		// The same buttons appear in several panels, so they get no mnemonic.
+		button = ElementFactory.createButton(fileMode ? Actions.FilePanel_Play : Actions.FilePanel_OpenFolder,
+				false);
+		button.addActionListener(event -> {
+			try {
+				Desktop.openFile(new File(filePathField.getText()));
+			} catch (IOException ex) {
+				ex.printStackTrace();
 			}
 		});
-
-		setEditable(false);
-	}
-
-	public void setEditable(boolean editable) {
-		filePathField.setEditable(editable);
+		add(button);
 	}
 
 	public void setFile(File file) {
@@ -98,38 +83,29 @@ public class FilePanel extends JPanel {
 			if (fileMode) {
 				if (file.exists()) {
 					if (file.isFile()) {
-						fileStatusLabel.setText("Exists");
+						fileStatusLabel.setText(Texts.FilePanel_Exists);
 						fileSizeLabel.setText(String.valueOf(file.length()) + " b");
 						fileDateLabel.setText(format.format(new Date(file.lastModified())));
 						button.setEnabled(true);
-
 					} else {
-						fileStatusLabel.setText("Directory");
+						fileStatusLabel.setText(Texts.FilePanel_Directory);
 						fileSizeLabel.setText("");
 						fileDateLabel.setText("");
 						button.setEnabled(false);
-
 					}
-
 				} else {
-					fileStatusLabel.setText("New");
+					fileStatusLabel.setText(Texts.FilePanel_New);
 					button.setEnabled(false);
-
 				}
 			} else {
 				button.setEnabled(true);
-
 			}
 		} else {
 			filePathField.setText("");
 			fileStatusLabel.setText("");
 			fileSizeLabel.setText("");
 			fileDateLabel.setText("");
-
 			button.setEnabled(false);
-
 		}
-
 	}
-
 }

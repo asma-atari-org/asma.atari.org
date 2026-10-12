@@ -7,14 +7,14 @@ import java.io.FileFilter;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JFrame;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import org.atari.asma.FileExtension;
 import org.atari.asma.util.FileUtility;
 import org.atari.asma.util.MessageQueueUtility;
 
 import com.wudsn.tools.base.common.MessageQueue;
+import com.wudsn.tools.base.gui.FileDrop;
+import com.wudsn.tools.base.gui.UIManager;
 
 public class SAPFileEditor implements SAPFileProcessor {
 
@@ -32,53 +32,35 @@ public class SAPFileEditor implements SAPFileProcessor {
 	}
 
 	private void addFileDropListener(JFrame frame) {
-		new FileDrop(frame, new FileDrop.Listener() {
-			public void filesDropped(java.io.File[] files) {
-				// handle file drop
+		new FileDrop(frame, true, new FileDrop.Listener() {
+			@Override
+			public boolean isDropAllowed() {
+				return true;
+			}
+
+			@Override
+			public void filesDropped(File[] files) {
 				for (var file : files) {
 					processFile(file);
 				}
-			} // end filesDropped
-		}); // end FileDrop.Listener
+			}
+		});
 	}
 
 	public static void main(String[] args) {
 		SAPFileEditor instance = new SAPFileEditor();
 		instance.run(args);
-	};
+	}
 
 	private void run(String[] args) {
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (UnsupportedLookAndFeelException e) {
-			// handle exception
-		} catch (ClassNotFoundException e) {
-			// handle exception
-		} catch (InstantiationException e) {
-			// handle exception
-		} catch (IllegalAccessException e) {
-			// handle exception
-		}
+		UIManager.init();
 
 		var files = new File[args.length];
 		for (int i = 0; i < args.length; i++) {
 			files[i] = new File(args[i]);
 		}
-
-//		if (files.length == 0) {
-//			JFileChooser chooser = new JFileChooser();
-//			chooser.setDialogTitle("SAPFileEditor - Select files");
-//			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-//			chooser.setMultiSelectionEnabled(true);
-//			int returnVal = chooser.showOpenDialog(null);
-//			if (returnVal == JFileChooser.APPROVE_OPTION) {
-//				files = chooser.getSelectedFiles();
-//			}
-//
-//		}
 		runFilesOrFolders(files);
-
-	};
+	}
 
 	private void runFilesOrFolders(File[] files) {
 		messageQueue.clear();
@@ -112,14 +94,7 @@ public class SAPFileEditor implements SAPFileProcessor {
 	}
 
 	public void closeFile(File inputFile) {
-		var path = inputFile.getAbsolutePath();
-
-		fileList.removeDialog(path);
-
-//		if (sapFileDialogMap.isEmpty()) {
-//			System.exit(0);
-//		}
-
+		fileList.removeDialog(inputFile.getAbsolutePath());
 	}
 
 	public void processFolder(File folder) {
