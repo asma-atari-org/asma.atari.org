@@ -37,9 +37,9 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 			public static final int FORMAT = 3;
 			public static final int CHANNELS = 4;
 			public static final int SONGS = 5;
-			public static final int FILE_PATH = 6;
-			public static final int FILE_SIZE = 7;
-			public static final int HARDWARE = 8;
+			public static final int HARDWARE = 6;
+			public static final int FILE_PATH = 7;
+			public static final int FILE_SIZE = 8;
 			public static final int DEFAULT_SONG = 9;
 			public static final int DEMOZOO_ID = 10;
 
@@ -67,12 +67,12 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 			// The value stays numeric for sorting; the renderer shows the website's text.
 			addColumn(FileInfo.Attributes.SONGS_AND_DEFAULT_SONG, Column.VISIBLE | Column.SORTABLE, null,
 					createTextRenderer(FileInfo::getSongsText, SwingConstants.LEADING), null);
+			addColumn(FileInfo.Attributes.HARDWARE, Column.HIDDEN | Column.SORTABLE);
 			addColumn(FileInfo.Attributes.FILE_PATH, Column.HIDDEN | Column.SORTABLE,
 					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			addColumn(FileInfo.Attributes.FILE_SIZE, Column.HIDDEN | Column.SORTABLE, null,
 					createTextRenderer(fileInfo -> sizeFormat.format(fileInfo.fileSize), SwingConstants.LEADING),
 					null);
-			addColumn(FileInfo.Attributes.HARDWARE, Column.HIDDEN | Column.SORTABLE);
 			addColumn(FileInfo.Attributes.DEFAULT_SONG_INDEX, Column.HIDDEN | Column.SORTABLE, null,
 					new PlainNumberCellRenderer(SwingConstants.LEADING), null);
 			addColumn(FileInfo.Attributes.DEMOZOO_ID, Column.HIDDEN | Column.SORTABLE, null,

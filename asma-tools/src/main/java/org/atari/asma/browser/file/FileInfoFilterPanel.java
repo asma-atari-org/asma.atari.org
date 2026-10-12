@@ -35,9 +35,9 @@ public final class FileInfoFilterPanel extends FilterPanel<FileInfo.Selection> {
 		titleField = addTextField(DataTypes.FileInfo_Title, 10);
 		authorField = addTextField(DataTypes.FileInfo_Author, 10);
 		dateField = addTextField(DataTypes.FileInfo_Date, 6);
-		hardwareComboBox = addValueSetComboBox(DataTypes.FileInfo_Hardware, Hardware.class);
-		channelsComboBox = addValueSetComboBox(DataTypes.FileInfo_Channels, Channels.class);
 		formatField = addTextField(DataTypes.FileInfo_OriginalModuleExt, 4);
+		channelsComboBox = addValueSetComboBox(DataTypes.FileInfo_Channels, Channels.class);
+		hardwareComboBox = addValueSetComboBox(DataTypes.FileInfo_Hardware, Hardware.class);
 		addCountLabel();
 	}
 
