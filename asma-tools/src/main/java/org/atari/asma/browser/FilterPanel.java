@@ -1,6 +1,8 @@
 package org.atari.asma.browser;
 
 import java.awt.FlowLayout;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -39,7 +41,20 @@ public abstract class FilterPanel<S> extends JPanel {
 			throw new IllegalArgumentException("Parameter 'selectionConsumer' must not be null.");
 		}
 		this.selectionConsumer = selectionConsumer;
-		setLayout(new FlowLayout(FlowLayout.LEFT, 8, 2));
+		// Wraps the fields into further rows if the window is too narrow.
+		setLayout(new WrapLayout(FlowLayout.LEFT, 8, 2));
+		// The preferred height depends on the width, so a new width needs a new layout of the parent.
+		addComponentListener(new ComponentAdapter() {
+			private int width;
+
+			@Override
+			public void componentResized(ComponentEvent event) {
+				if (getWidth() != width) {
+					width = getWidth();
+					revalidate();
+				}
+			}
+		});
 	}
 
 	protected final JTextField addTextField(DataType dataType, int columns) {
