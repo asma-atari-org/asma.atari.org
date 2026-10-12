@@ -11,13 +11,13 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Checkout WUDSN-Base
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: wudsn/wudsn-base
           path: wudsn-base
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
@@ -28,7 +28,7 @@ jobs:
       - name: Build and test
         run: mvn -B clean verify
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             asma-tools/target/SAPFileEditor.jar
