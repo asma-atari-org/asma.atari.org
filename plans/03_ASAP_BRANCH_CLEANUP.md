@@ -66,6 +66,28 @@ or `git merge-base --is-ancestor pokey-register-shadow upstream/master`).
    (end state: `master` + `sapr-dump` + tag `asap-8.0.0-asma`) and tick this
    plan off.
 
+## Follow-up: ASAP as an explicit Java module
+
+Noted 2026-10-12. The ASMA build warns "requires transitive directive for an
+automatic module" at `requires transitive asap;` in
+`asma-tools/src/main/java/module-info.java`, because the ASAP jar has no
+`module-info.class`. WUDSN Base got its own module-info for the same reason
+(see plan 06); ASAP is the last automatic module. Decided: wait until Fox
+has merged `pokey-register-shadow`, then:
+
+1. **Upstream, as its own merge request** (not part of the register-shadow
+   PR): a topic branch `java-module` off `upstream/master` with
+   - `java/module-info.java`: `module net.sf.asap { exports net.sf.asap; }`
+     (ASAP only needs `java.base`);
+   - `java/java.mk`: compile it with the sources into `java/classes` and add
+     `-C java/classes module-info.class` to `java/asap.jar` only -
+     `asap2wav.jar` has `ASAP2WAV` in the unnamed package and must not get
+     it; the Android build is unaffected.
+2. **ASMA**: include the same module-info in the step 4 rebuild (new
+   version, e.g. `8.1.0-asma`), change the requirement to
+   `requires transitive net.sf.asap;` (the module name changes from the
+   automatic `asap`), and confirm the warning is gone in the build.
+
 ## Not part of this cleanup
 
 - New RMT changes keep going to their own topic branches off `master`,
