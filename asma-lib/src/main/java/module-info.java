@@ -14,6 +14,6 @@ module org.atari.asma {
 	opens org.atari.asma.sap;
 
 	requires transitive com.google.gson;
-	// Automatic module of the WUDSN Base library, see plans/06.
+	// The WUDSN Base library, an explicit open module since 2026-10-12, see plans/06.
 	requires transitive com.wudsn.tools.base;
 }

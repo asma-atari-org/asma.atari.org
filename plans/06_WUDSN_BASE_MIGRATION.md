@@ -51,7 +51,7 @@ public API changes of asma-lib, or data contract decisions stops and asks.**
    - `com.wudsn.tools:com.wudsn.tools.base:1.0.0-SNAPSHOT` in the parent
      dependencyManagement and in asma-lib/asma-tools.
    - `requires (transitive) com.wudsn.tools.base;` in both module-infos
-     (automatic module).
+     (automatic module; an explicit open module since 2026-10-12).
    - CI: checkout `wudsn/wudsn-base` + `mvn install` before the build in
      `build.yml` and `release.yml` (RMT's proven pattern).
    - `mvn clean install` green; the shaded SAPFileEditor.jar now bundles the
