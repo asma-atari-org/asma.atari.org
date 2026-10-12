@@ -79,7 +79,7 @@ public final class FileInfoDetailsPanel extends DetailsPanel {
 		authorField.setText(fileInfo.author);
 		dateField.setText(fileInfo.date);
 		hardwareField.setText(fileInfo.getHardware().getText());
-		formatField.setText(fileInfo.originalModuleExt);
+		formatField.setText(fileInfo.getOriginalModuleFormatText());
 		channelsField.setText(fileInfo.getChannelsText());
 		filePathField.setText(fileInfo.filePath);
 		fileSizeField.setText(NumberFormat.getIntegerInstance().format(fileInfo.fileSize) + " bytes");

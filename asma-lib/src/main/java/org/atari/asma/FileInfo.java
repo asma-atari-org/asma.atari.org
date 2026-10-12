@@ -65,7 +65,9 @@ public final class FileInfo {
 			if (channels != null && channels != fileInfo.getChannels()) {
 				return false;
 			}
-			if (!format.isEmpty() && !contains(fileInfo.originalModuleExt, format)) {
+			// Like asma.js: the extension or its description.
+			if (!format.isEmpty() && !contains(fileInfo.originalModuleExt, format)
+					&& !contains(fileInfo.originalModuleExtDescription, format)) {
 				return false;
 			}
 			return true;
@@ -110,6 +112,9 @@ public final class FileInfo {
 	public String comment; // TODO use COMMENT from STIL
 	public String typeLetter;;
 	public String originalModuleExt;
+	// The description of the format, e.g. "Raster Music Tracker". Not part of
+	// the JSON files: filled after loading by programs with ASAP, like asma.js.
+	public transient String originalModuleExtDescription;
 	public int channels;
 	public int songs;
 	public int defaultSongIndex; // Zero-based
@@ -121,6 +126,19 @@ public final class FileInfo {
 
 	public FileInfo() {
 		messageQueue = new MessageQueue();
+	}
+
+	/**
+	 * Gets the format as display text, like getOriginalModuleFormatText() in
+	 * the website's file.js, e.g. "Raster Music Tracker (RMT)"; only the
+	 * extension without a description.
+	 */
+	public String getOriginalModuleFormatText() {
+		String ext = (originalModuleExt == null) ? "" : originalModuleExt.toUpperCase();
+		if (originalModuleExtDescription == null || originalModuleExtDescription.isEmpty()) {
+			return ext;
+		}
+		return originalModuleExtDescription + " (" + ext + ")";
 	}
 
 	/** The hardware of {@link #hardware}, see plans/13. */

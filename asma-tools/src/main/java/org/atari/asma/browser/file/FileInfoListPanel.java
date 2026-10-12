@@ -60,7 +60,8 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 			// Like the website, all columns are left-aligned except the date.
 			addColumn(FileInfo.Attributes.DATE, Column.VISIBLE | Column.SORTABLE, null,
 					createTextRenderer(fileInfo -> fileInfo.date, SwingConstants.RIGHT), null);
-			addColumn(FileInfo.Attributes.ORIGINAL_MODULE_EXT, Column.VISIBLE | Column.SORTABLE);
+			addColumn(FileInfo.Attributes.ORIGINAL_MODULE_EXT, Column.VISIBLE | Column.SORTABLE,
+					StringUtility.CASE_INSENSITIVE_COMPARATOR, null, null);
 			// Value sets show their text and sort by their sort key, see plans/13.
 			addColumn(FileInfo.Attributes.CHANNELS, Column.VISIBLE | Column.SORTABLE);
 			// The value stays numeric for sorting; the renderer shows the website's text.
@@ -121,7 +122,7 @@ public final class FileInfoListPanel extends AttributeTablePanel {
 			case Columns.DATE:
 				return fileInfo.date;
 			case Columns.FORMAT:
-				return fileInfo.originalModuleExt;
+				return fileInfo.getOriginalModuleFormatText();
 			case Columns.CHANNELS:
 				return fileInfo.getChannels();
 			case Columns.SONGS:

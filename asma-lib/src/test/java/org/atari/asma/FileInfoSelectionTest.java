@@ -1,5 +1,6 @@
 package org.atari.asma;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -51,5 +52,18 @@ public class FileInfoSelectionTest {
 		assertFalse(new FileInfo.Selection("", "", "", "", "", Hardware.ATARI2600, null, "").matches(fileInfo));
 		assertFalse(new FileInfo.Selection("", "", "", "", "", null, Channels.MONO_4, "").matches(fileInfo));
 		assertFalse(new FileInfo.Selection("", "", "", "", "", null, null, "ttt").matches(fileInfo));
+	}
+
+	@Test
+	public void formatMatchesExtensionAndDescription() {
+		FileInfo fileInfo = createFileInfo();
+		assertEquals("RMT", fileInfo.getOriginalModuleFormatText());
+		assertFalse(new FileInfo.Selection("", "", "", "", "", null, null, "raster").matches(fileInfo));
+
+		// Like asma.js, after the description was filled in.
+		fileInfo.originalModuleExtDescription = "Raster Music Tracker";
+		assertEquals("Raster Music Tracker (RMT)", fileInfo.getOriginalModuleFormatText());
+		assertTrue(new FileInfo.Selection("", "", "", "", "", null, null, "raster").matches(fileInfo));
+		assertTrue(new FileInfo.Selection("", "", "", "", "", null, null, "RMT").matches(fileInfo));
 	}
 }

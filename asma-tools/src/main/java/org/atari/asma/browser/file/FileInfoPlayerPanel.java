@@ -8,6 +8,7 @@ import javax.swing.JTextField;
 
 import org.atari.asma.ASMAClient;
 import org.atari.asma.FileInfo;
+import org.atari.asma.asap.ModuleFormatUtility;
 
 import com.wudsn.tools.base.gui.AttributeTable;
 import com.wudsn.tools.base.gui.AttributeTablePreferences;
@@ -93,6 +94,8 @@ public final class FileInfoPlayerPanel extends JPanel {
 		if (database == null) {
 			throw new IllegalArgumentException("Parameter 'database' must not be null.");
 		}
+		// Like asma.js after loading, for the format column, details and filter.
+		ModuleFormatUtility.setDescriptions(database.fileInfos);
 		selectionPanel.setFileInfos(database.fileInfos);
 	}
 
